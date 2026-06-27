@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VectorForge — Procedural Art Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,500;1,300&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #161616;
+    --bg3: #1e1e1e;
+    --bg4: #252525;
+    --border: #2a2a2a;
+    --border2: #363636;
+    --txt: #e8e8e8;
+    --txt2: #888;
+    --txt3: #555;
+    --accent: #c8a96e;
+    --accent2: #8b6f3e;
+    --gold: #d4a843;
+    --panel: 240px;
+    --epanel: 170px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--txt); font-family: 'DM Mono', monospace; font-size: 12px; overflow: hidden; }
+
+  /* ── Layout ── */
+  .app { display: grid; grid-template-columns: var(--panel) 1fr var(--epanel); grid-template-rows: 44px 1fr; height: 100vh; }
+  .topbar { grid-column: 1/-1; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--bg2); }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-hex { width: 22px; height: 22px; }
+  .logo-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; color: var(--accent); letter-spacing: 0.04em; }
+  .logo-sub { font-size: 9px; color: var(--txt3); letter-spacing: 0.12em; text-transform: uppercase; }
+  .tb-sep { width: 1px; height: 20px; background: var(--border2); margin: 0 4px; }
+  .tb-status { margin-left: auto; font-size: 10px; color: var(--txt3); }
+  .tb-status span { color: var(--accent); }
+  .tb-btn { background: none; border: 1px solid var(--border2); color: var(--txt2); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .tb-btn:hover { border-color: var(--accent2); color: var(--accent); }
+
+  /* ── Panels ── */
+  .left-panel { border-right: 1px solid var(--border); background: var(--bg2); overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+  .right-panel { border-left: 1px solid var(--border); background: var(--bg2); overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+  .canvas-area { background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; overflow: hidden; position: relative; }
+
+  .section { border-bottom: 1px solid var(--border); padding: 10px 12px; }
+  .sec-label { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--txt3); margin-bottom: 8px; }
+
+  /* ── Style tiles ── */
+  .style-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .stile { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 8px 4px 6px; cursor: pointer; text-align: center; transition: all .15s; }
+  .stile:hover { border-color: var(--border2); background: var(--bg4); }
+  .stile.active { border-color: var(--accent); background: #1c1810; }
+  .stile-ico { width: 32px; height: 32px; margin: 0 auto 4px; display: block; }
+  .stile-name { font-size: 8.5px; color: var(--txt2); letter-spacing: 0.04em; }
+  .stile.active .stile-name { color: var(--accent); }
+
+  /* ── Type chips ── */
+  .type-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tchip { font-size: 9px; padding: 3px 8px; border: 1px solid var(--border2); border-radius: 99px; cursor: pointer; color: var(--txt3); background: var(--bg3); transition: all .12s; }
+  .tchip:hover { color: var(--txt); border-color: var(--txt3); }
+  .tchip.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
+
+  /* ── Sliders ── */
+  .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .slider-row label { font-size: 9px; color: var(--txt3); width: 72px; flex-shrink: 0; letter-spacing: 0.04em; }
+  .slider-row input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 2px; background: var(--border2); border-radius: 2px; outline: none; }
+  .slider-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+  .slider-row input[type=range]::-webkit-slider-thumb:hover { background: var(--gold); }
+  .sv { font-size: 9px; color: var(--txt2); min-width: 26px; text-align: right; }
+
+  /* ── Color palettes ── */
+  .pal-row { display: flex; gap: 5px; flex-wrap: wrap; }
+  .pal-swatch { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
+  .pal-swatch.active { border-color: var(--txt); }
+
+  /* ── Canvas ── */
+  .cv-wrap { position: relative; }
+  .cv-shadow { box-shadow: 0 8px 48px rgba(0,0,0,.7); }
+  #main-svg { display: block; }
+  .cv-bar { display: flex; gap: 2px; background: var(--bg2); border: 1px solid var(--border); border-radius: 99px; padding: 4px; }
+  .cvb { width: 26px; height: 26px; background: none; border: none; color: var(--txt3); cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .12s; }
+  .cvb:hover { color: var(--txt); background: var(--bg4); }
+  .cvb.active { color: var(--accent); }
+  .cvb-txt { width: auto; padding: 0 8px; font-size: 9px; font-family: 'DM Mono', monospace; border-radius: 99px; }
+
+  /* ── Canvas size ── */
+  .size-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .sz-inp { width: 54px; font-size: 9px; background: var(--bg3); border: 1px solid var(--border); color: var(--txt); padding: 4px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; }
+  .sz-inp:focus { outline: none; border-color: var(--accent2); }
+  .sz-pre { font-size: 8px; padding: 3px 6px; background: var(--bg3); border: 1px solid var(--border); color: var(--txt3); border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; }
+  .sz-pre:hover { border-color: var(--border2); color: var(--txt); }
+
+  /* ── Text input for text-to-vector ── */
+  .tv-ta { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--txt); padding: 7px 8px; border-radius: 5px; font-family: 'DM Mono', monospace; font-size: 10px; resize: none; height: 52px; }
+  .tv-ta:focus { outline: none; border-color: var(--accent2); }
+  .font-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+  .font-chip { font-size: 8px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--txt3); background: var(--bg3); }
+  .font-chip:hover { color: var(--txt); }
+  .font-chip.active { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Generate button ── */
+  .gen-btn { width: 100%; padding: 10px; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 6px; background: var(--accent); color: #0f0f0f; border: none; font-family: 'DM Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; transition: all .15s; }
+  .gen-btn:hover { background: var(--gold); }
+  .gen-btn:active { transform: scale(.98); }
+  .gen-btn:disabled { opacity: .4; cursor: default; }
+
+  /* ── Export panel ── */
+  .xbtn { width: 100%; padding: 7px 10px; font-size: 10px; cursor: pointer; border-radius: 5px; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'DM Mono', monospace; transition: all .12s; margin-bottom: 5px; }
+  .xbtn-p { background: var(--accent); color: #0f0f0f; border: none; }
+  .xbtn-p:hover { background: var(--gold); }
+  .xbtn-s { background: var(--bg3); border: 1px solid var(--border2); color: var(--txt2); }
+  .xbtn-s:hover { border-color: var(--accent2); color: var(--accent); }
+
+  /* ── Variations ── */
+  .var-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .vthumb { border: 1px solid var(--border); border-radius: 5px; aspect-ratio: 1; overflow: hidden; cursor: pointer; background: #fff; display: flex; align-items: center; justify-content: center; }
+  .vthumb:hover { border-color: var(--border2); }
+  .vthumb.active { border: 1.5px solid var(--accent); }
+  .vthumb svg { width: 100%; height: 100%; }
+
+  /* ── Info ── */
+  .info-box { font-size: 9px; color: var(--txt3); line-height: 1.9; }
+  .info-box b { color: var(--txt2); font-weight: 500; }
+
+  /* ── Canvas grid overlay ── */
+  .grid-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .2s; }
+  .grid-svg.visible { opacity: .35; }
+
+  /* ── Pixel art canvas ── */
+  #px-canvas { display: none; image-rendering: pixelated; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .mode-bar { display: flex; gap: 4px; }
+  .mode-btn { font-size: 9px; padding: 3px 9px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg3); color: var(--txt3); font-family: 'DM Mono', monospace; }
+  .mode-btn.active { border-color: var(--accent); color: var(--accent); background: #1c1810; }
+
+  .tag { font-size: 8px; padding: 1px 5px; border-radius: 3px; background: var(--bg4); border: 1px solid var(--border); color: var(--txt3); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Top bar ── -->
+  <header class="topbar">
+    <div class="logo">
+      <svg class="logo-hex" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,6.5 20,15.5 11,20 2,15.5 2,6.5" fill="none" stroke="#c8a96e" stroke-width="1"/>
+        <polygon points="11,5 17,8.5 17,13.5 11,17 5,13.5 5,8.5" fill="#c8a96e20"/>
+        <circle cx="11" cy="11" r="2" fill="#c8a96e"/>
+      </svg>
+      <span class="logo-title">VectorForge</span>
+      <span class="logo-sub">Procedural</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="mode-bar">
+      <button class="mode-btn active" id="mb-vec" onclick="setMode('vector')">Vector SVG</button>
+      <button class="mode-btn" id="mb-px" onclick="setMode('pixel')">Pixel Art</button>
+    </div>
+    <div class="tb-sep"></div>
+    <span class="tag" id="dim-tag">400 × 400</span>
+    <div class="tb-status" id="tb-status"><span>Ready</span></div>
+    <button class="tb-btn" onclick="doGen()">↻ Regenerate</button>
+  </header>
+
+  <!-- ── Left Panel ── -->
+  <aside class="left-panel">
+
+    <div class="section">
+      <div class="sec-label">Art Style</div>
+      <div class="style-grid" id="style-grid"></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Output Type</div>
+      <div class="type-wrap" id="type-wrap"></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Parameters</div>
+      <div class="slider-row"><label>Complexity</label><input type="range" id="s-comp" min="0" max="100" value="55" step="1"><span class="sv" id="sv-comp">55</span></div>
+      <div class="slider-row"><label>Symmetry</label><input type="range" id="s-sym" min="0" max="100" value="50" step="1"><span class="sv" id="sv-sym">50</span></div>
+      <div class="slider-row"><label>Stroke w.</label><input type="range" id="s-sw" min="2" max="36" value="12" step="1"><span class="sv" id="sv-sw">1.2</span></div>
+      <div class="slider-row"><label>Fill opac.</label><input type="range" id="s-fill" min="0" max="100" value="0" step="1"><span class="sv" id="sv-fill">0%</span></div>
+      <div class="slider-row"><label>Seed</label><input type="range" id="s-seed" min="1" max="999" value="42" step="1"><span class="sv" id="sv-seed">42</span></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Canvas Size</div>
+      <div class="size-row">
+        <input type="number" id="cw" class="sz-inp" value="400" min="50" max="3000">
+        <span style="color:var(--txt3);font-size:10px">×</span>
+        <input type="number" id="ch" class="sz-inp" value="400" min="50" max="3000">
+      </div>
+      <div class="size-row" style="margin-top:5px">
+        <button class="sz-pre" onclick="setRatio(1,1)">1:1</button>
+        <button class="sz-pre" onclick="setRatio(4,3)">4:3</button>
+        <button class="sz-pre" onclick="setRatio(16,9)">16:9</button>
+        <button class="sz-pre" onclick="setRatio(3,4)">3:4</button>
+        <button class="sz-pre" onclick="setRatio(210,297)">A4</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Color Theme</div>
+      <div class="pal-row" id="pal-row"></div>
+    </div>
+
+    <div class="section" id="text-section">
+      <div class="sec-label">Text → Form <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0">(type to shape)</span></div>
+      <textarea class="tv-ta" id="tv-ta" maxlength="64" placeholder="ex: AURA, ☽, OM..."></textarea>
+      <div class="font-chips" id="font-chips"></div>
+    </div>
+
+    <div class="section" style="border-bottom:none; flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:14px;">
+      <button class="gen-btn" id="gen-btn" onclick="doGen()">Generate</button>
+    </div>
+  </aside>
+
+  <!-- ── Canvas ── -->
+  <main class="canvas-area" id="canvas-area">
+    <div class="cv-wrap" id="cv-wrap">
+      <div class="cv-shadow" id="svg-holder">
+        <svg id="main-svg" xmlns="http://www.w3.org/2000/svg" width="340" height="340" viewBox="0 0 400 400">
+          <rect width="400" height="400" fill="#ffffff"/>
+          <text x="200" y="200" text-anchor="middle" dominant-baseline="middle"
+            font-family="DM Mono,monospace" font-size="11" fill="#bbb">Click Generate</text>
+        </svg>
+        <canvas id="px-canvas" width="64" height="64"></canvas>
+      </div>
+      <svg class="grid-svg" id="grid-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="cv-bar">
+      <button class="cvb" onclick="zoom(-0.25)" title="Zoom out">−</button>
+      <button class="cvb cvb-txt" onclick="zoom(0)" title="Fit">Fit</button>
+      <button class="cvb" onclick="zoom(0.25)" title="Zoom in">+</button>
+      <span style="width:1px;height:16px;background:var(--border);margin:5px 2px"></span>
+      <button class="cvb" id="btn-bg" onclick="toggleBg()" title="Toggle background">◐</button>
+      <button class="cvb" id="btn-grid" onclick="toggleGrid()" title="Grid">⊞</button>
+      <button class="cvb" id="btn-draw" onclick="toggleDraw()" title="Draw mode">✏</button>
+    </div>
+  </main>
+
+  <!-- ── Right Panel (Export) ── -->
+  <aside class="right-panel">
+    <div class="section">
+      <div class="sec-label">Export</div>
+      <button class="xbtn xbtn-p" onclick="xSVG()">↓ SVG</button>
+      <button class="xbtn xbtn-s" onclick="xPNG()">↓ PNG</button>
+      <button class="xbtn xbtn-s" onclick="copySVG()">⎘ Copy SVG</button>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Variations</div>
+      <div class="var-grid" id="var-grid">
+        <div class="vthumb active" id="vt0" onclick="applyVar(0)"></div>
+        <div class="vthumb" id="vt1" onclick="applyVar(1)"></div>
+        <div class="vthumb" id="vt2" onclick="applyVar(2)"></div>
+        <div class="vthumb" id="vt3" onclick="applyVar(3)"></div>
+      </div>
+    </div>
+
+    <div class="section" style="border-bottom:none;flex:1">
+      <div class="sec-label">Info</div>
+      <div class="info-box" id="info-box">—</div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+// ────────────────────────────────────────────────────────────────────────────
+// Utility
+// ────────────────────────────────────────────────────────────────────────────
+const TAU = Math.PI * 2;
+const f = n => Math.round(n * 100) / 100;
+
+function mkRand(seed) {
+  let s = (seed ^ 0xDEADBEEF) >>> 0;
+  return () => {
+    s = Math.imul(s ^ (s >>> 15), s | 1);
+    s ^= s + Math.imul(s ^ (s >>> 7), s | 61);
+    return ((s ^ (s >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function pt(cx, cy, r, a) { return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
+
+function polyPath(cx, cy, r, n, rot = -Math.PI / 2) {
+  const pts = Array.from({ length: n }, (_, i) => pt(cx, cy, r, rot + i * TAU / n));
+  return 'M ' + pts.map(p => `${f(p[0])} ${f(p[1])}`).join(' L ') + ' Z';
+}
+
+function starPath(cx, cy, r1, r2, n, rot = -Math.PI / 2) {
+  const pts = [];
+  for (let i = 0; i < n * 2; i++) {
+    const r = i % 2 === 0 ? r1 : r2;
+    pts.push(pt(cx, cy, r, rot + i * Math.PI / n));
+  }
+  return 'M ' + pts.map(p => `${f(p[0])} ${f(p[1])}`).join(' L ') + ' Z';
+}
+
+function curvePath(pts, closed = false) {
+  if (pts.length < 2) return '';
+  let d = `M ${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1], curr = pts[i];
+    const mx = (prev[0] + curr[0]) / 2, my = (prev[1] + curr[1]) / 2;
+    d += ` Q ${f(prev[0])} ${f(prev[1])} ${f(mx)} ${f(my)}`;
+  }
+  if (closed) d += ' Z';
+  return d;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// State
+// ────────────────────────────────────────────────────────────────────────────
+let state = {
+  style: 'artdeco',
+  type: 'medallion',
+  comp: 0.55,
+  sym: 0.5,
+  sw: 1.2,
+  fill: 0,
+  seed: 42,
+  pal: 0,
+  w: 400,
+  h: 400,
+  font: 'serif',
+  mode: 'vector',
+  darkBg: false,
+  grid: false,
+  draw: false,
+  zoom: 1,
+  vars: [null, null, null, null],
+  activeVar: 0,
+};
+
+const STYLES = [
+  { id: 'artdeco',  name: 'Art Deco',    icon: 'ad'  },
+  { id: 'baroque',  name: 'Baroque',     icon: 'bq'  },
+  { id: 'geometric',name: 'Geometric',   icon: 'geo' },
+  { id: 'victorian',name: 'Victorian',   icon: 'vic' },
+  { id: 'celtic',   name: 'Celtic',      icon: 'cel' },
+  { id: 'islamic',  name: 'Islamic',     icon: 'isl' },
+  { id: 'minimal',  name: 'Minimal',     icon: 'min' },
+  { id: 'organic',  name: 'Organic',     icon: 'org' },
+];
+
+const TYPES_BY_STYLE = {
+  artdeco:   ['medallion','frame','divider','corner','pattern','ornament'],
+  baroque:   ['medallion','frame','divider','cartouche','swag','acanthus'],
+  geometric: ['mandala','frame','divider','tessellation','star','symbol'],
+  victorian: ['medallion','frame','divider','flourish','wreath','cartouche'],
+  celtic:    ['knot','border','medallion','cross','knotwork','spiral'],
+  islamic:   ['star','girih','arabesque','border','medallion','pattern'],
+  minimal:   ['symbol','line','grid','circle','mark','glyph'],
+  organic:   ['leaf','spiral','branch','flower','mandala','wave'],
+};
+
+const PALETTES = [
+  { name: 'Noir & Gold',   stroke: '#1a1a1a', fill: '#c8a96e', bg: '#ffffff', fill2: '#f0e8d8' },
+  { name: 'Midnight',      stroke: '#e8e8e8', fill: '#c8a96e', bg: '#0f0f0f', fill2: '#1e1e1e' },
+  { name: 'Sepia',         stroke: '#4a2e0a', fill: '#8b6f3e', bg: '#f5ede0', fill2: '#e8d5ba' },
+  { name: 'Cobalt',        stroke: '#1a2a5e', fill: '#4a7ab5', bg: '#f0f4ff', fill2: '#d8e4f0' },
+  { name: 'Forest',        stroke: '#1a3a1a', fill: '#4a8a4a', bg: '#f0f5f0', fill2: '#d0e8d0' },
+  { name: 'Crimson',       stroke: '#3a0a0a', fill: '#8a1a1a', bg: '#fff0f0', fill2: '#f0d0d0' },
+  { name: 'Lilac',         stroke: '#2a1a4a', fill: '#7a4a9a', bg: '#f5f0ff', fill2: '#e8d8f8' },
+  { name: 'Copper',        stroke: '#2a1a0a', fill: '#9a5a2a', bg: '#fff8f0', fill2: '#f0e0c8' },
+];
+
+const FONTS = ['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy'];
+
+// ────────────────────────────────────────────────────────────────────────────
+// Build UI
+// ────────────────────────────────────────────────────────────────────────────
+function buildStyleGrid() {
+  const grid = document.getElementById('style-grid');
+  const icons = {
+    ad:  '<polygon points="20,4 36,12 36,28 20,36 4,28 4,12" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="5" fill="currentColor" opacity=".4"/><line x1="20" y1="4" x2="20" y2="8" stroke="currentColor"/><line x1="20" y1="32" x2="20" y2="36" stroke="currentColor"/>',
+    bq:  '<path d="M20 4 C10 4 4 10 4 20 S10 36 20 36 36 30 36 20 30 4 20 4Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M20 10 C13 14 13 26 20 30 C27 26 27 14 20 10Z" fill="currentColor" opacity=".25"/>',
+    geo: '<polygon points="20,4 36,14 36,26 20,36 4,26 4,14" fill="none" stroke="currentColor" stroke-width="1.2"/><polygon points="20,9 31,16 31,24 20,31 9,24 9,16" fill="none" stroke="currentColor" stroke-width="0.8"/>',
+    vic: '<circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="20" cy="20" r="8" fill="none" stroke="currentColor" stroke-width="0.8"/><path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" stroke-width="0.6"/>',
+    cel: '<path d="M20 8 C24 8 28 12 28 20 C28 28 24 32 20 32 C16 32 12 28 12 20 C12 12 16 8 20 8Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M14 14 C20 18 26 14 26 20 C26 26 20 22 14 26" fill="none" stroke="currentColor" stroke-width="0.8"/>',
+    isl: '<path d="M20 4 L23.5 13 L33 13 L25 19 L28.5 29 L20 23 L11.5 29 L15 19 L7 13 L16.5 13 Z" fill="none" stroke="currentColor" stroke-width="1.2"/>',
+    min: '<line x1="8" y1="20" x2="32" y2="20" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="4" fill="currentColor"/>',
+    org: '<path d="M20 34 C20 34 8 26 8 16 C8 10 14 6 20 12 C26 6 32 10 32 16 C32 26 20 34 20 34Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M20 34 L20 18" stroke="currentColor" stroke-width="0.8"/>',
+  };
+  grid.innerHTML = STYLES.map(s => `
+    <div class="stile ${s.id === state.style ? 'active' : ''}" onclick="selectStyle('${s.id}')">
+      <svg class="stile-ico" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">${icons[s.icon]}</svg>
+      <div class="stile-name">${s.name}</div>
+    </div>`).join('');
+}
+
+function buildTypeChips() {
+  const wrap = document.getElementById('type-wrap');
+  const types = TYPES_BY_STYLE[state.style] || [];
+  if (!types.includes(state.type)) state.type = types[0];
+  wrap.innerHTML = types.map(t => `
+    <button class="tchip ${t === state.type ? 'active' : ''}" onclick="selectType('${t}')">${t}</button>`).join('');
+}
+
+function buildPalettes() {
+  const row = document.getElementById('pal-row');
+  const cols = ['#1a1a1a','#0f0f0f','#4a2e0a','#1a2a5e','#1a3a1a','#3a0a0a','#2a1a4a','#2a1a0a'];
+  row.innerHTML = PALETTES.map((p, i) => `
+    <div class="pal-swatch ${i === state.pal ? 'active' : ''}" style="background:${cols[i]}" title="${p.name}" onclick="selectPal(${i})"></div>`).join('');
+}
+
+function buildFontChips() {
+  const wrap = document.getElementById('font-chips');
+  const labels = ['Serif','Sans','Mono','Cursive','Fantasy'];
+  wrap.innerHTML = FONTS.map((f2, i) => `
+    <button class="font-chip ${f2 === state.font ? 'active' : ''}" onclick="selectFont('${f2}')" style="font-family:${f2}">${labels[i]}</button>`).join('');
+}
+
+function buildVariations() {
+  for (let i = 0; i < 4; i++) {
+    const el = document.getElementById('vt' + i);
+    el.className = 'vthumb' + (i === state.activeVar ? ' active' : '');
+    if (state.vars[i]) el.innerHTML = state.vars[i];
+    else el.innerHTML = '<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#f5f5f5"/><line x1="15" y1="30" x2="45" y2="30" stroke="#ddd" stroke-width="0.8"/><circle cx="30" cy="30" r="8" fill="none" stroke="#ddd" stroke-width="0.8"/></svg>';
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Controls
+// ────────────────────────────────────────────────────────────────────────────
+function selectStyle(id) {
+  state.style = id;
+  buildStyleGrid();
+  buildTypeChips();
+}
+function selectType(t) {
+  state.type = t;
+  buildTypeChips();
+}
+function selectPal(i) {
+  state.pal = i;
+  buildPalettes();
+}
+function selectFont(f2) {
+  state.font = f2;
+  buildFontChips();
+}
+function setRatio(w, h) {
+  const base = 400;
+  const ratio = w / h;
+  if (ratio >= 1) { state.w = base; state.h = Math.round(base / ratio); }
+  else { state.h = base; state.w = Math.round(base * ratio); }
+  document.getElementById('cw').value = state.w;
+  document.getElementById('ch').value = state.h;
+  updateDimTag();
+}
+function updateDimTag() {
+  document.getElementById('dim-tag').textContent = `${state.w} × ${state.h}`;
+}
+function setMode(m) {
+  state.mode = m;
+  document.getElementById('mb-vec').className = 'mode-btn' + (m === 'vector' ? ' active' : '');
+  document.getElementById('mb-px').className = 'mode-btn' + (m === 'pixel' ? ' active' : '');
+  document.getElementById('main-svg').style.display = m === 'vector' ? 'block' : 'none';
+  document.getElementById('px-canvas').style.display = m === 'pixel' ? 'block' : 'none';
+}
+
+// Sliders
+[['s-comp','sv-comp', v => { state.comp = v/100; return v; }],
+ ['s-sym', 'sv-sym',  v => { state.sym  = v/100; return v; }],
+ ['s-sw',  'sv-sw',   v => { state.sw   = v/10;  return (v/10).toFixed(1); }],
+ ['s-fill','sv-fill', v => { state.fill  = v/100; return v+'%'; }],
+ ['s-seed','sv-seed', v => { state.seed  = v;     return v; }],
+].forEach(([id, sv, fn]) => {
+  document.getElementById(id).addEventListener('input', e => {
+    document.getElementById(sv).textContent = fn(+e.target.value);
+  });
+});
+
+document.getElementById('cw').addEventListener('change', e => { state.w = +e.target.value; updateDimTag(); });
+document.getElementById('ch').addEventListener('change', e => { state.h = +e.target.value; updateDimTag(); });
+
+// ────────────────────────────────────────────────────────────────────────────
+// View controls
+// ────────────────────────────────────────────────────────────────────────────
+function zoom(delta) {
+  if (delta === 0) { fitToView(); return; }
+  state.zoom = Math.max(0.1, Math.min(4, state.zoom + delta));
+  applyZoom();
+}
+function fitToView() {
+  const area = document.getElementById('canvas-area');
+  const aw = area.clientWidth - 48, ah = area.clientHeight - 80;
+  state.zoom = Math.min(aw / state.w, ah / state.h, 2);
+  applyZoom();
+}
+function applyZoom() {
+  const svg = document.getElementById('main-svg');
+  const px  = document.getElementById('px-canvas');
+  const w = Math.round(state.w * state.zoom);
+  const h = Math.round(state.h * state.zoom);
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', h);
+  px.style.width = w + 'px';
+  px.style.height = h + 'px';
+  updateGrid();
+}
+function toggleBg() {
+  state.darkBg = !state.darkBg;
+  const holder = document.getElementById('svg-holder');
+  holder.style.background = state.darkBg ? '#111' : '#fff';
+  document.getElementById('main-svg').querySelector('rect.bg-rect') &&
+    (document.getElementById('main-svg').querySelector('rect.bg-rect').setAttribute('fill', state.darkBg ? '#111' : '#fff'));
+  document.getElementById('btn-bg').style.color = state.darkBg ? 'var(--accent)' : '';
+}
+function toggleGrid() {
+  state.grid = !state.grid;
+  document.getElementById('grid-svg').className = 'grid-svg' + (state.grid ? ' visible' : '');
+  document.getElementById('btn-grid').style.color = state.grid ? 'var(--accent)' : '';
+  updateGrid();
+}
+function updateGrid() {
+  if (!state.grid) return;
+  const svg = document.getElementById('grid-svg');
+  const w = Math.round(state.w * state.zoom);
+  const h = Math.round(state.h * state.zoom);
+  const step = Math.max(20, Math.round(50 * state.zoom));
+  let lines = '';
+  for (let x = 0; x < w; x += step) lines += `<line x1="${x}" y1="0" x2="${x}" y2="${h}" stroke="#888" stroke-width="0.4"/>`;
+  for (let y = 0; y < h; y += step) lines += `<line x1="0" y1="${y}" x2="${w}" y2="${y}" stroke="#888" stroke-width="0.4"/>`;
+  const wr = document.getElementById('cv-wrap');
+  const rect = document.getElementById('svg-holder').getBoundingClientRect();
+  const parent = wr.getBoundingClientRect();
+  svg.style.left = (rect.left - parent.left) + 'px';
+  svg.style.top  = (rect.top  - parent.top)  + 'px';
+  svg.style.width = w + 'px';
+  svg.style.height = h + 'px';
+  svg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${lines}</svg>`;
+}
+
+// Draw mode (freehand sketch on canvas)
+let drawing = false, drawPts = [];
+function toggleDraw() {
+  state.draw = !state.draw;
+  document.getElementById('btn-draw').style.color = state.draw ? 'var(--accent)' : '';
+  const holder = document.getElementById('svg-holder');
+  holder.style.cursor = state.draw ? 'crosshair' : 'default';
+  if (!state.draw) drawPts = [];
+}
+document.getElementById('svg-holder').addEventListener('mousedown', e => {
+  if (!state.draw) return;
+  drawing = true;
+  drawPts = [[e.offsetX / state.zoom, e.offsetY / state.zoom]];
+});
+document.addEventListener('mousemove', e => {
+  if (!drawing || !state.draw) return;
+  const rect = document.getElementById('svg-holder').getBoundingClientRect();
+  drawPts.push([(e.clientX - rect.left) / state.zoom, (e.clientY - rect.top) / state.zoom]);
+  previewDraw();
+});
+document.addEventListener('mouseup', () => {
+  if (!drawing || !state.draw) return;
+  drawing = false;
+  if (drawPts.length > 4) convertDrawToOrnament();
+});
+function previewDraw() {
+  const ol = document.getElementById('draw-overlay');
+  if (ol) ol.remove();
+  const svg = document.getElementById('main-svg');
+  const d = curvePath(drawPts);
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  el.setAttribute('id', 'draw-overlay');
+  el.setAttribute('d', d);
+  el.setAttribute('fill', 'none');
+  el.setAttribute('stroke', '#c8a96e');
+  el.setAttribute('stroke-width', '1.5');
+  el.setAttribute('opacity', '0.5');
+  svg.appendChild(el);
+}
+function convertDrawToOrnament() {
+  // Analyze drawn stroke and generate ornament that mirrors its bounding shape
+  const xs = drawPts.map(p => p[0]), ys = drawPts.map(p => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  const sz = Math.max(maxX - minX, maxY - minY);
+  state.seed = Math.floor(Math.random() * 999) + 1;
+  document.getElementById('s-seed').value = state.seed;
+  document.getElementById('sv-seed').textContent = state.seed;
+  // Generate ornament centered on drawn region
+  const pal = PALETTES[state.pal];
+  const sw = state.sw;
+  const content = generateContent(state.style, state.type, cx, cy, sz * 0.5, state.comp, state.sym, state.seed, pal, sw, state.fill);
+  const svgEl = document.getElementById('main-svg');
+  const ol = document.getElementById('draw-overlay');
+  if (ol) ol.remove();
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.innerHTML = content;
+  svgEl.appendChild(g);
+  setStatus(`Ornament placed from sketch`);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Generators
+// ────────────────────────────────────────────────────────────────────────────
+function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, sw, fillOp) {
+  const rnd = mkRand(seed);
+  const n = Math.round(4 + sym * 12);
+  const layers = 2 + Math.round(comp * 6);
+  const color = { stroke: pal.stroke, fill: pal.fill, fill2: pal.fill2 };
+
+  const SO = `fill="none" stroke="${color.stroke}" stroke-width="${sw}"`;
+  const FG = `fill="${color.fill}" stroke="${color.fill}" stroke-width="${sw * 0.3}" fill-opacity="${fillOp}"`;
+  const FG2 = `fill="${color.fill2}" stroke="${color.stroke}" stroke-width="${sw * 0.5}" fill-opacity="${Math.min(fillOp + 0.3, 1)}"`;
+
+  const generators = {
+    artdeco: {
+      medallion: () => genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw),
+      frame:     () => genADFrame(0, 0, state.w, state.h, comp, n, rnd, SO, FG, sw),
+      divider:   () => genDivider(0, cy, state.w, comp, sym, rnd, SO, FG, sw, 'artdeco'),
+      corner:    () => genADCorner(cx - sz * 0.5, cy - sz * 0.5, sz, comp, rnd, SO, FG, sw),
+      pattern:   () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'artdeco'),
+      ornament:  () => genADOrn(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw),
+    },
+    baroque: {
+      medallion: () => genBQMedallion(cx, cy, sz, layers, comp, sym, rnd, SO, FG, FG2, sw),
+      frame:     () => genBQFrame(0, 0, state.w, state.h, comp, rnd, SO, FG, sw),
+      divider:   () => genDivider(0, cy, state.w, comp, sym, rnd, SO, FG, sw, 'baroque'),
+      cartouche: () => genBQCartouche(cx, cy, sz, comp, rnd, SO, FG, FG2, sw),
+      swag:      () => genBQSwag(0, cy, state.w, comp, rnd, SO, FG, sw),
+      acanthus:  () => genBQAcanthus(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+    },
+    geometric: {
+      mandala:      () => genMandala(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw),
+      frame:        () => genGeoFrame(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw),
+      divider:      () => genDivider(0, cy, state.w, comp, sym, rnd, SO, FG, sw, 'geo'),
+      tessellation: () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'geo'),
+      star:         () => genGeoStar(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw),
+      symbol:       () => genGeoSymbol(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw),
+    },
+    victorian: {
+      medallion: () => genVicMedallion(cx, cy, sz, layers, comp, sym, rnd, SO, FG, FG2, sw),
+      frame:     () => genVicFrame(0, 0, state.w, state.h, comp, rnd, SO, FG, sw),
+      divider:   () => genDivider(0, cy, state.w, comp, sym, rnd, SO, FG, sw, 'victorian'),
+      flourish:  () => genBQAcanthus(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+      wreath:    () => genVicWreath(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw),
+      cartouche: () => genBQCartouche(cx, cy, sz, comp, rnd, SO, FG, FG2, sw),
+    },
+    celtic: {
+      knot:     () => genCelticKnot(cx, cy, sz, n, comp, rnd, SO, FG, sw),
+      border:   () => genADFrame(0, 0, state.w, state.h, comp, 6, rnd, SO, FG, sw),
+      medallion:() => genMandala(cx, cy, sz, 6, layers, comp, rnd, SO, FG, FG2, sw),
+      cross:    () => genCelticCross(cx, cy, sz, comp, rnd, SO, FG, FG2, sw),
+      knotwork: () => genCelticKnot(cx, cy, sz * 1.2, 8, comp, rnd, SO, FG, sw),
+      spiral:   () => genOrganicSpiral(cx, cy, sz, comp, rnd, SO, FG, sw),
+    },
+    islamic: {
+      star:      () => genIslamicStar(cx, cy, sz, n, comp, rnd, SO, FG, FG2, sw),
+      girih:     () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'girih'),
+      arabesque: () => genArabesque(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+      border:    () => genADFrame(0, 0, state.w, state.h, comp, 8, rnd, SO, FG, sw),
+      medallion: () => genIslamicStar(cx, cy, sz, 12, comp, rnd, SO, FG, FG2, sw),
+      pattern:   () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'islamic'),
+    },
+    minimal: {
+      symbol:  () => genMinimalSymbol(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+      line:    () => genDivider(0, cy, state.w, comp * 0.3, sym, rnd, SO, FG, sw, 'min'),
+      grid:    () => genMinGrid(0, 0, state.w, state.h, comp, rnd, SO, FG, sw),
+      circle:  () => genMinCircles(cx, cy, sz, comp, rnd, SO, FG, sw),
+      mark:    () => genMinimalSymbol(cx, cy, sz * 0.7, comp * 0.5, sym, rnd, SO, FG, sw),
+      glyph:   () => genGlyph(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+    },
+    organic: {
+      leaf:    () => genOrganicLeaf(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+      spiral:  () => genOrganicSpiral(cx, cy, sz, comp, rnd, SO, FG, sw),
+      branch:  () => genOrganicBranch(cx, cy, sz, comp, rnd, SO, FG, sw),
+      flower:  () => genOrganicFlower(cx, cy, sz, n, comp, rnd, SO, FG, FG2, sw),
+      mandala: () => genMandala(cx, cy, sz, 8, layers, comp, rnd, SO, FG, FG2, sw),
+      wave:    () => genWave(0, cy, state.w, state.h, comp, rnd, SO, FG, sw),
+    },
+  };
+
+  const gen = generators[style] && generators[style][type];
+  if (gen) return gen();
+
+  // fallback
+  return genMandala(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw);
+}
+
+// ── Art Deco generators ──────────────────────────────────────────────────────
+function genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const rays = Math.round(6 + comp * 14);
+  const outerR = sz * 0.48;
+  const innerR = sz * (0.10 + 0.08 * comp);
+
+  // Outer ring
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(outerR)}" ${SO}/>`);
+
+  // Rays
+  for (let i = 0; i < rays; i++) {
+    const a = (i / rays) * TAU - Math.PI / 2;
+    const ha = (Math.PI / rays) * 0.42;
+    const [x1, y1] = pt(cx, cy, innerR, a - ha);
+    const [xt, yt] = pt(cx, cy, outerR * 0.92, a);
+    const [x2, y2] = pt(cx, cy, innerR, a + ha);
+    parts.push(`<path d="M ${f(x1)} ${f(y1)} L ${f(xt)} ${f(yt)} L ${f(x2)} ${f(y2)} Z" ${FG}/>`);
+  }
+
+  // Concentric rings
+  const ringCount = 2 + Math.round(comp * 4);
+  for (let i = 1; i <= ringCount; i++) {
+    const r = innerR + (outerR * 0.6 - innerR) * i / ringCount;
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" ${SO}/>`);
+  }
+
+  // Inner polygon
+  parts.push(`<path d="${polyPath(cx, cy, innerR * 0.85, 8, Math.PI / 8)}" ${SO}/>`);
+  parts.push(`<path d="${polyPath(cx, cy, innerR * 0.52, 4, Math.PI / 4)}" ${FG}/>`);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(innerR * 0.22)}" ${SO}/>`);
+
+  // Outer stepped detail
+  if (comp > 0.4) {
+    const steps = 2 + Math.round(comp * 3);
+    for (let i = 0; i < steps; i++) {
+      const r2 = outerR + 4 + i * 5;
+      const arc = Math.PI * 0.3;
+      for (let s = 0; s < 4; s++) {
+        const a = s * Math.PI / 2;
+        const [ax, ay] = pt(cx, cy, r2, a - arc / 2);
+        const [bx, by] = pt(cx, cy, r2, a + arc / 2);
+        parts.push(`<path d="M ${f(ax)} ${f(ay)} A ${r2} ${r2} 0 0 1 ${f(bx)} ${f(by)}" ${SO}/>`);
+      }
+    }
+  }
+
+  return parts.join('\n');
+}
+
+function genADFrame(x, y, w, h, comp, n, rnd, SO, FG, sw) {
+  const parts = [];
+  const m = 14;
+  parts.push(`<rect x="${m}" y="${m}" width="${w - 2 * m}" height="${h - 2 * m}" ${SO}/>`);
+  parts.push(`<rect x="${m + 8}" y="${m + 8}" width="${w - 2 * (m + 8)}" height="${h - 2 * (m + 8)}" ${SO}/>`);
+
+  // Corner stepped brackets
+  const cs = Math.min(w, h) * 0.12;
+  const steps = 3 + Math.round(comp * 5);
+  const corners = [[m, m, 1, 1], [w - m, m, -1, 1], [w - m, h - m, -1, -1], [m, h - m, 1, -1]];
+  for (const [bx, by, dx, dy] of corners) {
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const d = cs * t, d2 = cs * (1 - t);
+      parts.push(`<line x1="${f(bx)}" y1="${f(by + dy * d)}" x2="${f(bx + dx * d2)}" y2="${f(by + dy * d)}" ${SO}/>`);
+      parts.push(`<line x1="${f(bx + dx * d)}" y1="${f(by)}" x2="${f(bx + dx * d)}" y2="${f(by + dy * d2)}" ${SO}/>`);
+    }
+    parts.push(`<circle cx="${f(bx)}" cy="${f(by)}" r="${f(cs * 0.08)}" ${FG}/>`);
+  }
+
+  // Top/bottom repeating motif
+  const cw = 18;
+  const iM = m + 8 + 5;
+  const nT = Math.max(2, Math.floor((w - 2 * (m + cs + 12)) / (cw + 6)));
+  const sx = (w - nT * (cw + 6) + 6) / 2;
+  for (let i = 0; i < nT; i++) {
+    const fx = sx + i * (cw + 6);
+    for (const [yo, dir] of [[iM, -1], [h - iM, 1]]) {
+      parts.push(`<polyline points="${f(fx)},${yo} ${f(fx + cw / 2)},${f(yo + dir * 8)} ${f(fx + cw)},${yo}" ${SO}/>`);
+    }
+  }
+
+  // Side repeating motif
+  const nS = Math.max(2, Math.floor((h - 2 * (m + cs + 12)) / (cw + 6)));
+  const sy2 = (h - nS * (cw + 6) + 6) / 2;
+  for (let i = 0; i < nS; i++) {
+    const fy = sy2 + i * (cw + 6);
+    for (const [xo, dir] of [[iM, 1], [w - iM, -1]]) {
+      parts.push(`<polyline points="${xo},${f(fy)} ${f(xo + dir * 8)},${f(fy + cw / 2)} ${xo},${f(fy + cw)}" ${SO}/>`);
+    }
+  }
+  return parts.join('\n');
+}
+
+function genADCorner(ox, oy, sz, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const steps = 4 + Math.round(comp * 8);
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const d = sz * t;
+    parts.push(`<line x1="${f(ox)}" y1="${f(oy + d)}" x2="${f(ox + sz - d)}" y2="${f(oy + d)}" ${SO}/>`);
+    parts.push(`<line x1="${f(ox + d)}" y1="${f(oy)}" x2="${f(ox + d)}" y2="${f(oy + sz - d)}" ${SO}/>`);
+  }
+  const diags = 2 + Math.round(comp * 4);
+  for (let i = 0; i <= diags; i++) {
+    const a = (i / diags) * Math.PI / 2;
+    const [ex, ey] = pt(ox, oy, sz, a);
+    parts.push(`<line x1="${f(ox)}" y1="${f(oy)}" x2="${f(ex)}" y2="${f(ey)}" ${SO}/>`);
+  }
+  parts.push(`<circle cx="${f(ox)}" cy="${f(oy)}" r="${f(sz * 0.07)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+function genADOrn(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const n = Math.round(3 + comp * 5);
+  for (let i = -n; i <= n; i++) {
+    for (let j = -n; j <= n; j++) {
+      if (Math.abs(i) + Math.abs(j) <= n) {
+        const px = cx + i * sz * 0.4 / n;
+        const py = cy + j * sz * 0.4 / n;
+        const r = sz * 0.4 / n * 0.42;
+        parts.push(`<path d="M ${f(px)} ${f(py - r)} L ${f(px + r)} ${f(py)} L ${f(px)} ${f(py + r)} L ${f(px - r)} ${f(py)} Z" ${SO}/>`);
+      }
+    }
+  }
+  parts.push(`<path d="${polyPath(cx, cy, sz * 0.09, 8, Math.PI / 8)}" ${FG}/>`);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.035)}" fill="${PALETTES[state.pal].bg}"/>`);
+  return parts.join('\n');
+}
+
+// ── Baroque generators ───────────────────────────────────────────────────────
+function genBQMedallion(cx, cy, sz, layers, comp, sym, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const rx = sz * 0.48, ry = sz * 0.44;
+  parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(rx)}" ry="${f(ry)}" ${SO}/>`);
+  parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(rx * 0.82)}" ry="${f(ry * 0.82)}" ${SO}/>`);
+
+  // Scrollwork
+  function scroll(bx, by, s, dir) {
+    const ex = bx + dir * s * 0.7, ey = by + s * 0.55;
+    const c1x = bx + dir * s * 0.9, c1y = by - s * 0.05;
+    const c2x = bx + dir * s * 1.1, c2y = by + s * 0.35;
+    parts.push(`<path d="M ${f(bx)} ${f(by)} C ${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(ex)} ${f(ey)}" ${SO}/>`);
+    parts.push(`<circle cx="${f(ex + dir * s * 0.1)}" cy="${f(ey)}" r="${f(s * 0.12)}" ${SO}/>`);
+  }
+
+  const ls = 2 + Math.round(comp * 4);
+  for (let i = 0; i < ls; i++) {
+    const t = i / (ls - 1 || 1);
+    const by = cy + (t - 0.5) * sz * 0.75;
+    const bsz = sz * 0.18 * (1.1 - t * 0.4);
+    scroll(cx, by, bsz, 1); scroll(cx, by, bsz, -1);
+    if (comp > 0.5) { scroll(cx + bsz * 0.4, by - bsz * 0.15, bsz * 0.42, 1); scroll(cx - bsz * 0.4, by - bsz * 0.15, bsz * 0.42, -1); }
+  }
+
+  // Crown
+  for (const [ox, oy, r] of [[0, -sz * 0.5 - 10, 9], [10, -sz * 0.5 - 5, 6], [-10, -sz * 0.5 - 5, 6]]) {
+    parts.push(`<circle cx="${f(cx + ox)}" cy="${f(cy + oy)}" r="${r}" ${SO}/>`);
+    parts.push(`<circle cx="${f(cx + ox)}" cy="${f(cy + oy)}" r="${f(r * 0.38)}" ${FG}/>`);
+  }
+
+  const br = sz * 0.1;
+  parts.push(`<path d="M ${f(cx - br * 2.5)} ${f(cy + ry)} Q ${f(cx)} ${f(cy + ry + br)} ${f(cx + br * 2.5)} ${f(cy + ry)}" ${SO}/>`);
+
+  return parts.join('\n');
+}
+
+function genBQFrame(x, y, w, h, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const m = 12;
+  const rx = Math.min(w, h) * 0.08;
+  function rRect(x2, y2, ww, hh, r) {
+    return `M ${f(x2 + r)} ${y2} L ${f(x2 + ww - r)} ${y2} Q ${x2 + ww} ${y2} ${x2 + ww} ${f(y2 + r)} L ${x2 + ww} ${f(y2 + hh - r)} Q ${x2 + ww} ${y2 + hh} ${f(x2 + ww - r)} ${y2 + hh} L ${f(x2 + r)} ${y2 + hh} Q ${x2} ${y2 + hh} ${x2} ${f(y2 + hh - r)} L ${x2} ${f(y2 + r)} Q ${x2} ${y2} ${f(x2 + r)} ${y2} Z`;
+  }
+  parts.push(`<path d="${rRect(m, m, w - 2 * m, h - 2 * m, rx)}" ${SO}/>`);
+  parts.push(`<path d="${rRect(m + 9, m + 9, w - 2 * (m + 9), h - 2 * (m + 9), rx * 0.65)}" ${SO}/>`);
+
+  // Corner scrolls
+  function cs(bx, by, dx, dy, s) {
+    const ex = bx + dx * s, ey = by + dy * s;
+    const c1x = bx + dx * s * 0.3, c1y = by + dy * s * 0.9;
+    const c2x = bx + dx * s * 0.7, c2y = by + dy * s * 0.1;
+    parts.push(`<path d="M ${f(bx)} ${f(by)} C ${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(ex)} ${f(ey)}" ${SO}/>`);
+    parts.push(`<circle cx="${f(bx)}" cy="${f(by)}" r="5" ${SO}/>`);
+    parts.push(`<circle cx="${f(ex)}" cy="${f(ey)}" r="5" ${SO}/>`);
+    parts.push(`<circle cx="${f(bx)}" cy="${f(by)}" r="2" ${FG}/>`);
+    parts.push(`<circle cx="${f(ex)}" cy="${f(ey)}" r="2" ${FG}/>`);
+  }
+  const csz = Math.min(w, h) * 0.14;
+  cs(m + rx + 8, m + 8, 1, 1, csz); cs(w - m - rx - 8, m + 8, -1, 1, csz);
+  cs(w - m - rx - 8, h - m - 8, -1, -1, csz); cs(m + rx + 8, h - m - 8, 1, -1, csz);
+
+  // Side foliage
+  const nl = 1 + Math.round(comp * 2);
+  for (let i = 0; i < nl; i++) {
+    const t = (i + 0.5) / nl;
+    const ly = m + (h - 2 * m) * t;
+    const ls = 14 + comp * 12;
+    for (const [lx, dir] of [[m + 3, 1], [w - m - 3, -1]]) {
+      parts.push(`<path d="M ${lx} ${f(ly)} C ${f(lx + dir * ls * 0.6)} ${f(ly - ls * 0.5)} ${f(lx + dir * ls * 0.9)} ${f(ly - ls * 0.9)} ${f(lx + dir * ls * 0.65)} ${f(ly - ls * 1.1)}" ${SO}/>`);
+      parts.push(`<path d="M ${lx} ${f(ly)} C ${f(lx + dir * ls * 0.6)} ${f(ly + ls * 0.5)} ${f(lx + dir * ls * 0.9)} ${f(ly + ls * 0.9)} ${f(lx + dir * ls * 0.65)} ${f(ly + ls * 1.1)}" ${SO}/>`);
+      parts.push(`<circle cx="${lx}" cy="${f(ly)}" r="3" ${FG}/>`);
+    }
+  }
+  return parts.join('\n');
+}
+
+function genBQCartouche(cx, cy, sz, comp, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const rx = sz * 0.45, ry = sz * 0.35;
+  parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(rx)}" ry="${f(ry)}" ${SO}/>`);
+  parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(rx * 0.85)}" ry="${f(ry * 0.8)}" ${SO}/>`);
+  // Scrolled ends
+  for (const dir of [-1, 1]) {
+    const bx = cx + dir * rx;
+    parts.push(`<path d="M ${f(bx)} ${f(cy - ry * 0.3)} C ${f(bx + dir * sz * 0.1)} ${f(cy - ry * 0.5)} ${f(bx + dir * sz * 0.18)} ${f(cy)} ${f(bx + dir * sz * 0.1)} ${f(cy + ry * 0.5)} L ${f(bx)} ${f(cy + ry * 0.3)}" ${SO}/>`);
+  }
+  return parts.join('\n');
+}
+
+function genBQSwag(x, cy, w, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const segs = 2 + Math.round(comp * 4);
+  const segW = w / segs;
+  for (let i = 0; i < segs; i++) {
+    const sx = x + i * segW, ex = sx + segW;
+    const drop = 20 + comp * 30;
+    parts.push(`<path d="M ${f(sx)} ${f(cy)} Q ${f(sx + segW / 2)} ${f(cy + drop)} ${f(ex)} ${f(cy)}" ${SO}/>`);
+    // Tassels
+    const tc = cx => {
+      parts.push(`<line x1="${f(cx)}" y1="${f(cy + drop)}" x2="${f(cx)}" y2="${f(cy + drop + 15 + comp * 10)}" ${SO}/>`);
+      parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy + drop + 20 + comp * 10)}" rx="5" ry="7" ${FG}/>`);
+    };
+    if (i === 0) tc(sx);
+    tc(ex);
+  }
+  parts.push(`<line x1="${x}" y1="${f(cy)}" x2="${w}" y2="${f(cy)}" ${SO}/>`);
+  return parts.join('\n');
+}
+
+function genBQAcanthus(cx, cy, sz, comp, sym, rnd, SO, FG, sw) {
+  const parts = [];
+  parts.push(`<line x1="${f(cx)}" y1="${f(cy - sz * 0.48)}" x2="${f(cx)}" y2="${f(cy + sz * 0.48)}" ${SO}/>`);
+  function leaf(bx, by, size, dir) {
+    const ex = bx + dir * size * 0.72, ey = by + size * 0.52;
+    const c1x = bx + dir * size * 0.85, c1y = by - size * 0.08;
+    const c2x = bx + dir * size * 1.05, c2y = by + size * 0.32;
+    parts.push(`<path d="M ${f(bx)} ${f(by)} C ${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(ex)} ${f(ey)}" ${SO}/>`);
+    const lr = size * 0.13;
+    parts.push(`<circle cx="${f(ex + dir * lr * 0.28)}" cy="${f(ey)}" r="${f(lr)}" ${SO}/>`);
+    if (comp > 0.4) {
+      parts.push(`<path d="M ${f(bx + dir * size * 0.3)} ${f(by + size * 0.08)} C ${f(bx + dir * size * 0.5)} ${f(by - size * 0.15)} ${f(bx + dir * size * 0.7)} ${f(by + size * 0.02)} ${f(bx + dir * size * 0.55)} ${f(by + size * 0.25)}" ${SO}/>`);
+    }
+  }
+  const ls = 2 + Math.round(comp * 4);
+  for (let i = 0; i < ls; i++) {
+    const t = i / (ls - 1 || 1);
+    const by = cy + (t - 0.5) * sz * 0.8;
+    const bs = sz * 0.2 * (1.2 - t * 0.5);
+    leaf(cx, by, bs, 1); leaf(cx, by, bs, -1);
+  }
+  return parts.join('\n');
+}
+
+// ── Geometric / Mandala ──────────────────────────────────────────────────────
+function genMandala(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  for (let l = 0; l < layers; l++) {
+    const t = (l + 1) / (layers + 1);
+    const r = sz * 0.48 * t;
+    const prevR = l === 0 ? sz * 0.015 : sz * 0.48 * l / (layers + 1);
+
+    // Petal ring
+    for (let i = 0; i < n; i++) {
+      const a1 = (i / n) * TAU - Math.PI / 2;
+      const a2 = ((i + 1) / n) * TAU - Math.PI / 2;
+      const aM = (a1 + a2) / 2;
+      const [tx, ty] = pt(cx, cy, r, aM);
+      const [b1x, b1y] = pt(cx, cy, prevR, a1);
+      const [b2x, b2y] = pt(cx, cy, prevR, a2);
+      const d = l % 2 === 0 ? SO : FG;
+      parts.push(`<path d="M ${f(b1x)} ${f(b1y)} Q ${f(tx)} ${f(ty)} ${f(b2x)} ${f(b2y)} Q ${f(cx + (b2x - cx) * 0.1)} ${f(cy + (b2y - cy) * 0.1)} ${f(b1x)} ${f(b1y)}" ${d}/>`);
+    }
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" ${SO}/>`);
+  }
+  const sR = sz * 0.055, sR2 = sz * 0.022;
+  parts.push(`<path d="${starPath(cx, cy, sR, sR2, n)}" ${FG}/>`);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.016)}" fill="${PALETTES[state.pal].bg}"/>`);
+  return parts.join('\n');
+}
+
+function genGeoFrame(x, y, w, h, comp, sym, rnd, SO, FG, sw) {
+  const parts = [];
+  const m = 14;
+  parts.push(`<rect x="${m}" y="${m}" width="${w - 2 * m}" height="${h - 2 * m}" ${SO}/>`);
+  const n = Math.round(4 + sym * 4);
+  const cR = Math.min(w, h) * 0.09;
+  for (const [bx, by] of [[m, m], [w - m, m], [w - m, h - m], [m, h - m]]) {
+    parts.push(`<circle cx="${bx}" cy="${by}" r="${f(cR)}" ${SO}/>`);
+    parts.push(`<path d="${starPath(bx, by, cR * 0.72, cR * 0.3, n)}" ${SO}/>`);
+    parts.push(`<circle cx="${bx}" cy="${by}" r="${f(cR * 0.16)}" ${FG}/>`);
+  }
+  const unit = cR * 1.7;
+  const useW = w - 2 * m - 2 * cR * 1.2;
+  const nP = Math.max(2, Math.floor(useW / unit));
+  const pSx = (w - nP * unit) / 2;
+  for (let i = 0; i < nP; i++) {
+    const px = pSx + (i + 0.5) * unit;
+    for (const py of [m, h - m]) parts.push(`<path d="${polyPath(px, py, unit * 0.28, n)}" ${SO}/>`);
+  }
+  const useH = h - 2 * m - 2 * cR * 1.2;
+  const nPH = Math.max(2, Math.floor(useH / unit));
+  const pSy = (h - nPH * unit) / 2;
+  for (let i = 0; i < nPH; i++) {
+    const py2 = pSy + (i + 0.5) * unit;
+    for (const px2 of [m, w - m]) parts.push(`<path d="${polyPath(px2, py2, unit * 0.28, n)}" ${SO}/>`);
+  }
+  return parts.join('\n');
+}
+
+function genGeoStar(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  for (let l = layers; l >= 0; l--) {
+    const r1 = sz * 0.48 * (l + 1) / (layers + 1);
+    const r2 = r1 * (0.35 + comp * 0.2);
+    const rot = l * Math.PI / (n * 2);
+    const d = l % 2 === 0 ? SO : FG;
+    parts.push(`<path d="${starPath(cx, cy, r1, r2, n, -Math.PI / 2 + rot)}" ${d}/>`);
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.05)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+function genGeoSymbol(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const n = Math.round(3 + sym * 5);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.48)}" ${SO}/>`);
+  parts.push(`<path d="${polyPath(cx, cy, sz * 0.42, n)}" ${SO}/>`);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU - Math.PI / 2;
+    const [x1, y1] = pt(cx, cy, sz * 0.42, a);
+    parts.push(`<line x1="${f(cx)}" y1="${f(cy)}" x2="${f(x1)}" y2="${f(y1)}" ${SO}/>`);
+    parts.push(`<circle cx="${f(x1)}" cy="${f(y1)}" r="${f(sz * 0.04)}" ${FG}/>`);
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.14)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+// ── Victorian generators ─────────────────────────────────────────────────────
+function genVicMedallion(cx, cy, sz, layers, comp, sym, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const n = Math.round(8 + sym * 8);
+  const rings = 2 + Math.round(comp * 3);
+  for (let i = rings; i >= 1; i--) {
+    const r = sz * 0.48 * i / rings;
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" ${SO}/>`);
+    parts.push(`<path d="${polyPath(cx, cy, r * 0.9, 8, Math.PI / 8)}" ${SO}/>`);
+  }
+  const bR = sz * 0.48;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU - Math.PI / 2;
+    const [bx2, by2] = pt(cx, cy, bR * 0.88, a);
+    const [ex2, ey2] = pt(cx, cy, bR * 1.08, a + TAU / (n * 2));
+    const cpx = (bx2 + ex2) / 2 + Math.cos(a + Math.PI / 2) * sz * 0.12;
+    const cpy = (by2 + ey2) / 2 + Math.sin(a + Math.PI / 2) * sz * 0.12;
+    parts.push(`<path d="M ${f(bx2)} ${f(by2)} Q ${f(cpx)} ${f(cpy)} ${f(ex2)} ${f(ey2)}" ${SO}/>`);
+    parts.push(`<circle cx="${f(ex2)}" cy="${f(ey2)}" r="3.5" ${SO}/>`);
+    parts.push(`<circle cx="${f(ex2)}" cy="${f(ey2)}" r="1.4" ${FG}/>`);
+  }
+  parts.push(`<path d="${starPath(cx, cy, sz * 0.1, sz * 0.04, 8)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+function genVicFrame(x, y, w, h, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const m = 12;
+  for (const d of [m, m + 4, m + 10]) {
+    parts.push(`<rect x="${d}" y="${d}" width="${w - 2 * d}" height="${h - 2 * d}" ${SO}/>`);
+  }
+  const cR = Math.min(w, h) * 0.08;
+  for (const [bx, by] of [[m, m], [w - m, m], [w - m, h - m], [m, h - m]]) {
+    parts.push(`<circle cx="${bx}" cy="${by}" r="${f(cR)}" ${SO}/>`);
+    parts.push(`<path d="${polyPath(bx, by, cR * 0.72, 8, Math.PI / 8)}" ${SO}/>`);
+    parts.push(`<path d="${starPath(bx, by, cR * 0.52, cR * 0.2, 8)}" ${SO}/>`);
+    parts.push(`<circle cx="${bx}" cy="${by}" r="${f(cR * 0.14)}" ${FG}/>`);
+  }
+  // Flourishes on edges
+  const fw = 24 + comp * 12, fh = 15 + comp * 7;
+  const nF = Math.max(2, Math.floor((w - 2 * (m + cR * 2 + 10)) / (fw + 12)));
+  const fsx = (w - nF * (fw + 12) + 12) / 2;
+  for (let i = 0; i < nF; i++) {
+    const fcx = fsx + i * (fw + 12) + fw / 2;
+    for (const [fy, fdir] of [[m + 3, -1], [h - m - 3, 1]]) {
+      parts.push(`<path d="M ${f(fcx)} ${fy} C ${f(fcx + fw * 0.14)} ${f(fy + fdir * fh * 0.5)} ${f(fcx + fw * 0.42)} ${f(fy + fdir * fh * 0.28)} ${f(fcx + fw * 0.28)} ${f(fy + fdir * fh)}" ${SO}/>`);
+      parts.push(`<path d="M ${f(fcx)} ${fy} C ${f(fcx - fw * 0.14)} ${f(fy + fdir * fh * 0.5)} ${f(fcx - fw * 0.42)} ${f(fy + fdir * fh * 0.28)} ${f(fcx - fw * 0.28)} ${f(fy + fdir * fh)}" ${SO}/>`);
+      parts.push(`<circle cx="${f(fcx)}" cy="${fy}" r="2" ${FG}/>`);
+    }
+  }
+  return parts.join('\n');
+}
+
+function genVicWreath(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const n = Math.round(12 + comp * 16);
+  const r = sz * 0.42;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU - Math.PI / 2;
+    const [lx, ly] = pt(cx, cy, r, a);
+    const rot = a + Math.PI / 4;
+    const llen = sz * 0.1 + rnd() * sz * 0.05;
+    const [ex, ey] = [lx + Math.cos(rot) * llen, ly + Math.sin(rot) * llen];
+    const cp1x = lx + Math.cos(rot - 0.4) * llen * 0.5;
+    const cp1y = ly + Math.sin(rot - 0.4) * llen * 0.5;
+    parts.push(`<path d="M ${f(lx)} ${f(ly)} Q ${f(cp1x)} ${f(cp1y)} ${f(ex)} ${f(ey)}" ${SO}/>`);
+    if (rnd() > 0.55) parts.push(`<circle cx="${f(ex)}" cy="${f(ey)}" r="${f(sz * 0.018)}" ${FG}/>`);
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r * 0.85)}" ${SO}/>`);
+  parts.push(`<path d="${starPath(cx, cy, sz * 0.12, sz * 0.05, 8)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+// ── Celtic generators ────────────────────────────────────────────────────────
+function genCelticKnot(cx, cy, sz, n, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const r = sz * 0.42;
+  const n2 = Math.round(n * 0.5 + comp * 6) * 2;
+  const pts = Array.from({ length: n2 }, (_, i) => {
+    const a = (i / n2) * TAU;
+    const rr = i % 2 === 0 ? r : r * (0.6 + comp * 0.2);
+    return pt(cx, cy, rr, a);
+  });
+
+  let d = `M ${f(pts[0][0])} ${f(pts[0][1])}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1], curr = pts[i];
+    const cpx = cx + (curr[0] - cx) * 0.5, cpy = cy + (curr[1] - cy) * 0.5;
+    d += ` Q ${f(cpx)} ${f(cpy)} ${f(curr[0])} ${f(curr[1])}`;
+  }
+  d += ' Z';
+  parts.push(`<path d="${d}" ${SO}/>`);
+
+  // Inner ring
+  const innerPts = pts.map(([x, y]) => [cx + (x - cx) * 0.55, cy + (y - cy) * 0.55]);
+  let d2 = `M ${f(innerPts[0][0])} ${f(innerPts[0][1])}`;
+  for (let i = 1; i < innerPts.length; i++) {
+    d2 += ` L ${f(innerPts[i][0])} ${f(innerPts[i][1])}`;
+  }
+  d2 += ' Z';
+  parts.push(`<path d="${d2}" ${SO}/>`);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.06)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+function genCelticCross(cx, cy, sz, comp, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const arm = sz * 0.48, aw = sz * 0.16;
+  const rr = sz * 0.22;
+  // Cross arms
+  parts.push(`<rect x="${f(cx - aw / 2)}" y="${f(cy - arm)}" width="${f(aw)}" height="${f(arm * 2)}" ${SO}/>`);
+  parts.push(`<rect x="${f(cx - arm)}" y="${f(cy - aw / 2)}" width="${f(arm * 2)}" height="${f(aw)}" ${SO}/>`);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(rr)}" ${SO}/>`);
+  // Knotwork on ring
+  const kn = 4 + Math.round(comp * 4);
+  for (let i = 0; i < kn; i++) {
+    const a = (i / kn) * TAU;
+    const [kx, ky] = pt(cx, cy, rr, a);
+    parts.push(`<circle cx="${f(kx)}" cy="${f(ky)}" r="${f(sz * 0.03)}" ${FG}/>`);
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.07)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+// ── Islamic generators ───────────────────────────────────────────────────────
+function genIslamicStar(cx, cy, sz, n, comp, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const layers = 2 + Math.round(comp * 3);
+  for (let l = layers; l >= 0; l--) {
+    const r1 = sz * 0.48 * (l + 1) / (layers + 1);
+    const r2 = r1 * (0.28 + comp * 0.15);
+    parts.push(`<path d="${starPath(cx, cy, r1, r2, n)}" ${l % 2 === 0 ? SO : FG}/>`);
+    // Inner polygon
+    parts.push(`<path d="${polyPath(cx, cy, r2 * 0.9, n)}" ${SO}/>`);
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.04)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+function genArabesque(cx, cy, sz, comp, sym, rnd, SO, FG, sw) {
+  const parts = [];
+  const n = Math.round(4 + sym * 4);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU;
+    const [bx, by] = pt(cx, cy, sz * 0.1, a);
+    const [ex, ey] = pt(cx, cy, sz * 0.45, a);
+    const [c1x, c1y] = pt(cx, cy, sz * 0.25, a + Math.PI / (n * 0.8));
+    const [c2x, c2y] = pt(cx, cy, sz * 0.35, a - Math.PI / (n * 0.8));
+    parts.push(`<path d="M ${f(bx)} ${f(by)} C ${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(ex)} ${f(ey)}" ${SO}/>`);
+    parts.push(`<circle cx="${f(ex)}" cy="${f(ey)}" r="${f(sz * 0.03)}" ${FG}/>`);
+    if (comp > 0.5) {
+      const [m1x, m1y] = pt(cx, cy, sz * 0.3, a);
+      const [sm1x, sm1y] = pt(m1x, m1y, sz * 0.1, a + Math.PI / 2);
+      const [sm2x, sm2y] = pt(m1x, m1y, sz * 0.1, a - Math.PI / 2);
+      parts.push(`<path d="M ${f(sm1x)} ${f(sm1y)} Q ${f(m1x + Math.cos(a) * sz * 0.06)} ${f(m1y + Math.sin(a) * sz * 0.06)} ${f(sm2x)} ${f(sm2y)}" ${SO}/>`);
+    }
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.08)}" ${SO}/>`);
+  return parts.join('\n');
+}
+
+// ── Minimal generators ───────────────────────────────────────────────────────
+function genMinimalSymbol(cx, cy, sz, comp, sym, rnd, SO, FG, sw) {
+  const parts = [];
+  const n = Math.round(3 + sym * 3);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.46)}" ${SO}/>`);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU - Math.PI / 2;
+    const [x1, y1] = pt(cx, cy, sz * 0.18, a);
+    const [x2, y2] = pt(cx, cy, sz * 0.42, a);
+    parts.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" ${SO}/>`);
+  }
+  if (comp > 0.3) parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.15)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+function genMinGrid(x, y, w, h, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const n = Math.round(3 + comp * 8);
+  const sw2 = SO;
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    parts.push(`<line x1="${f(w * t)}" y1="0" x2="${f(w * t)}" y2="${h}" ${sw2}/>`);
+    parts.push(`<line x1="0" y1="${f(h * t)}" x2="${w}" y2="${f(h * t)}" ${sw2}/>`);
+  }
+  if (comp > 0.5) {
+    const cx = w / 2, cy = h / 2;
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(Math.min(w, h) * 0.38)}" ${FG}/>`);
+  }
+  return parts.join('\n');
+}
+
+function genMinCircles(cx, cy, sz, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const n = 2 + Math.round(comp * 6);
+  for (let i = n; i >= 1; i--) {
+    const r = sz * 0.48 * i / n;
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" ${i % 2 === 0 ? SO : FG}/>`);
+  }
+  return parts.join('\n');
+}
+
+function genGlyph(cx, cy, sz, comp, sym, rnd, SO, FG, sw) {
+  const text = document.getElementById('tv-ta').value.trim() || '✦';
+  const font = state.font;
+  const fsize = sz * 0.9;
+  return `<text x="${f(cx)}" y="${f(cy)}" text-anchor="middle" dominant-baseline="middle" font-family="${font}" font-size="${f(fsize)}" fill="none" stroke="${PALETTES[state.pal].stroke}" stroke-width="${sw * 0.5}">${text}</text>`;
+}
+
+// ── Organic generators ───────────────────────────────────────────────────────
+function genOrganicLeaf(cx, cy, sz, comp, sym, rnd, SO, FG, sw) {
+  const parts = [];
+  const n = Math.round(3 + sym * 4);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU - Math.PI / 2;
+    const len = sz * (0.38 + rnd() * 0.12);
+    const [ex, ey] = pt(cx, cy, len, a);
+    const [c1x, c1y] = pt(cx, cy, len * 0.4, a - 0.5);
+    const [c2x, c2y] = pt(cx, cy, len * 0.7, a + 0.5);
+    parts.push(`<path d="M ${f(cx)} ${f(cy)} C ${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(ex)} ${f(ey)} C ${f(c2x)} ${f(c2y)} ${f(c1x)} ${f(c1y)} ${f(cx)} ${f(cy)}" ${SO}/>`);
+    if (comp > 0.4) {
+      const mid = [(cx + ex) / 2, (cy + ey) / 2];
+      parts.push(`<line x1="${f(cx)}" y1="${f(cy)}" x2="${f(mid[0])}" y2="${f(mid[1])}" ${SO}/>`);
+    }
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.05)}" ${FG}/>`);
+  return parts.join('\n');
+}
+
+function genOrganicSpiral(cx, cy, sz, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const turns = 2 + comp * 4;
+  const steps = Math.round(80 + comp * 120);
+  let d = `M ${f(cx)} ${f(cy)}`;
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const a = t * turns * TAU;
+    const r = t * sz * 0.48;
+    const [x, y] = pt(cx, cy, r, a);
+    d += ` L ${f(x)} ${f(y)}`;
+  }
+  parts.push(`<path d="${d}" fill="none" stroke="${PALETTES[state.pal].stroke}" stroke-width="${sw}"/>`);
+  // Mirror spiral
+  if (comp > 0.4) {
+    let d2 = `M ${f(cx)} ${f(cy)}`;
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const a = t * turns * TAU + Math.PI;
+      const r = t * sz * 0.48;
+      const [x, y] = pt(cx, cy, r, a);
+      d2 += ` L ${f(x)} ${f(y)}`;
+    }
+    parts.push(`<path d="${d2}" fill="none" stroke="${PALETTES[state.pal].fill}" stroke-width="${sw * 0.6}"/>`);
+  }
+  return parts.join('\n');
+}
+
+function genOrganicBranch(cx, cy, sz, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  function branch(bx, by, angle, len, depth) {
+    if (depth <= 0 || len < sz * 0.04) return;
+    const ex = bx + Math.cos(angle) * len;
+    const ey = by + Math.sin(angle) * len;
+    parts.push(`<line x1="${f(bx)}" y1="${f(by)}" x2="${f(ex)}" y2="${f(ey)}" stroke="${PALETTES[state.pal].stroke}" stroke-width="${f(sw * (depth / 5))}" fill="none"/>`);
+    const spread = 0.4 + comp * 0.5;
+    branch(ex, ey, angle - spread, len * (0.6 + rnd() * 0.15), depth - 1);
+    branch(ex, ey, angle + spread, len * (0.6 + rnd() * 0.15), depth - 1);
+    if (comp > 0.5 && depth < 3 && rnd() > 0.5) branch(ex, ey, angle, len * 0.5, depth - 1);
+  }
+  const maxDepth = 3 + Math.round(comp * 3);
+  branch(cx, cy + sz * 0.4, -Math.PI / 2, sz * 0.4, maxDepth);
+  return parts.join('\n');
+}
+
+function genOrganicFlower(cx, cy, sz, n, comp, rnd, SO, FG, FG2, sw) {
+  const parts = [];
+  const petals = Math.round(4 + comp * 8);
+  const pLen = sz * 0.42;
+  const pW = pLen * (0.25 + comp * 0.2);
+  for (let i = 0; i < petals; i++) {
+    const a = (i / petals) * TAU - Math.PI / 2;
+    const [ex, ey] = pt(cx, cy, pLen, a);
+    const [c1x, c1y] = pt(cx, cy, pLen * 0.5, a - 0.45);
+    const [c2x, c2y] = pt(cx, cy, pLen * 0.5, a + 0.45);
+    const d = i % 2 === 0 ? SO : FG;
+    parts.push(`<path d="M ${f(cx)} ${f(cy)} C ${f(c1x)} ${f(c1y)} ${f(c2x)} ${f(c2y)} ${f(ex)} ${f(ey)} C ${f(c2x)} ${f(c2y)} ${f(c1x)} ${f(c1y)} ${f(cx)} ${f(cy)}" ${d}/>`);
+  }
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.1)}" ${FG}/>`);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.04)}" fill="${PALETTES[state.pal].bg}"/>`);
+  return parts.join('\n');
+}
+
+function genWave(x, cy, w, h, comp, rnd, SO, FG, sw) {
+  const parts = [];
+  const waves = 2 + Math.round(comp * 5);
+  const amp = h * 0.08 + comp * h * 0.12;
+  for (let wv = 0; wv < waves; wv++) {
+    const wy = cy - (waves / 2) * amp * 0.4 + wv * amp * 0.4;
+    const freq = 1 + wv * 0.5;
+    const steps = 120;
+    let d = `M 0 ${f(wy)}`;
+    for (let i = 1; i <= steps; i++) {
+      const px = w * i / steps;
+      const py = wy + Math.sin((i / steps) * TAU * freq + wv * 0.7) * amp;
+      d += ` L ${f(px)} ${f(py)}`;
+    }
+    parts.push(`<path d="${d}" fill="none" stroke="${PALETTES[state.pal].stroke}" stroke-width="${sw * (1 - wv * 0.15)}"/>`);
+  }
+  return parts.join('\n');
+}
+
+// ── Generic generators ───────────────────────────────────────────────────────
+function genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style) {
+  const parts = [];
+  parts.push(`<line x1="${x + 16}" y1="${f(cy)}" x2="${w - 16}" y2="${f(cy)}" ${SO}/>`);
+  const cx = w / 2;
+
+  if (style === 'artdeco') {
+    parts.push(`<path d="M ${cx} ${f(cy - 12 - comp * 10)} L ${f(cx + 8 + comp * 6)} ${f(cy)} L ${cx} ${f(cy + 12 + comp * 10)} L ${f(cx - 8 - comp * 6)} ${f(cy)} Z" ${FG}/>`);
+    const ns = 2 + Math.round(comp * 3);
+    for (let i = 1; i <= ns; i++) {
+      const off = 20 + i * 18;
+      for (const dir of [-1, 1]) parts.push(`<rect x="${f(cx + dir * off - 5)}" y="${f(cy - 8 - comp * 4)}" width="10" height="${f(16 + comp * 8)}" ${SO}/>`);
+    }
+  } else if (style === 'baroque') {
+    const ow = 40 + comp * 25, oh = 16 + comp * 8;
+    parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(ow)}" ry="${f(oh)}" ${SO}/>`);
+    parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(ow * 0.8)}" ry="${f(oh * 0.65)}" ${SO}/>`);
+    for (const dir of [-1, 1]) {
+      const bx = cx + dir * ow;
+      parts.push(`<path d="M ${f(bx)} ${f(cy)} C ${f(bx + dir * 16)} ${f(cy - oh * 1.1)} ${f(bx + dir * 28)} ${f(cy - oh * 0.3)} ${f(bx + dir * 28)} ${f(cy + oh * 0.3)} C ${f(bx + dir * 28)} ${f(cy + oh * 1.1)} ${f(bx + dir * 16)} ${f(cy + oh * 0.8)} ${f(bx + dir * 6)} ${f(cy + oh * 0.3)}" ${SO}/>`);
+    }
+  } else if (style === 'geo' || style === 'geometric') {
+    const n2 = Math.round(4 + sym * 6);
+    parts.push(`<path d="${starPath(cx, cy, 16 + comp * 12, 7 + comp * 5, n2)}" ${SO}/>`);
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(4 + comp * 3)}" ${FG}/>`);
+    const ns = 2 + Math.round(comp * 3);
+    for (let i = 1; i <= ns; i++) {
+      const off = 28 + i * 14;
+      for (const dir of [-1, 1]) parts.push(`<circle cx="${f(cx + dir * off)}" cy="${f(cy)}" r="${f(3 + comp * 2)}" ${SO}/>`);
+    }
+  } else if (style === 'victorian') {
+    parts.push(`<path d="${starPath(cx, cy, 14 + comp * 10, 6 + comp * 4, 8)}" ${SO}/>`);
+    const ns2 = 2 + Math.round(comp * 3);
+    for (let i = 1; i <= ns2; i++) {
+      const off2 = 22 + i * 14;
+      for (const dir of [-1, 1]) {
+        parts.push(`<path d="M ${f(cx + dir * off2)} ${f(cy - 5)} L ${f(cx + dir * off2 + dir * 4)} ${f(cy)} L ${f(cx + dir * off2)} ${f(cy + 5)} L ${f(cx + dir * off2 - dir * 4)} ${f(cy)} Z" ${FG}/>`);
+      }
+    }
+  } else {
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(5 + comp * 4)}" ${FG}/>`);
+    for (const dir of [-1, 1]) {
+      parts.push(`<circle cx="${f(cx + dir * 20)}" cy="${f(cy)}" r="3" ${SO}/>`);
+      parts.push(`<circle cx="${f(cx + dir * 35)}" cy="${f(cy)}" r="2" ${SO}/>`);
+    }
+  }
+  return parts.join('\n');
+}
+
+function genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style) {
+  const parts = [];
+  const cell = 40 + Math.round((1 - comp) * 35);
+  for (let row = -1; row <= Math.ceil(h / cell) + 1; row++) {
+    for (let col = -1; col <= Math.ceil(w / cell) + 1; col++) {
+      const offset = (style === 'geo' || style === 'girih') ? (row % 2 === 0 ? 0 : cell / 2) : 0;
+      const cx = col * cell + cell / 2 + offset;
+      const cy = row * (style === 'geo' ? cell * 0.866 : cell) + cell / 2;
+      if (cx < -cell || cx > w + cell || cy < -cell || cy > h + cell) continue;
+      const n = style === 'girih' || style === 'islamic' ? 6 : Math.round(3 + sym * 4);
+      parts.push(`<path d="${polyPath(cx, cy, cell * 0.47, n)}" ${SO}/>`);
+      parts.push(`<path d="${polyPath(cx, cy, cell * 0.22, n, Math.PI / n)}" ${FG}/>`);
+    }
+  }
+  return parts.join('\n');
+}
+
+// ── Text-to-shape ────────────────────────────────────────────────────────────
+function genTextShape(cx, cy, sz, comp, sym, rnd, SO, FG, sw) {
+  const text = document.getElementById('tv-ta').value.trim();
+  if (!text) return genMandala(cx, cy, sz, 8, 3, comp, rnd, SO, FG, FG, sw);
+  const font = state.font;
+  const fsize = Math.min(sz * 0.85, sz * 1.8 / text.length);
+  const parts = [];
+  parts.push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="middle" dominant-baseline="middle" font-family="${font}" font-size="${f(fsize)}" fill="none" stroke="${PALETTES[state.pal].stroke}" stroke-width="${sw * 0.5}">${text}</text>`);
+  // Decorative ring around text
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.47)}" ${SO}/>`);
+  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.38)}" ${SO}/>`);
+  // Radial lines at characters
+  const n = text.length;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * TAU;
+    const [x1, y1] = pt(cx, cy, sz * 0.38, a);
+    const [x2, y2] = pt(cx, cy, sz * 0.47, a);
+    parts.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" ${SO}/>`);
+  }
+  return parts.join('\n');
+}
+
+// ── Pixel Art ───────────────────────────────────────────────────────────────
+function genPixelArt() {
+  const canvas = document.getElementById('px-canvas');
+  const size = 64;
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const rnd = mkRand(state.seed);
+  const pal = PALETTES[state.pal];
+
+  ctx.fillStyle = state.darkBg ? '#111' : '#fff';
+  ctx.fillRect(0, 0, size, size);
+
+  const cx = size / 2, cy = size / 2;
+  const r = size * 0.45 * state.comp;
+  const n = Math.round(4 + state.sym * 8);
+
+  // Draw symmetric pattern pixel by pixel
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const dx = x - cx, dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx);
+      const sector = Math.floor((angle + Math.PI) / (TAU / n));
+      const fib = (dist * 0.4 + sector * 2.7) % 1;
+      if (dist < r && (fib < state.comp * 0.6 || dist < r * 0.1)) {
+        ctx.fillStyle = fib < 0.15 ? pal.fill : pal.stroke;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Main generate
+// ────────────────────────────────────────────────────────────────────────────
+function doGen() {
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  setStatus('Generating…');
+
+  const cw = +(document.getElementById('cw').value);
+  const ch = +(document.getElementById('ch').value);
+  state.w = cw || 400;
+  state.h = ch || 400;
+  state.comp  = +document.getElementById('s-comp').value / 100;
+  state.sym   = +document.getElementById('s-sym').value / 100;
+  state.sw    = +document.getElementById('s-sw').value / 10;
+  state.fill  = +document.getElementById('s-fill').value / 100;
+  state.seed  = +document.getElementById('s-seed').value;
+
+  const pal = PALETTES[state.pal];
+  const bgColor = state.darkBg ? '#111' : '#fff';
+
+  if (state.mode === 'pixel') {
+    genPixelArt();
+    document.getElementById('main-svg').style.display = 'none';
+    document.getElementById('px-canvas').style.display = 'block';
+    setStatus(`Pixel Art · ${state.w}×${state.h}`);
+    btn.disabled = false;
+    fitToView();
+    return;
+  }
+
+  const text = document.getElementById('tv-ta').value.trim();
+  const cx = state.w / 2, cy = state.h / 2, sz = Math.min(state.w, state.h) * 0.46;
+
+  let content;
+  if (text && (state.type === 'glyph' || state.type === 'symbol' || state.type === 'mark')) {
+    content = genTextShape(cx, cy, sz, state.comp, state.sym, mkRand(state.seed), '', '', state.sw);
+  } else {
+    content = generateContent(state.style, state.type, cx, cy, sz, state.comp, state.sym, state.seed, pal, state.sw, state.fill);
+  }
+
+  const svgMarkup = `<svg xmlns="http://www.w3.org/2000/svg" width="${state.w}" height="${state.h}" viewBox="0 0 ${state.w} ${state.h}">
+  <rect class="bg-rect" width="${state.w}" height="${state.h}" fill="${bgColor}"/>
+  ${content}
+</svg>`;
+
+  document.getElementById('main-svg').outerHTML = svgMarkup.replace('<svg ', '<svg id="main-svg" ');
+  // Re-get after replacing
+  setTimeout(() => {
+    const newSvg = document.querySelector('#svg-holder svg');
+    if (newSvg) newSvg.id = 'main-svg';
+    fitToView();
+    generateVariations();
+    updateInfo();
+    setStatus(`Done · ${state.style} / ${state.type}`);
+    btn.disabled = false;
+  }, 20);
+}
+
+function generateVariations() {
+  const seeds = [state.seed, state.seed + 111, state.seed + 222, state.seed + 333];
+  const pal = PALETTES[state.pal];
+  const sw = state.sw;
+  const thumbSz = 50;
+  const tw = 60, th = 60;
+  const cx = tw / 2, cy = th / 2, sz = Math.min(tw, th) * 0.44;
+
+  for (let i = 0; i < 4; i++) {
+    const c = generateContent(state.style, state.type, cx, cy, sz, state.comp, state.sym, seeds[i], pal, 0.8, 0);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${tw} ${th}"><rect width="${tw}" height="${th}" fill="#fff"/>${c}</svg>`;
+    state.vars[i] = svg;
+    state.vars[i + '_seed'] = seeds[i];
+    document.getElementById('vt' + i).innerHTML = svg;
+    document.getElementById('vt' + i).className = 'vthumb' + (i === state.activeVar ? ' active' : '');
+  }
+}
+
+function applyVar(i) {
+  state.activeVar = i;
+  if (state.vars[i + '_seed'] !== undefined) {
+    state.seed = state.vars[i + '_seed'];
+    document.getElementById('s-seed').value = state.seed;
+    document.getElementById('sv-seed').textContent = state.seed;
+  }
+  for (let j = 0; j < 4; j++) document.getElementById('vt' + j).className = 'vthumb' + (j === i ? ' active' : '');
+  doGen();
+}
+
+function updateInfo() {
+  const el = document.getElementById('info-box');
+  const approxPaths = document.querySelectorAll('#main-svg path, #main-svg circle, #main-svg line, #main-svg rect, #main-svg ellipse, #main-svg polygon').length;
+  el.innerHTML = `<b>Style</b> ${state.style}<br><b>Type</b> ${state.type}<br><b>Canvas</b> ${state.w}×${state.h}<br><b>Palette</b> ${PALETTES[state.pal].name}<br><b>Elements</b> ~${approxPaths}<br><b>Seed</b> ${state.seed}`;
+}
+
+function setStatus(msg) {
+  document.getElementById('tb-status').innerHTML = `<span>${msg}</span>`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Export
+// ────────────────────────────────────────────────────────────────────────────
+function getSVGString() {
+  const svg = document.getElementById('main-svg');
+  if (!svg) return '';
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' + clone.outerHTML;
+}
+
+function xSVG() {
+  const str = getSVGString();
+  if (!str) return;
+  const blob = new Blob([str], { type: 'image/svg+xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `vectorforge-${state.style}-${state.type}-${state.seed}.svg`;
+  a.click();
+  setStatus('SVG exported ✓');
+}
+
+function xPNG() {
+  const svg = document.getElementById('main-svg');
+  if (!svg) return;
+  const str = getSVGString();
+  const blob = new Blob([str], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = state.w * 2; canvas.height = state.h * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob(b => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = `vectorforge-${state.style}-${state.type}-${state.seed}.png`;
+      a.click();
+      setStatus('PNG exported @2x ✓');
+    });
+  };
+  img.src = url;
+}
+
+function copySVG() {
+  const str = getSVGString();
+  navigator.clipboard.writeText(str).then(() => setStatus('SVG code copied ✓'));
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Init
+// ────────────────────────────────────────────────────────────────────────────
+buildStyleGrid();
+buildTypeChips();
+buildPalettes();
+buildFontChips();
+buildVariations();
+updateDimTag();
+
+// Auto-generate on load
+setTimeout(() => doGen(), 200);
+</script>
+</body>
+</html>
