@@ -105,3 +105,82 @@ O modo freehand draw converte o traço do usuário em um ornamento. A decisão e
 - O SVG exportado contém todos os elementos acumulados — também desejável.
 - Não há "desfazer" — uma vez adicionado, só regerar do zero remove. (Ver IDEAS.md para undo stack futuro.)
 - O export SVG exporta a composição completa, incluindo os `<g>` adicionados pelo draw mode.
+
+---
+
+## FIX-001 — Botão "↻ Regenerate" não sorteava seed novo
+**Data:** 2026-06-30
+
+- **Sintoma:** clicar em "↻ Regenerate" no topbar não produzia nenhuma variação visual; o resultado era idêntico ao anterior.
+- **Causa raiz:** o `onclick` do botão chamava `doGen()` diretamente, que lê `state.seed` do slider atual sem alterá-lo. Sem mudança de seed, o PRNG determinístico (`mkRand`) sempre retorna a mesma sequência — o botão era, na prática, idempotente.
+- **Solução:** novo handler `doGenRandom()` sorteia `state.seed = Math.ceil(Math.random() * 999)`, sincroniza o slider e o display (`#s-seed`, `#sv-seed`), e só então chama `doGen()`. O `onclick` do botão passou a apontar para `doGenRandom()`.
+- **Lição:** qualquer botão de "atalho" que pareça repetir uma ação precisa ser conferido quanto a side-effects esperados (aqui, randomização) — não basta repetir a função de geração; o estado que a alimenta precisa mudar primeiro.
+
+---
+
+## FIX-002 — Export PNG no modo Pixel Art baixava o SVG anterior
+**Data:** 2026-06-30
+
+- **Sintoma:** no modo Pixel Art, clicar em "↓ PNG" baixava uma imagem do último SVG vetorial gerado, não do pixel art visível no canvas.
+- **Causa raiz:** `xPNG()` sempre lia `#main-svg` via `getSVGString()`, sem checar `state.mode`. O Pixel Art vive num elemento `<canvas id="px-canvas">` totalmente separado (pipeline paralelo, ver Armadilha 3 no CONTEXT.md) — a função de export nunca olhava para ele.
+- **Solução:** `xPNG()` agora checa `state.mode === 'pixel'` primeiro; se verdadeiro, cria um canvas intermediário, desenha `px-canvas` nele com `imageSmoothingEnabled = false` (preserva o aspecto pixelado no upscale) e exporta via `toBlob()`. Caso contrário, mantém o fluxo SVG→canvas@2x original.
+- **Lição:** features que compartilham um botão de UI mas usam pipelines de dados diferentes (SVG vs Canvas 2D) precisam de despacho explícito por modo dentro da função compartilhada — confirma a Armadilha 3 já documentada no CONTEXT.md.
+
+---
+
+## DEC-006 — Simplex Noise seeded via `mkRand`, inicializado por geração
+**Data:** 2026-06-30 · **Status:** aceita
+
+### Contexto
+O ruído branco do `mkRand()` original não tem coerência espacial: pontos vizinhos não têm valores parecidos, então não dá para gerar transições suaves (densidade crescente do centro pra borda, ondas com textura orgânica, pétalas com curvatura assimétrica natural). Era preciso um ruído gradiente.
+
+### Decisão
+Implementar Simplex Noise 2D (algoritmo de Stefan Gustavson, domínio público/MIT, ~80 linhas, zero dependências) como `snoise(x, y)`. A tabela de permutação não é fixa — `snoiseSetSeed(seed)` a reembaralha deterministicamente via `mkRand(seed)`, e é chamada no início de `generateContent()`, antes de qualquer gerador rodar.
+
+### Alternativas consideradas
+- **Perlin noise clássico** — mais conhecido, mas tem artefatos de grade quadrada visíveis em baixa frequência; Simplex é isotrópico e mais limpo para ornamentos.
+- **Ruído de valor (value noise) simples** — mais barato computacionalmente, mas produz gradientes com "facetas" visíveis; pior para curvas orgânicas.
+- **Biblioteca externa (ex. `simplex-noise` via npm)** — quebraria DEC-001 (zero dependências de runtime / arquivo único).
+
+### Consequências
+- **Nova armadilha:** `snoise()` só é reprodutível se `snoiseSetSeed()` rodou antes com o seed correto. Isso é garantido automaticamente dentro de `generateContent()` — mas `genPixelArt()` é um pipeline paralelo que **não** passa por `generateContent()` (ver Armadilha 3). Se um gerador de pixel art baseado em noise for adicionado no futuro, ele precisa chamar `snoiseSetSeed()` explicitamente, ou vai usar uma tabela de permutação desatualizada/imprevisível.
+- Seed idêntico + parâmetros idênticos continuam produzindo SVG byte-a-byte idêntico (a garantia do DEC-003 se estende ao noise).
+- Abre caminho para Flow Fields e qualquer gerador futuro que precise de campo de ruído coerente (ver IDEAS.md, F3).
+
+---
+
+## DEC-007 — Modelo híbrido: ASU para código, arquivo completo para documentação rolante
+**Data:** 2026-06-30 · **Status:** aceita
+
+### Contexto
+Após o ASU funcionar bem no `vectorforge.html` (86KB, patch cirúrgico evita reenviar o arquivo inteiro), surgiu a pergunta de usar o mesmo mecanismo nos arquivos de documentação (STATUS, CHANGELOG, IDEAS, DECISIONS, CONTEXT, GLOSSARY).
+
+### Decisão
+ASU fica reservado para código (`vectorforge.html` e futuros módulos `.js`). Documentação continua sendo entregue como arquivo completo regenerado, especialmente STATUS.md, CHANGELOG.md e IDEAS.md — arquivos "rolantes" cuja edição é inerentemente holística (mover item resolvido de seção, checar que nada foi perdido ao reclassificar uma ideia) e não mapeia bem para um patch cirúrgico de uma seção isolada.
+
+### Alternativas consideradas
+- **ASU em tudo, incluindo docs** — tecnicamente viável via `type: markdown` + `replace_section` (headings de DECISIONS.md e IDEAS.md já são únicos o suficiente). Rejeitada como padrão porque o ganho de token é proporcional ao tamanho do arquivo: docs típicos têm 4–8KB, regenerar inteiro já é barato; o patch cirúrgico perderia a garantia holística (princípio 12 do CEREBRO — "nada único se perdeu") sem ganho real que compense.
+- **Nunca usar ASU, nem em código** — rejeitada; já provou valor real no `vectorforge.html`, reduzindo o volume de texto reenviado a cada sessão.
+
+### Consequências
+- CONTEXT.md e GLOSSARY.md (estáveis, crescem devagar) são candidatos a reavaliar para ASU pontual no futuro, se uma edição for genuinamente isolada — mas o padrão por ora é arquivo completo para todo o conjunto de docs, sem exceção automática.
+- Quando DECISIONS.md se aproximar das ~700 linhas que o próprio arquivo já prevê como gatilho de arquivamento, reavaliar: nesse porte, o cálculo de custo/benefício do ASU muda.
+
+---
+
+## DEC-008 — Instruções ASU entregues como arquivo para download (desvio do padrão do Kit)
+**Data:** 2026-06-30 · **Status:** aceita — desvio registrado
+
+### Contexto
+O CEREBRO.md (ambas as versões, original e atualizada) prescreve por padrão entregar instrução ASU como bloco `yaml` inline no chat ("Nunca arquivos soltos"). Na prática, isso expôs um ponto de fricção: copiar/colar um bloco com caracteres Unicode não-ASCII (↻, ──) em âncoras de patch tem risco real de divergência de encoding entre o que foi gerado e o que chega no disco do usuário, gerando falhas de match difíceis de diagnosticar (ver sessão de 2026-06-30, FIX da âncora do botão Regenerate).
+
+### Decisão
+Para este projeto, instruções ASU passam a ser entregues como arquivo `.yaml` para download, nomeado `AAAA-MM-DD-asuNNNN.yaml` (convenção já trazida pela atualização do Kit). Isso elimina a etapa de copiar/colar manual e também resolve, por construção, a ambiguidade de "já rodei essa instrução?" — cada tentativa vira um arquivo com nome único.
+
+### Alternativas consideradas
+- **Manter bloco inline, só evitar Unicode literal em âncoras** — parcialmente adotado de qualquer forma (boa prática permanente daqui pra frente, independente do canal de entrega), mas não resolve sozinho o problema de reaplicar a mesma instrução duas vezes por engano.
+- **Manter o padrão do Kit sem desvio** — rejeitada a pedido explícito do usuário, com motivo concreto documentado acima.
+
+### Consequências
+- Esta é uma adaptação **específica deste projeto** ao padrão do Kit — registrada aqui e em IDEAS.md → Feedback para o Kit, e incorporada ao CEREBRO.md deste projeto (seção "Saída de código via ASU").
+- Convenção de nome datado/numerado passa a ser obrigatória para toda instrução ASU gerada a partir de agora.

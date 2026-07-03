@@ -67,7 +67,9 @@ doGen()
 
 **PRNG seeded (`mkRand`):** usa xorshift multiplicativo. Seed idêntico + parâmetros idênticos = resultado idêntico sempre. Isso é central para as Variations (seeds seed, seed+111, seed+222, seed+333).
 
-**Gerador de pixel art:** usa Canvas 2D API num `<canvas id="px-canvas">` oculto em modo vector. Não compartilha estado com o SVG — é um pipeline paralelo ativado por `setMode('pixel')`.
+**Simplex Noise (`snoise`, desde v0.2.0):** ruído gradiente com coerência espacial — ao contrário do `mkRand()` (ruído branco), pontos vizinhos no espaço produzem valores parecidos, permitindo transições suaves (curvatura orgânica, densidade crescente, perturbação de ondas). `snoiseSetSeed(seed)` reembaralha a tabela de permutação deterministicamente e é chamada automaticamente no início de `generateContent()` — todo gerador SVG tem noise reproducível sem esforço extra. Ver DEC-006.
+
+**Gerador de pixel art:** usa Canvas 2D API num `<canvas id="px-canvas">` oculto em modo vector. Não compartilha estado com o SVG — é um pipeline paralelo ativado por `setMode('pixel')`. **Importante:** por não passar por `generateContent()`, este pipeline não chama `snoiseSetSeed()` — se um gerador de pixel art baseado em noise for adicionado no futuro, a chamada precisa ser feita explicitamente (ver Armadilha 7).
 
 ---
 
@@ -94,6 +96,8 @@ doGen()
 5. **Alterar `state.w`/`state.h` sem chamar `updateDimTag()`** — o badge no topbar fica defasado. → Toda mudança de dimensão passa por `setRatio()` ou atualiza a tag explicitamente.
 
 6. **Iterar sobre `generators[style]` esperando ordem** — é um objeto literal; a ordem das chaves não é garantida. → Nunca depender de ordem; use arrays se precisar de sequência.
+
+7. **Usar `snoise()` em `genPixelArt()` sem chamar `snoiseSetSeed()` antes** — o pipeline de pixel art não passa por `generateContent()` (onde a chamada é automática), então herdaria a tabela de permutação da última geração SVG, não do seed atual do pixel art. → Se `genPixelArt()` vier a usar noise, chamar `snoiseSetSeed(state.seed)` explicitamente no início da função.
 
 ---
 

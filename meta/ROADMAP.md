@@ -17,32 +17,40 @@
 
 ---
 
-## 🟡 F2 — Estabilização e Polimento *(próxima)*
-**Objetivo:** Corrigir os bugs conhecidos, adicionar JSDoc, e melhorar a UX dos dois pontos mais fracos (Regenerate e export pixel art).
-**Critério de conclusão:** zero bugs conhecidos no STATUS, todas as funções geradoras com docstring, testes manuais em Chrome e Firefox documentados.
-- [ ] Corrigir export PNG no modo Pixel Art (`px-canvas.toBlob()`).
-- [ ] Fazer "↻ Regenerate" sortear seed aleatório.
-- [ ] Adicionar JSDoc a todas as funções geradoras públicas.
-- [ ] Testar em Firefox e Safari; documentar comportamentos divergentes.
-- [ ] Validar fallback de fontes offline (sem Google Fonts).
+## 🟢 F2 — Estabilização e Fundação Matemática *(concluída — 2026-06-30)*
+**Objetivo:** Corrigir os bugs conhecidos e estabelecer a base matemática (noise coerente) que sustenta os geradores mais avançados de F3.
+**Critério de conclusão:** zero bugs conhecidos no STATUS, Simplex Noise integrado e reproducível, primeiro gerador baseado em ângulo áureo entregue.
+- [x] Corrigir export PNG no modo Pixel Art (FIX-002).
+- [x] Fazer "↻ Regenerate" sortear seed aleatório (FIX-001).
+- [x] Implementar Simplex Noise 2D seeded (DEC-006).
+- [x] `genPhyllotaxis` — ângulo áureo + noise + anéis-guia.
+- [x] Noise orgânico em `genOrganicLeaf` e `genWave`.
+- [ ] JSDoc nas funções geradoras do v0.1.0 — não concluído, adiado para F3 (backlog).
+- [ ] Testar em Firefox e Safari — não concluído, adiado para F3 (backlog).
 
 ---
 
-## 🔵 F3 — Persistência e Biblioteca Pessoal *(futuro)*
-**Objetivo:** Permitir que o usuário salve e recupere configurações favoritas entre sessões.
-**Critério de conclusão:** usuário consegue salvar um preset, fechar o browser, reabrir e carregar o preset.
-- Preset gallery via `localStorage` (serializa `state` completo como JSON).
-- Import/export de presets como arquivo `.json` para compartilhamento.
-- UI de galeria no right panel (substituir ou expandir o painel de Variations).
+## 🟡 F3 — Motor Estrutural e Geradores de Nova Categoria *(próxima)*
+**Objetivo:** Sair do repertório trigonometria+noise e abrir categorias de ornamento estruturalmente novas (recursão, campo de fluxo, tesselação por proximidade), com uma base de módulos que sustente esse crescimento sem o arquivo virar ingerenciável.
+**Critério de conclusão:** motor L-System funcional com ao menos 3 presets (árvore, Koch, dragon curve), Flow Fields como tipo novo, setup de build modular rodando.
+- [ ] Build step com esbuild: separar `vectorforge.html` em `src/` por estilo, bundle de volta para arquivo único no output.
+- [ ] Motor L-System (reescrita de string + turtle graphics), ~150 linhas.
+- [ ] Novo estilo `botanical` com presets: árvore recursiva, Koch snowflake, Dragon curve.
+- [ ] Flow Fields como tipo novo em Organic/Minimal, usando o `snoise` já disponível desde F2.
+- [ ] Fechar débito técnico: sincronizar `snoiseSetSeed` em `genPixelArt` se algum gerador de pixel art vier a usar noise.
+- [ ] JSDoc pendente do F2 (funções geradoras do v0.1.0).
+- [ ] Teste cross-browser (Firefox, Safari) pendente do F2.
 
 ---
 
-## 🔵 F4 — Geração Avançada *(futuro)*
-**Objetivo:** Ampliar o espaço criativo com modos de geração que vão além das formas geométricas puras.
-- Geração baseada em ruído (Perlin/simplex) como ponto de partida orgânico.
-- Proporção áurea / Fibonacci como modo explícito de espaciamento.
+## 🔵 F4 — Geometria Avançada e Persistência *(futuro)*
+**Objetivo:** Ampliar com técnicas de maior custo computacional/estrutural e permitir que o usuário salve trabalho entre sessões.
+- Voronoi/Worley noise — tesselações islâmicas variáveis, padrão celular orgânico.
+- Preset gallery via `localStorage` (serializa `state` completo como JSON); import/export de presets `.json`.
 - Blending de dois estilos (ex.: 70% Art Deco + 30% Celtic).
 - Parâmetro de hotspot: ponto de peso que concentra complexidade localmente.
+- Reaction-Diffusion (avaliar perf com Web Worker antes de comprometer).
+- Marching Squares como auxiliar de Flow Fields/Noise para extração de isocurvas.
 
 ---
 
@@ -60,3 +68,4 @@
 - **Backend server-side / SaaS** — fora de escopo; a proposta de valor é zero-setup no browser.
 - **Geração via IA/diffusion** — descartada; latência e custo quebram a experiência de "gera em milissegundos". Ver IDEAS.md seção Descartadas.
 - **Integração com Adobe Illustrator nativo (.ai)** — formato proprietário sem SDK público gratuito; SVG funciona em todos os destinos mencionados.
+- **Python como motor gerador** — descartada (análise 2026-06-30, ver IDEAS.md → Descartadas e DECISIONS.md contexto de DEC-006): quebraria o modelo `file://` sem ganho técnico real sobre JS vanilla para este escopo.

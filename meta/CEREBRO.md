@@ -7,6 +7,17 @@
 
 ---
 
+## Mudanças nesta revisão (2026-06-30)
+
+Mesclado com a atualização do Kit trazida pelo usuário nesta data, mais dois desvios específicos deste projeto:
+
+- **Nova seção** "Recomendação de configuração (fim de sessão)" — incorporada do Kit sem alteração.
+- **Seção ASU reescrita** — incorpora a distinção do Kit entre arquivos NOVOS (sempre download) e EDIÇÃO de existentes, nomenclatura `AAAA-MM-DD-asuNNNN.yaml`, **e dois desvios registrados deste projeto**: DEC-007 (modelo híbrido — ASU só para código, arquivo completo para toda a documentação) e DEC-008 (instruções ASU deste projeto são SEMPRE entregues como arquivo para download, mesmo editando arquivo existente — o Kit por padrão pede bloco inline nesse caso; aqui não). Motivo registrado em DECISIONS.md.
+- **Tabela de arquivos**: mantido `HISTORICO.md` (nome em uso desde a fundação do projeto) em vez de `HISTORY.md` que a atualização do Kit trouxe — mesmo papel, só preservando a convenção PT-BR já estabelecida aqui.
+- Nada foi removido do conjunto de princípios universais do Kit.
+
+---
+
 ## Ritual de início de sessão
 
 1. Lê `CEREBRO.md` (este) — confirma comportamento e ritual.
@@ -104,7 +115,7 @@ Cada arquivo tem um papel e um comportamento temporal distinto. **Respeite o pap
 - STATUS é só o agora: item resolvido sai do STATUS e vai para o CHANGELOG (e para o log da sessão). Médio/longo prazo vive no ROADMAP, não no STATUS.
 - IDEAS nunca perde: ideia implementada vai para a seção «Concluídas»; ideia descartada vai para «Descartadas» com o motivo. Assim nunca se reabre discussão já resolvida.
 - DECISIONS cresce devagar: quando passar de ~700 linhas ou uma decisão for substituída, mova as antigas para um arquivo de arquivo morto.
-- Válvula de desvio registrado: os templates e a estrutura deste kit são PONTO DE PARTIDA, não contrato. Se a realidade do projeto não couber neles, adapte — dispense um arquivo que não serve, acrescente seção ou arquivo que falte — e REGISTRE o desvio (o que mudou e por quê) no DECISIONS, marcando-o também na seção «Feedback para o Kit» do IDEAS. Desviar SEM registrar é que é o erro; desviar registrando é como o kit aprende. E não duplique o que a estrutura já cobre.
+- Válvula de desvio registrado: os templates e a estrutura deste kit são PONTO DE PARTIDA, não contrato. Se a realidade do projeto não couber neles, adapte — dispense um arquivo que não serve, acrescente seção ou arquivo que falte — e REGISTRE o desvio (o que mudou e por quê) no DECISIONS, marcando-o também na seção «Feedback para o Kit» do IDEAS. Desviar SEM registrar é que é o erro; desviar registrando é como o kit aprende. E não duplique o que a estrutura já cobre. **Este projeto já tem dois desvios ativos: DEC-007 (modelo híbrido de entrega) e DEC-008 (ASU sempre como download) — ver seção "Saída de código via ASU" abaixo.**
 
 ## Como o assistente entrega as atualizações dos documentos
 
@@ -121,13 +132,13 @@ As mudanças nos documentos que decorrem do trabalho do assistente são registra
 - APLICA de forma simples: baixa os arquivos completos e substitui os antigos na pasta (e sobe no Git/Projeto, se usar). Sem editar nada à mão.
 - Pode ignorar, adiar ou pedir ajustes antes de aplicar.
 
-> Sobre os arquivos: os documentos já no Projeto chegam ao assistente como somente-leitura (ele lê, não salva por cima). Isso NÃO o impede de entregar versões novas — ele cria cada arquivo atualizado como arquivo novo para baixar. Sem ferramenta de download, entrega o conteúdo completo de cada arquivo no chat, um por bloco. Princípio único: arquivo inteiro, conjunto consistente, nunca pedaços para costurar.
+> Sobre os arquivos: os documentos já no Projeto chegam ao assistente como somente-leitura (ele lê, não salva por cima). Isso NÃO o impede de entregar versões novas — ele cria cada arquivo atualizado como arquivo novo para baixar. Princípio único: arquivo inteiro, conjunto consistente, nunca pedaços para costurar.
 
 ### Commit pronto ao final (se você versiona com Git)
 
 Quando a entrega inclui arquivos que vão para um repositório Git/GitHub (código ou documentos), o assistente fecha a resposta com o bloco de commit pronto para copiar e colar, na convenção Conventional Commits (`tipo(escopo): descrição` — feat, fix, docs, refactor, chore), em TRÊS linhas separadas: `git add` listando os arquivos alterados (pode usar `git add .` quando o conjunto é pequeno e a árvore é conhecida/limpa), `git commit` com a mensagem completa, e `git push` — prontas para colar uma a uma e conferir entre elas.
 
-> Se o seu sistema operacional estiver definido acima, cada comando já vem na sintaxe certa do seu shell (ex.: no CMD do Windows, comando numa linha só, `-m` repetido para parágrafos e mensagem SEM acentos, que o CMD corrompe). Para mudanças triviais, basta o título; para várias mudanças de naturezas diferentes, o assistente pode sugerir mais de um commit.
+> Comandos de terminal já vêm na sintaxe do CMD do Windows: comando numa linha só, `-m` repetido para parágrafos e mensagem SEM acentos, que o CMD corrompe. Para mudanças triviais, basta o título; para várias mudanças de naturezas diferentes, o assistente pode sugerir mais de um commit.
 
 ### Canal de atualização do kit
 
@@ -145,7 +156,7 @@ Este projeto foi montado com o Kit de Contexto. O Kit evolui — novos princípi
 
 Os documentos de contexto são feitos para guardar o que tem VALOR para o projeto. Isso, por si só, já protege sua privacidade — sem precisar de censura que atrapalhe a captura do que importa.
 
-- Registre o que serve ao projeto (ideias, decisões, estado, preferências de trabalho). Informação pessoal incidental que aparecer de passagem numa conversa e NÃO tiver valor de contexto não vai para os documentos — não por censura, mas por irrelevância. (Ex.: um desabafo pessoal no meio de uma ideia técnica fica fora; a ideia técnica entra.)
+- Registre o que serve ao projeto (ideias, decisões, estado, preferências de trabalho). Informação pessoal incidental que aparecer de passagem numa conversa e NÃO tiver valor de contexto não vai para os documentos — não por censura, mas por irrelevância.
 - Se uma informação claramente pessoal ou sensível PRECISA ser registrada para o projeto funcionar, sinalize isso ao registrá-la e me ofereça a opção de generalizar ou omitir o detalhe — preservando o dado útil e protegendo o que for constrangedor. A decisão final é minha.
 - Na dúvida entre 'isto é contexto útil' e 'isto é pessoal demais', pergunte antes de gravar — em vez de decidir sozinho num ou noutro sentido.
 
@@ -153,13 +164,13 @@ Os documentos de contexto são feitos para guardar o que tem VALOR para o projet
 
 Pense na janela de contexto como a memória RAM: rápida, finita, zerada a cada conversa. Os arquivos do Projeto são o disco. Para editar ou reproduzir um arquivo com fidelidade, o assistente precisa dele COMPLETO à vista — e há mais de um caminho para isso (conhecimento do Projeto, ferramenta de código + mount, ou anexo). Saber qual usar evita perder fidelidade e desperdiçar tokens.
 
-- Dois canais de leitura do Projeto, e o que importa é ter o arquivo COMPLETO (não o rótulo RAG): (a) o conhecimento do Projeto no chat — se o total é pequeno, entra INTEIRO no contexto; se cresce e se aproxima do limite, vira busca por fragmentos (RAG), com o indicador 'Modo de pesquisa' na tela do Projeto. (b) Em conversas com a FERRAMENTA DE CÓDIGO ativa, os arquivos subidos por UPLOAD DIRETO no Projeto também ficam montados num sistema de arquivos (em /mnt/project/, ACHATADO — sem subpastas) que o assistente abre INTEIRO com ferramentas de arquivo, INDEPENDENTE de RAG. Atenção: o que entra pelo CONECTOR do GitHub alimenta só a busca (RAG) e NÃO aparece no mount. Ou seja: 'Modo de pesquisa' ligado NÃO impede o assistente de ler pelo mount o que foi subido direto. Ele consegue editar/reproduzir com fidelidade quando tem o arquivo inteiro por algum canal: Projeto pequeno (in-context), mount (ferramenta de código), anexo na conversa, ou por tê-lo gerado ali.
+- Dois canais de leitura do Projeto, e o que importa é ter o arquivo COMPLETO (não o rótulo RAG): (a) o conhecimento do Projeto no chat — se o total é pequeno, entra INTEIRO no contexto; se cresce e se aproxima do limite, vira busca por fragmentos (RAG), com o indicador 'Modo de pesquisa' na tela do Projeto. (b) Em conversas com a FERRAMENTA DE CÓDIGO ativa, os arquivos subidos por UPLOAD DIRETO no Projeto também ficam montados num sistema de arquivos (em /mnt/project/, ACHATADO — sem subpastas) que o assistente abre INTEIRO com ferramentas de arquivo, INDEPENDENTE de RAG. Atenção: o que entra pelo CONECTOR do GitHub alimenta só a busca (RAG) e NÃO aparece no mount. Ou seja: 'Modo de pesquisa' ligado NÃO impede o assistente de ler pelo mount o que foi subido direto.
 - Regra dura — nunca reconstruir de fragmentos: se for editar/reescrever/reproduzir um arquivo e só houver FRAGMENTOS (RAG, sem mount, sem anexo), o assistente faz a parte que NÃO depende dele e então PEDE o arquivo de forma direta e específica — nunca adivinha o resto nem gera uma versão falsa/incompleta.
-- Caminho mais limpo para projetos com arquivos/repositório (dev, game, ou qualquer projeto com pastas de código): suba TUDO por UPLOAD DIRETO no conhecimento do Projeto — inclusive os arquivos grandes (o conector do GitHub NÃO serve aqui: alimenta só a busca, não o mount) — e ATIVE a ferramenta de código na conversa. Assim o assistente lê e edita tudo pelo mount, em RAG ou não, sem precisar anexar nada. RITUAL DE INÍCIO: o assistente confere se tem o mount (lista /mnt/project/), MAPEIA a estrutura e informa ao usuário o que há e onde — útil em projetos com muitas pastas, em que o usuário pode não saber o que passar. Se NÃO tiver o mount (ferramenta de código desligada), avisa o usuário para ativá-la ANTES de trabalhar, em vez de tentar com fragmentos.
-- Chat simples, sem ferramenta de código: não há mount; vale só o conhecimento do chat. Projeto grande = fragmentos = anexe na conversa o arquivo que será editado. O anexo vale só naquela conversa e ocupa contexto a cada turno; anexe uma vez (reanexe só se mudar por fora, ou descreva o que mudou). Um arquivo que o assistente gerou na conversa tem a mesma fidelidade de um anexo (entrou no histórico) — mas só enquanto a conversa cabe na janela (conversa longa é compactada e perde o que saiu dela).
-- Onde colocar cada arquivo: leves e de referência (contexto, status, decisões, ideias) → conhecimento do Projeto, de preferência por upload direto (a sincronização do GitHub é manual e às vezes falha silenciosamente). Arquivos grandes e projetos com muitas pastas (Next, Svelte, etc.): coloque TUDO no Projeto por UPLOAD DIRETO e use o mount com a ferramenta de código (o conector do GitHub alimenta só a busca — não popula o mount) — ANEXAR é o último recurso (só no chat sem ferramenta de código), e aí só o arquivo da tarefa (há limite de anexos por conversa). Atenção: arquivos com o MESMO nome em pastas diferentes podem colidir no conhecimento do Projeto; se acontecer, diferencie os nomes (prefixo da pasta) — ou confie no mapeamento que o assistente faz no início.
-- Manifesto de achatamento (detecção automática): alguns projetos sobem o repositório ACHATADO por uma ferramenta (ex.: FlatDrop), que gera um `_MANIFEST.md` mapeando caminho original → nome na pasta (em colisão, o nome plano ganha um sufixo `__pasta`). No mapeamento de início, o assistente verifica se esse manifesto existe. SE EXISTE: é a fonte de verdade de nomes e estrutura — consulta antes de deduzir qualquer nome, refere-se e ENTREGA sempre pelo nome/caminho real (sem o sufixo), sem deixar duas entregas de mesmo nome real se sobreporem, e aproveita a tabela para entender a estrutura do projeto. SE NÃO EXISTE: segue normalmente — a ausência não é erro nem motivo para pedir nada. Atenção: ferramentas de achatamento podem FILTRAR o que sobe (tipos que o Projeto não aceita, pastas como node_modules/.git, itens do .gitignore) — arquivo ausente pode ser filtragem deliberada; se algo necessário faltar, peça em vez de assumir.
-- Handoff ao final + integridade: ao encerrar, o assistente diz, arquivo por arquivo, onde colocar cada um para a PRÓXIMA conversa, LEMBRA de ativar a ferramenta de código, e monta um PROMPT DE INÍCIO pronto (incluindo o lembrete de ativar a ferramenta de código e a ordem de leitura). Se suspeitar que um arquivo foi corrompido numa transferência antiga (editado de fragmentos), confere contra a versão íntegra (linhas, trechos-chave) antes de seguir; e se o arquivo recebido estiver desatualizado em relação ao que o assistente já gerou, pausa e avisa antes de editar.
+- Caminho mais limpo para projetos com arquivos/repositório: suba TUDO por UPLOAD DIRETO no conhecimento do Projeto — inclusive os arquivos grandes — e ATIVE a ferramenta de código na conversa. RITUAL DE INÍCIO: o assistente confere se tem o mount (lista /mnt/project/), MAPEIA a estrutura e informa ao usuário o que há e onde.
+- Chat simples, sem ferramenta de código: não há mount; vale só o conhecimento do chat. Projeto grande = fragmentos = anexe na conversa o arquivo que será editado.
+- Onde colocar cada arquivo: leves e de referência (contexto, status, decisões, ideias) → conhecimento do Projeto, de preferência por upload direto. Arquivos grandes e projetos com muitas pastas: coloque TUDO no Projeto por UPLOAD DIRETO e use o mount com a ferramenta de código.
+- Manifesto de achatamento (detecção automática): alguns projetos sobem o repositório ACHATADO por uma ferramenta (ex.: FlatDrop), que gera um `_MANIFEST.md` mapeando caminho original → nome na pasta. No mapeamento de início, o assistente verifica se esse manifesto existe. SE EXISTE: é a fonte de verdade de nomes e estrutura. SE NÃO EXISTE: segue normalmente.
+- Handoff ao final + integridade: ao encerrar, o assistente diz, arquivo por arquivo, onde colocar cada um para a PRÓXIMA conversa, LEMBRA de ativar a ferramenta de código, e monta um PROMPT DE INÍCIO pronto.
 
 ## Tabela de gatilhos (evento → o que o assistente entrega)
 
@@ -169,13 +180,14 @@ Pense na janela de contexto como a memória RAM: rápida, finita, zerada a cada 
 | Decisão importante tomada | Entrega o DECISIONS.md completo e atualizado (nova entrada em formato ADR: contexto, decisão, alternativas, consequências). |
 | Bug grave resolvido | Entrega o DECISIONS.md completo (nova entrada: sintoma, causa raiz, solução, lição). |
 | Ideia mencionada (sua ou minha) | Entrega o IDEAS.md completo com a ideia capturada (na hora, sem pedir). |
-| Feedback sobre o kit — dito OU feito (desvio estrutural: diretriz nova neste CEREBRO.md, template alterado/dispensado, arquivo novo criado) | Registra na hora no IDEAS.md, seção «Feedback para o Kit»: o que foi observado/mudado e por quê. É o material que volta para evoluir o kit — sem o registro, o aprendizado deste projeto se perde. |
+| Feedback sobre o kit — dito OU feito (desvio estrutural: diretriz nova neste CEREBRO.md, template alterado/dispensado, arquivo novo criado) | Registra na hora no IDEAS.md, seção «Feedback para o Kit»: o que foi observado/mudado e por quê. |
+| Feedback sobre o ASU (a ferramenta, não o Kit) | Registra na hora no IDEAS.md, seção «Feedback para o ASU» — canal separado, não misturar com feedback do Kit. |
 | Fim de sessão | Entrega os arquivos completos afetados: STATUS.md + CHANGELOG.md (se fechou algo) + log da sessão. |
 | Decisão de arquitetura ou troca de lib | Entrega o DECISIONS.md completo (nova DEC-N: contexto, decisão, alternativas, consequências). |
 | Mudança de fase do projeto | Entrega o ROADMAP.md completo com a fase atualizada (concluída / em curso / próxima). |
 | Termo técnico próprio do projeto usado | Entrega o GLOSSARY.md completo com o termo definido. |
 
-> Se um arquivo referenciado pelas regras acima (IDEAS, DECISIONS, etc.) ainda não existir no projeto, o assistente o CRIA na primeira necessidade — a partir do papel descrito e do modelo do kit — em vez de tratar a ausência como erro ou adiar a captura.
+> Se um arquivo referenciado pelas regras acima ainda não existir no projeto, o assistente o CRIA na primeira necessidade — a partir do papel descrito e do modelo do kit — em vez de tratar a ausência como erro ou adiar a captura.
 
 ## Ao final de cada sessão, o assistente entrega (como arquivos completos)
 
@@ -185,8 +197,8 @@ Cada arquivo abaixo vem INTEIRO e atualizado, pronto para você baixar e substit
 2. CHANGELOG.md — completo, com nova entrada se algo foi concluído
 3. DECISIONS.md — completo, com nova DEC/FIX se houve decisão ou bug grave
 4. IDEAS.md — completo, com as ideias da sessão capturadas e reclassificadas
-5. ROADMAP.md — completo, se alguma fase mudou de estado (quando o projeto usa roadmap)
-6. GLOSSARY.md — completo, se surgiu termo novo (quando o projeto usa glossário)
+5. ROADMAP.md — completo, se alguma fase mudou de estado
+6. GLOSSARY.md — completo, se surgiu termo novo
 7. logs/AAAA-MM-DD.md — log da sessão preenchido (formato em LOG-TEMPLATE.md)
 
 ## Quando perguntar vs. quando agir
@@ -201,7 +213,6 @@ Antes de finalizar uma resposta pedindo que eu suba qualquer arquivo (JSON, log,
 
 - Quando eu disser «já subi X», a primeira ação é **procurar X**, não perguntar de novo nem assumir que não chegou.
 - Só pede o upload se a busca não encontrar — e aí é específico sobre nome e local esperado, para eu subir certo de primeira.
-- Pedir algo que já está lá desperdiça um turno meu (ver princípio «não desperdiça tokens»).
 - O mesmo vale para o ESTADO do projeto: antes de repetir uma pendência do STATUS («ainda falta X»), confere o estado real — se já foi resolvida, diz e atualiza o STATUS em vez de ecoar o registro velho.
 
 ## Ambiente (sistema operacional)
@@ -215,13 +226,31 @@ O usuário trabalha em **Windows (CMD/Prompt de Comando)**. Qualquer comando de 
 
 Respostas em pt-BR, incluindo comentários quando houver código.
 
+## Recomendação de configuração (fim de sessão)
+
+No fim de cada sessão, junto do resumo e de qualquer dúvida, avalie o que a **próxima etapa** exige e recomende a configuração de forma **completa e explícita**: **modelo** (ex.: Opus vs Sonnet), **esforço** (Baixo/Médio/Alto/Extra/Máximo) e **pensamento** (ligado/desligado).
+- **Nunca afirme saber a configuração atual** — ela não é legível de forma confiável. Recomende pela TAREFA e pela config que o usuário declarou.
+- Próxima etapa **pesada** + config provável fraca → **pare e peça o aumento, nomeando os níveis exatos**.
+- Etapa atual **leve** mas config **alta** → **não pare no meio**; termine e, no fim, sinalize "pode baixar para X na próxima".
+- É um **default recomendado**, não proibição — cabe sob a válvula de desvio registrado.
+
 ## Saída de código via ASU (patch)
 
-Este projeto entrega mudanças de código como instrução do **Atualizador Automático de Scripts (ASU)** — não arquivos inteiros. Pré-requisito: o `INSTRUCTION_GUIDE.md` está no conhecimento do Projeto e a ferramenta ASU está instalada.
+Este projeto usa o **Atualizador Automático de Scripts (ASU)** para **alterar arquivos existentes** — responda com UMA instrução `yaml` (patch cirúrgico), não arquivos inteiros. Para **arquivos NOVOS**, entregue o arquivo **pronto para baixar** (não embuta o arquivo inteiro num bloco YAML — arrisca corromper no escape), **exceto** quando a criação faz parte de uma instrução que também edita existentes (operação atômica) — aí use `create_file` na mesma instrução. Pré-requisito: `INSTRUCTION_GUIDE.md` e `PROMPT_IA.md` estão no conhecimento do Projeto e o ASU está instalado.
 
-1. Ao pedir uma "instrução ASU" (ou ao alterar arquivos existentes), responda com **UM bloco `yaml`** cujo `format_version` é o declarado no `INSTRUCTION_GUIDE.md` do Projeto (não fixe um número aqui — o guia é o contrato) e uma linha final com `python -m src apply instrucao.yaml --root <RAIZ> --dry-run`. Nunca XML; nunca arquivos soltos.
-2. Prefira edições **cirúrgicas** (`replace_function`/`replace_method`/`replace_section`/`set_json_path`); para JS e outras linguagens, `type: "text"` + `replace_context_block` com âncoras copiadas **literalmente do arquivo real** (indentação exata), casando **uma única vez** — só o miolo no `new_content`.
-3. Não invente campos nem use número de linha; o `INSTRUCTION_GUIDE.md` é a referência obrigatória do formato.
-4. **Verificação (sessão seguinte):** se você emitiu uma instrução ASU e os arquivos do projeto estão à vista, confira no disco cada arquivo que ela tocou antes de seguir — não confie em "deu certo".
+**⚠️ Dois desvios registrados deste projeto (ver DECISIONS.md para o ADR completo — não duplicado aqui, só referenciado):**
 
-*Gerado pelo Kit de Contexto Universal — nicho Desenvolvimento. Edite à vontade: este arquivo é seu.*
+- **DEC-007 — Modelo híbrido de entrega.** ASU é usado **somente para código** (`vectorforge.html` e futuros módulos `.js`). Toda a documentação (STATUS, CHANGELOG, IDEAS, DECISIONS, CONTEXT, GLOSSARY, ROADMAP) é **sempre** entregue como arquivo completo regenerado — nunca via patch ASU, mesmo para uma seção isolada. Motivo: edições em docs rolantes são holísticas (mover item entre seções, checar que nada foi perdido) e o ganho de token em arquivos de poucos KB não compensa perder essa garantia.
+- **DEC-008 — Instrução ASU sempre como arquivo para download.** Diferente do padrão do Kit acima (que pede bloco `yaml` inline ao editar arquivo existente), **toda instrução ASU deste projeto — nova ou de edição — é entregue como arquivo `.yaml` para download**, nunca colada inline no chat. Motivo: risco confirmado de corrupção de encoding ao copiar/colar âncoras com caracteres Unicode não-ASCII (setas, box-drawing) do chat para o disco do usuário no Windows.
+
+Regras operacionais (aplicando os desvios acima):
+
+1. Ao pedir uma "instrução ASU" (ou ao **editar** código existente), gere **UM arquivo `.yaml`** cujo `format_version` é o declarado no `INSTRUCTION_GUIDE.md` (o guia é o contrato) e **entregue-o como download**, nomeado `AAAA-MM-DD-asuNNNN.yaml` (ex.: `2026-06-30-asu0001.yaml`; numeração reinicia a cada dia). Termine com `python -m src apply <arquivo>.yaml --root <RAIZ> --dry-run`. Nunca XML, nunca bloco inline.
+2. **Arquivo de CÓDIGO novo:** entregue-o pronto para baixar diretamente — não o reescreva como instrução ASU. Exceção: criação junto de edições a existentes na MESMA instrução → aí `create_file` dentro do mesmo `.yaml` de download.
+3. Prefira edições **cirúrgicas** (`replace_function`/`replace_method`/`replace_context_block`/`set_json_path`); para JS, `type: "text"` + `replace_context_block` com âncoras copiadas **literalmente** do arquivo real (indentação exata), casando **uma única vez** — só o miolo no `new_content`.
+4. **Âncoras com caractere Unicode não-ASCII (setas, box-drawing, símbolos):** nunca usar o literal em `pattern`/`before`/`after`. Usar `.*` no lugar do caractere especial, ancorando em texto ASCII estável ao redor. Aplica mesmo quando o caractere aparece corretamente na leitura do arquivo via `view` — a divergência acontece no transporte, não na leitura.
+5. Não invente campos nem use número de linha; o `INSTRUCTION_GUIDE.md` é a referência obrigatória do formato.
+6. **Antes de reenviar uma instrução que falhou:** checar primeiro se o `new_content` esperado já está presente no arquivo (via `view`/`grep` no mount, se disponível) — "casou 0 vezes" pode significar que o patch já foi aplicado com sucesso numa tentativa anterior, não que a âncora está errada. Confirmar isso evita gerar uma segunda instrução desnecessária.
+7. **Verificação (sessão seguinte):** se emitiu uma instrução ASU e os arquivos estão à vista (mount ou upload), confira no disco cada arquivo tocado antes de seguir — não confie em "deu certo".
+
+*Gerado pelo Kit de Contexto Universal — nicho Desenvolvimento. Mesclado com atualização do Kit + desvios de projeto em 2026-06-30. Edite à vontade: este arquivo é seu.*

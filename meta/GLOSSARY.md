@@ -17,7 +17,11 @@
 - **SO / FG / FG2** — strings de atributos SVG geradas por `generateContent()` e passadas aos geradores: `SO` = stroke only (sem fill), `FG` = fill com a cor de acento, `FG2` = fill2 com opacidade aumentada.
 - **Draw mode** — modo freehand onde o usuário esboça com o mouse; ao soltar, `convertDrawToOrnament()` calcula o bounding box do traço e gera um ornamento centrado nessa área.
 - **Text → Form** — feature que usa o conteúdo da textarea como base para um glyph SVG decorado com anéis radiais e linhas radiais (tipo `'glyph'` no estilo Minimal, ou tipos `'symbol'`/`'mark'` com texto).
-- **Pixel Art mode** — modo alternativo ao SVG: usa Canvas 2D API para gerar arte pixel-by-pixel com simetria radial. Não exporta via `xSVG()`/`xPNG()` da mesma forma (bug conhecido).
+- **Pixel Art mode** — modo alternativo ao SVG: usa Canvas 2D API para gerar arte pixel-by-pixel com simetria radial. Não sincroniza `snoiseSetSeed` automaticamente (pipeline paralelo, não passa por `generateContent()` — ver débito técnico em IDEAS.md).
+- **Simplex Noise (`snoise`)** — ruído gradiente 2D com coerência espacial (pontos vizinhos têm valores parecidos), ao contrário do ruído branco de `mkRand()`. Implementação Gustavson (MIT), zero deps. Retorna float em `[-1, 1]`. Ver DEC-006.
+- **`snoiseSetSeed(seed)`** — reembaralha a tabela de permutação do Simplex Noise deterministicamente via `mkRand(seed)`. Precisa ser chamada antes de qualquer uso de `snoise()` para garantir reproducibilidade; já é chamada automaticamente no início de `generateContent()`.
+- **Phyllotaxis** — padrão de disposição espiral presente em girassóis, pinhas e alcachofras, gerado pelo ângulo áureo (φ → ≈137.507°). Tipo `phyllotaxis` no estilo Organic desde v0.2.0 (`genPhyllotaxis`).
+- **Ângulo áureo (golden angle)** — `π × (3 − √5)`, deriva de φ (proporção áurea); usado em `genPhyllotaxis` para distribuir pontos sem sobreposição visual, replicando o padrão de crescimento vegetal real.
 
 ## Arquiteturas / módulos
 
@@ -27,6 +31,7 @@
 - **`PALETTES`** — array de 8 objetos de paleta; índice `state.pal` seleciona o ativo.
 - **`mkRand(seed)`** — factory de PRNG seeded; retorna closure `() => float [0,1)`.
 - **`doGen()`** — orquestra leitura de controles, chamada a `generateContent()`, montagem do SVG e atualização do DOM.
+- **`doGenRandom()`** — handler do botão "↻ Regenerate" desde v0.2.0 (FIX-001): sorteia `state.seed`, sincroniza slider/display, então chama `doGen()`. Torna o botão não-idempotente.
 - **`state`** — objeto global único com todo o estado da aplicação (estilo, tipo, parâmetros, modo, zoom, vars, etc.).
 
 ## Comandos / artefatos
