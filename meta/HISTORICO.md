@@ -89,3 +89,20 @@ Este guia é válido para a arquitetura do v0.1.0. Se a arquitetura mudar signif
 **PNG @2x**: gerado via `canvas.toBlob()` com escala 2×. 96 DPI × 2 = 192 DPI efetivos, suficiente para print até ~A5 em 150 DPI.
 
 **Pixel Art export**: BUG CONHECIDO — ver STATUS.md. A função `xPNG()` atual não distingue o modo; usa sempre `#main-svg`. Fix planejado para F2.
+
+---
+
+## 4. Integração da atualização do Kit de Contexto (2026-07-03)
+
+Registro do processo de comparação/adaptação, útil se uma futura atualização do Kit gerar dúvida semelhante.
+
+**O que foi comparado:** a Instrução do Projeto vigente até então (curta, cerca de 20 linhas, sem seções de ASU/config/commit/gitignore/README) contra `instrucoes-dev__template-update.txt` trazido pelo usuário — uma versão mais rica do mesmo arquivo, com parágrafos novos.
+
+**Diferenças encontradas, por categoria:**
+
+1. **Protocolo de releitura do mount** — novo. Sempre que o usuário sinalizar upload (mesmo sem nomear arquivo), reler `/mnt/project/` antes de responder, nunca de memória. Adotado sem atrito — já era boa prática implícita, agora é regra explícita.
+2. **Escopo do ASU ampliado** — este foi o ponto que gerou conflito real (não superficial) com o DEC-007 vigente. O Kit novo permite ASU em `DECISIONS.md`/`CONTEXT.md` (heading estável), enquanto DEC-007 original dizia "ASU só para código". Resolvido com DEC-009: adotamos a ampliação, mas restrita a anexos isolados (nova entrada DEC-N/FIX-N no fim do DECISIONS; edição aditiva isolada no CONTEXT) — não para qualquer edição nesses arquivos.
+3. **Entrega de instrução ASU sempre como download** — o Kit novo já adota isso como padrão. Nosso DEC-008 (que era um desvio registrado) convergiu — deixou de ser exceção.
+4. **Parágrafos operacionais novos, sem conflito** — feedback de ASU registrado antes de fechar sessão; nome de download simples (sem prefixo de pasta); recomendação de configuração explícita a cada fim de sessão; bloco de commit sempre entregue separado; `.gitignore` entregue na primeira leva que criar estrutura; `README.md` atualizado só quando a estrutura estabilizar (com aviso se for adiado). Todos adotados sem alteração — nenhum contradizia nada que já tínhamos.
+
+**Lição para a próxima atualização do Kit:** o processo que funcionou foi (a) pedir/localizar o texto exato da versão nova (não confiar em memória do que "provavelmente" mudou), (b) diff mental categoria por categoria contra o CEREBRO.md e a Instrução do Projeto vigentes, (c) para cada diferença, perguntar "isso contradiz uma decisão já registrada (DEC-N), ou é só uma adição sem atrito?" — só o primeiro caso exige uma DEC nova; o resto é aplicação direta.

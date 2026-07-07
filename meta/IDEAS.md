@@ -100,6 +100,9 @@ O Kit prescreve o mesmo mecanismo de entrega (bloco YAML inline) para código e 
 ### 2026-06-30 — Entrega de instrução ASU como arquivo para download (DEC-008)
 O padrão atual prescreve bloco YAML inline. Copiar/colar blocos com caracteres Unicode (setas, box-drawing dashes) em âncoras de patch tem risco real de divergência de encoding (confirmado em sessão 2026-06-30: `↻` em pattern falhou). Sugestão para o Kit: mudar o padrão para entrega como arquivo `.yaml` datado/numerado (`AAAA-MM-DD-asuNNNN.yaml`) — elimina step manual de copiar/colar, resolve por construção o problema de "rodar mesma instrução duas vezes por engano", e resolve o risco de encoding.
 
+### 2026-07-03 — Convergência confirmada: Kit validou DEC-007/DEC-008 de forma independente
+A atualização do Kit trazida pelo usuário nesta data (`instrucoes-dev__template-update.txt`) formalizou, sem que tivéssemos avisado ninguém do time do Kit, exatamente os dois pontos que tínhamos especulado como "candidatos a reavaliar no futuro" em DEC-007: (a) ASU pode tocar docs de heading estável (DECISIONS/CONTEXT), não só código; (b) entrega de instrução ASU sempre como arquivo para download é o novo padrão, não só bloco inline. Isso não gerou um feedback novo para o Kit — é uma confirmação de que o Kit chegou à mesma conclusão pelo próprio caminho. Registrado aqui só para fechar o loop e não reabrir a discussão. Ver DEC-009 em DECISIONS.md para a integração formal deste projeto.
+
 ---
 
 ## 📝 Feedback para o ASU

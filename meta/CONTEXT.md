@@ -29,6 +29,7 @@ VectorForge é um gerador procedural de arte vetorial que roda inteiramente no b
 vectorforge/
 ├── vectorforge.html        # O aplicativo inteiro — UI + lógica + estilos em um arquivo
 └── docs/                   # Kit de Contexto (este conjunto de arquivos .md)
+    ├── CEREBRO.md
     ├── CONTEXT.md
     ├── STATUS.md
     ├── DECISIONS.md
@@ -38,11 +39,14 @@ vectorforge/
     ├── GLOSSARY.md
     ├── HISTORICO.md
     ├── LOG-TEMPLATE.md
+    ├── INSTRUCOES-PROJETO.md   # cola nas Instruções personalizadas do Claude Project
     └── logs/
-        └── 2026-06-23.md
+        ├── 2026-06-23.md
+        ├── 2026-06-30.md
+        └── 2026-07-03.md
 ```
 
-O `vectorforge.html` é **autocontido**: tudo que o usuário precisa está nele. Os docs vivem separados e não são empacotados no app.
+O `vectorforge.html` é **autocontido**: tudo que o usuário precisa está nele. Os docs vivem separados e não são empacotados no app. **Ainda não existe `.gitignore` nem `README.md` expandido** — ver STATUS.md → backlog.
 
 ---
 
@@ -80,6 +84,32 @@ doGen()
 - **Seed para reproducibilidade** — `mkRand(seed)` retorna closure PRNG; seed igual = arte igual. Ver DEC-003.
 - **`outerHTML` replacement para atualizar o canvas** — necessário para trocar `viewBox`; requer re-query pós-replace. Ver DEC-004.
 - **Modo draw (freehand) acumula `<g>` no SVG existente** — não regera; é aditivo por design. Ver DEC-005.
+- **ASU cobre código + anexos isolados em DECISIONS.md/CONTEXT.md** (DEC-009); docs rolantes (STATUS/CHANGELOG/IDEAS/GLOSSARY/ROADMAP/HISTORICO) são sempre arquivo completo. Ver DEC-007/008/009.
+
+---
+
+## Inventário de Geradores (referência rápida — evita abrir o `.html` para orientação)
+
+Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2], sw)` e retorna string SVG. `SO`/`FG`/`FG2` são strings de atributos (ver GLOSSARY.md). Despacho central em `generateContent()` → `generators[style][type]`.
+
+| Estilo | Tipos (`TYPES_BY_STYLE`) | Funções geradoras |
+|---|---|---|
+| **artdeco** | medallion, frame, divider, corner, pattern, ornament | `genADMedallion`, `genADFrame`, `genDivider('artdeco')`, `genADCorner`, `genPattern('artdeco')`, `genADOrn` |
+| **baroque** | medallion, frame, divider, cartouche, swag, acanthus | `genBQMedallion`, `genBQFrame`, `genDivider('baroque')`, `genBQCartouche`, `genBQSwag`, `genBQAcanthus` |
+| **geometric** | mandala, frame, divider, tessellation, star, symbol | `genMandala`, `genGeoFrame`, `genDivider('geo')`, `genPattern('geo')`, `genGeoStar`, `genGeoSymbol` |
+| **victorian** | medallion, frame, divider, flourish, wreath, cartouche | `genVicMedallion`, `genVicFrame`, `genDivider('victorian')`, `genBQAcanthus` (reuso), `genVicWreath`, `genBQCartouche` (reuso) |
+| **celtic** | knot, border, medallion, cross, knotwork, spiral | `genCelticKnot`, `genADFrame` (reuso, n=6), `genMandala` (reuso, n=6), `genCelticCross`, `genCelticKnot` (reuso, sz×1.2/n=8), `genOrganicSpiral` (reuso) |
+| **islamic** | star, girih, arabesque, border, medallion, pattern | `genIslamicStar`, `genPattern('girih')`, `genArabesque`, `genADFrame` (reuso, n=8), `genIslamicStar` (reuso, n=12), `genPattern('islamic')` |
+| **minimal** | symbol, line, grid, circle, mark, glyph | `genMinimalSymbol`, `genDivider('min', comp×0.3)`, `genMinGrid`, `genMinCircles`, `genMinimalSymbol` (reuso menor), `genGlyph` |
+| **organic** | leaf, spiral, branch, flower, mandala, wave, **phyllotaxis** (novo v0.2.0) | `genOrganicLeaf` (usa `snoise`), `genOrganicSpiral`, `genOrganicBranch`, `genOrganicFlower`, `genMandala` (reuso, n=8), `genWave` (usa `snoise`), `genPhyllotaxis` (usa `snoise`) |
+
+**Padrão de reuso:** vários estilos reaproveitam geradores de outros (Celtic/Islamic reusam `genADFrame`/`genMandala` com parâmetros diferentes; Victorian reusa `genBQAcanthus`/`genBQCartouche`). Isso é intencional — reduz duplicação — mas significa que uma mudança em `genADFrame`, por exemplo, afeta visualmente Art Deco **e** Celtic **e** Islamic ao mesmo tempo. Conferir todos os estilos que reusam antes de alterar um gerador compartilhado.
+
+**Geradores genéricos** (não amarrados a um estilo, despachados por parâmetro `style`): `genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style)`, `genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style)`.
+
+**Só no modo Pixel Art** (pipeline paralelo, não usa `generateContent()`): `genPixelArt()`.
+
+**Só na feature Text→Form**: `genTextShape()` (chamado por `doGen()` quando `type` é `glyph`/`symbol`/`mark` e há texto na textarea) e `genGlyph()` (gerador nativo do tipo `glyph` no estilo Minimal).
 
 ---
 

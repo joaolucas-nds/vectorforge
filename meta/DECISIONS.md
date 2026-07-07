@@ -150,7 +150,7 @@ Implementar Simplex Noise 2D (algoritmo de Stefan Gustavson, domínio público/M
 ---
 
 ## DEC-007 — Modelo híbrido: ASU para código, arquivo completo para documentação rolante
-**Data:** 2026-06-30 · **Status:** aceita
+**Data:** 2026-06-30 · **Status:** SUPERADA parcialmente por DEC-009 (2026-07-03) — o corpo abaixo é o registro histórico original; DEC-009 é a regra vigente para o escopo do ASU em docs.
 
 ### Contexto
 Após o ASU funcionar bem no `vectorforge.html` (86KB, patch cirúrgico evita reenviar o arquivo inteiro), surgiu a pergunta de usar o mesmo mecanismo nos arquivos de documentação (STATUS, CHANGELOG, IDEAS, DECISIONS, CONTEXT, GLOSSARY).
@@ -184,3 +184,29 @@ Para este projeto, instruções ASU passam a ser entregues como arquivo `.yaml` 
 ### Consequências
 - Esta é uma adaptação **específica deste projeto** ao padrão do Kit — registrada aqui e em IDEAS.md → Feedback para o Kit, e incorporada ao CEREBRO.md deste projeto (seção "Saída de código via ASU").
 - Convenção de nome datado/numerado passa a ser obrigatória para toda instrução ASU gerada a partir de agora.
+
+---
+
+## DEC-009 — Escopo do ASU ampliado para docs de heading estável (DECISIONS, CONTEXT); rolantes continuam full-file
+**Data:** 2026-07-03 · **Status:** aceita — supera DEC-007 neste ponto específico
+
+### Contexto
+A atualização do Kit trazida pelo usuário nesta data (`instrucoes-dev__template-update.txt`) formaliza uma regra que o DEC-007 original já cogitava como possibilidade futura: "ASU: editar código, doc de heading estável (DECISIONS/CONTEXT) ou trecho localizado de capítulo → instrução yaml para baixar. Escrita nova, reescrita profunda e docs rolantes (STATUS/CHANGELOG/IDEAS/HISTORY...) → arquivo inteiro." Isso amplia o escopo do ASU além do que DEC-007 permitia ("ASU é usado somente para código").
+
+Não é um conflito acidental — é o Kit convergindo exatamente para o cenário que DEC-007 já apontava como candidato a reavaliação ("CONTEXT.md e GLOSSARY.md são candidatos a reavaliar para ASU pontual no futuro, se uma edição for genuinamente isolada").
+
+### Decisão
+Ampliar o escopo do ASU neste projeto para cobrir, além de código:
+- **DECISIONS.md** — via `replace_section`/`insert_after_pattern`, exclusivamente para ANEXAR uma nova entrada `## DEC-N` ou `## FIX-N` ao final do arquivo (heading novo, não precisa reordenar nem revisar o resto). Nunca para editar uma entrada existente — isso continua exigindo arquivo completo (regra de não reescrever entradas antigas já é do próprio DECISIONS.md).
+- **CONTEXT.md** — via `replace_section`/`insert_after_pattern`, exclusivamente para edições genuinamente ISOLADAS e ADITIVAS: uma nova Armadilha numerada ao final da lista, uma linha nova na Stack, uma entrada nova na tabela de Estrutura. Qualquer edição que exija reler o arquivo inteiro para garantir coerência (reordenar, resolver duplicidade, decidir o que sai) continua sendo arquivo completo.
+- **STATUS.md, CHANGELOG.md, IDEAS.md, GLOSSARY.md, ROADMAP.md, HISTORICO.md** — sem mudança: continuam SEMPRE arquivo completo, por serem holísticos/rolantes (mover item entre seções, checar duplicidade, resolver o que sai). O Kit novo concorda com isso ("docs rolantes... → arquivo inteiro").
+
+### Alternativas consideradas
+- **Manter DEC-007 inalterado, ignorar a ampliação do Kit** — rejeitada; o ganho é real (DECISIONS.md deste projeto só cresce, nunca é reescrito por completo — patch cirúrgico elimina reenviar 13KB+ a cada FIX/DEC novo) e o Kit já validou a ideia com uma regra formal, não uma sugestão frágil.
+- **Ampliar para TODOS os docs, incluindo rolantes** — rejeitada; STATUS/CHANGELOG/IDEAS são precisamente os casos onde a edição é holística por natureza (o próprio Kit novo os exclui explicitamente).
+
+### Consequências
+- DEC-008 (entrega sempre como arquivo `.yaml` para download) permanece válida e agora **convergiu com o padrão do Kit** — deixou de ser um desvio, o Kit adotou o mesmo default. O registro histórico do DEC-008 não é reescrito (é o motivo original, ainda válido), só deixa de ser uma "exceção" para ser a regra.
+- Próxima vez que uma DEC-N ou FIX-N nova precisar ser registrada, avaliar se cabe como patch ASU (`insert_after_pattern` no final do arquivo) em vez de arquivo completo — reduz volume de texto reenviado.
+- CONTEXT.md ainda é candidato conservador: só usar ASU quando a edição for comprovadamente isolada (uma armadilha nova, uma linha na stack); em caso de dúvida, arquivo completo continua sendo o padrão seguro.
+- Ver seção "Saída de código via ASU" no CEREBRO.md — atualizada para refletir este escopo.

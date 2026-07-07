@@ -16,6 +16,15 @@ Mesclado com a atualização do Kit trazida pelo usuário nesta data, mais dois 
 - **Tabela de arquivos**: mantido `HISTORICO.md` (nome em uso desde a fundação do projeto) em vez de `HISTORY.md` que a atualização do Kit trouxe — mesmo papel, só preservando a convenção PT-BR já estabelecida aqui.
 - Nada foi removido do conjunto de princípios universais do Kit.
 
+## Mudanças nesta revisão (2026-07-03)
+
+Nova atualização do Kit trazida pelo usuário (`instrucoes-dev__template-update.txt`, versão mais rica que a anterior) comparada e integrada:
+
+- **Seção ASU refinada via DEC-009**: o Kit novo formaliza exatamente o que DEC-007 já cogitava como possibilidade futura — ASU pode tocar `DECISIONS.md` (só anexar DEC-N/FIX-N novo) e `CONTEXT.md` (só edição isolada e aditiva), além de código. Docs rolantes (STATUS/CHANGELOG/IDEAS/GLOSSARY/ROADMAP/HISTORICO) continuam sempre arquivo completo — nisso o Kit novo concorda com DEC-007 original. Ver DEC-009 em DECISIONS.md para o ADR completo.
+- **DEC-008 convergiu com o Kit**: a entrega de instrução ASU sempre como arquivo para download, que era um desvio registrado deste projeto, agora é o padrão do próprio Kit atualizado. Deixa de ser exceção.
+- **Novos parágrafos adotados sem alteração**: protocolo de reler o mount quando o usuário sinalizar upload (mesmo sem nomear o arquivo); feedback de ASU registrado no IDEAS antes de fechar a sessão; nome de download simples (sem prefixo de pasta); recomendação de configuração explícita a cada fim de sessão; bloco de commit sempre entregue ao concluir mudança versionada; `.gitignore` entregue na primeira leva que cria estrutura; `README.md` atualizado quando a estrutura estabilizar (com aviso explícito se for adiado).
+- **Instruções do Projeto (arquivo curto, fora do CEREBRO) regeneradas** para incorporar os parágrafos acima — ver `INSTRUCOES-PROJETO.md` entregue nesta sessão.
+
 ---
 
 ## Ritual de início de sessão
@@ -26,6 +35,7 @@ Mesclado com a atualização do Kit trazida pelo usuário nesta data, mais dois 
 4. Lê última entrada do `CHANGELOG.md` — vê o que mudou desde a sessão anterior.
 5. **Não lê por padrão:** IDEAS inteiro, logs antigos, arquivos de arquivo morto. Lê sob demanda quando a tarefa exigir.
 6. Antes de executar: confirma em uma frase o que entendeu. Se houver ambiguidade real, pergunta antes.
+7. **Sempre que o usuário sinalizar upload** — mesmo sem nomear o arquivo ("já subi", "veja o arquivo", "atualizei o mount") — relê o mount (`/mnt/project/`, notas `.txt` soltas + `_MANIFEST.md` se houver) ANTES de responder, nunca de memória do que foi lido antes. Arquivos `.txt` soltos no mount são entrada transitória (a fundir nos docs oficiais na próxima atualização), não fonte canônica — se não houver nenhum, segue normalmente.
 
 ## Princípios de trabalho
 
@@ -115,7 +125,7 @@ Cada arquivo tem um papel e um comportamento temporal distinto. **Respeite o pap
 - STATUS é só o agora: item resolvido sai do STATUS e vai para o CHANGELOG (e para o log da sessão). Médio/longo prazo vive no ROADMAP, não no STATUS.
 - IDEAS nunca perde: ideia implementada vai para a seção «Concluídas»; ideia descartada vai para «Descartadas» com o motivo. Assim nunca se reabre discussão já resolvida.
 - DECISIONS cresce devagar: quando passar de ~700 linhas ou uma decisão for substituída, mova as antigas para um arquivo de arquivo morto.
-- Válvula de desvio registrado: os templates e a estrutura deste kit são PONTO DE PARTIDA, não contrato. Se a realidade do projeto não couber neles, adapte — dispense um arquivo que não serve, acrescente seção ou arquivo que falte — e REGISTRE o desvio (o que mudou e por quê) no DECISIONS, marcando-o também na seção «Feedback para o Kit» do IDEAS. Desviar SEM registrar é que é o erro; desviar registrando é como o kit aprende. E não duplique o que a estrutura já cobre. **Este projeto já tem dois desvios ativos: DEC-007 (modelo híbrido de entrega) e DEC-008 (ASU sempre como download) — ver seção "Saída de código via ASU" abaixo.**
+- Válvula de desvio registrado: os templates e a estrutura deste kit são PONTO DE PARTIDA, não contrato. Se a realidade do projeto não couber neles, adapte — dispense um arquivo que não serve, acrescente seção ou arquivo que falte — e REGISTRE o desvio (o que mudou e por quê) no DECISIONS, marcando-o também na seção «Feedback para o Kit» do IDEAS. Desviar SEM registrar é que é o erro; desviar registrando é como o kit aprende. E não duplique o que a estrutura já cobre. **Este projeto tem três decisões ativas sobre o próprio processo: DEC-007 (modelo híbrido original, parcialmente superado), DEC-008 (ASU sempre como download — convergiu com o Kit) e DEC-009 (escopo do ASU ampliado a DECISIONS/CONTEXT) — ver seção "Saída de código via ASU" abaixo.**
 
 ## Como o assistente entrega as atualizações dos documentos
 
@@ -139,6 +149,11 @@ As mudanças nos documentos que decorrem do trabalho do assistente são registra
 Quando a entrega inclui arquivos que vão para um repositório Git/GitHub (código ou documentos), o assistente fecha a resposta com o bloco de commit pronto para copiar e colar, na convenção Conventional Commits (`tipo(escopo): descrição` — feat, fix, docs, refactor, chore), em TRÊS linhas separadas: `git add` listando os arquivos alterados (pode usar `git add .` quando o conjunto é pequeno e a árvore é conhecida/limpa), `git commit` com a mensagem completa, e `git push` — prontas para colar uma a uma e conferir entre elas.
 
 > Comandos de terminal já vêm na sintaxe do CMD do Windows: comando numa linha só, `-m` repetido para parágrafos e mensagem SEM acentos, que o CMD corrompe. Para mudanças triviais, basta o título; para várias mudanças de naturezas diferentes, o assistente pode sugerir mais de um commit.
+
+### Artefatos de repositório (.gitignore, README)
+
+- **`.gitignore`**: em projeto com repositório Git, entregue um `.gitignore` adequado ao stack na PRIMEIRA leva que criar estrutura (ex.: `node_modules/`, `dist/`, `.env`, pastas de output/backup). Não espere o usuário pedir — entregue junto dos primeiros arquivos. Este projeto (`vectorforge.html` + docs `.md`) ainda não tem um `.gitignore` gerado; é item de backlog (ver STATUS.md).
+- **`README.md`**: entregue ou atualize quando a estrutura estabilizar — não no rascunho inicial, para não nascer desatualizado. Se ainda for cedo para isso, diga explicitamente que está adiando e por quê, em vez de simplesmente omitir. O `README.md` atual deste projeto é um placeholder de uma linha (`"# vectorforge"`); expandir fica registrado como item de backlog, não uma omissão silenciosa.
 
 ### Canal de atualização do kit
 
@@ -238,19 +253,24 @@ No fim de cada sessão, junto do resumo e de qualquer dúvida, avalie o que a **
 
 Este projeto usa o **Atualizador Automático de Scripts (ASU)** para **alterar arquivos existentes** — responda com UMA instrução `yaml` (patch cirúrgico), não arquivos inteiros. Para **arquivos NOVOS**, entregue o arquivo **pronto para baixar** (não embuta o arquivo inteiro num bloco YAML — arrisca corromper no escape), **exceto** quando a criação faz parte de uma instrução que também edita existentes (operação atômica) — aí use `create_file` na mesma instrução. Pré-requisito: `INSTRUCTION_GUIDE.md` e `PROMPT_IA.md` estão no conhecimento do Projeto e o ASU está instalado.
 
-**⚠️ Dois desvios registrados deste projeto (ver DECISIONS.md para o ADR completo — não duplicado aqui, só referenciado):**
+**⚠️ Três desvios/refinamentos registrados deste projeto (ver DECISIONS.md para o ADR completo — não duplicado aqui, só referenciado):**
 
-- **DEC-007 — Modelo híbrido de entrega.** ASU é usado **somente para código** (`vectorforge.html` e futuros módulos `.js`). Toda a documentação (STATUS, CHANGELOG, IDEAS, DECISIONS, CONTEXT, GLOSSARY, ROADMAP) é **sempre** entregue como arquivo completo regenerado — nunca via patch ASU, mesmo para uma seção isolada. Motivo: edições em docs rolantes são holísticas (mover item entre seções, checar que nada foi perdido) e o ganho de token em arquivos de poucos KB não compensa perder essa garantia.
-- **DEC-008 — Instrução ASU sempre como arquivo para download.** Diferente do padrão do Kit acima (que pede bloco `yaml` inline ao editar arquivo existente), **toda instrução ASU deste projeto — nova ou de edição — é entregue como arquivo `.yaml` para download**, nunca colada inline no chat. Motivo: risco confirmado de corrupção de encoding ao copiar/colar âncoras com caracteres Unicode não-ASCII (setas, box-drawing) do chat para o disco do usuário no Windows.
+- **DEC-007 — Modelo híbrido original.** Ponto de partida: ASU só para código; toda documentação como arquivo completo. **Parcialmente superado por DEC-009** (ver abaixo) — mantido aqui só como registro histórico do raciocínio inicial.
+- **DEC-008 — Instrução ASU sempre como arquivo para download.** Toda instrução ASU deste projeto — nova ou de edição — é entregue como arquivo `.yaml` para download, nunca colada inline no chat. Motivo original: risco confirmado de corrupção de encoding ao copiar/colar âncoras com caracteres Unicode não-ASCII (setas, box-drawing) do chat para o disco do usuário no Windows. **Convergiu com o padrão do Kit atualizado em 2026-07-03** — deixou de ser um desvio, passou a ser a regra padrão.
+- **DEC-009 — Escopo do ASU ampliado (2026-07-03).** Além de código, ASU agora cobre também:
+  - **DECISIONS.md**: só para ANEXAR uma nova entrada `## DEC-N`/`## FIX-N` ao final (heading novo). Nunca para editar entrada existente.
+  - **CONTEXT.md**: só para edições isoladas e aditivas (nova Armadilha ao final da lista, nova linha na Stack, nova linha numa tabela). Se a edição exigir reler o arquivo para reordenar/resolver duplicidade, é arquivo completo.
+  - **STATUS.md, CHANGELOG.md, IDEAS.md, GLOSSARY.md, ROADMAP.md, HISTORICO.md**: SEM mudança — sempre arquivo completo (holísticos/rolantes por natureza).
 
 Regras operacionais (aplicando os desvios acima):
 
-1. Ao pedir uma "instrução ASU" (ou ao **editar** código existente), gere **UM arquivo `.yaml`** cujo `format_version` é o declarado no `INSTRUCTION_GUIDE.md` (o guia é o contrato) e **entregue-o como download**, nomeado `AAAA-MM-DD-asuNNNN.yaml` (ex.: `2026-06-30-asu0001.yaml`; numeração reinicia a cada dia). Termine com `python -m src apply <arquivo>.yaml --root <RAIZ> --dry-run`. Nunca XML, nunca bloco inline.
+1. Ao pedir uma "instrução ASU" (código, ou anexo isolado em DECISIONS.md/CONTEXT.md), gere **UM arquivo `.yaml`** cujo `format_version` é o declarado no `INSTRUCTION_GUIDE.md` (o guia é o contrato) e **entregue-o como download**, nomeado `AAAA-MM-DD-asuNNNN.yaml` (ex.: `2026-07-03-asu0001.yaml`; numeração reinicia a cada dia). Termine com `python -m src apply <arquivo>.yaml --root <RAIZ> --dry-run`. Nunca XML, nunca bloco inline.
 2. **Arquivo de CÓDIGO novo:** entregue-o pronto para baixar diretamente — não o reescreva como instrução ASU. Exceção: criação junto de edições a existentes na MESMA instrução → aí `create_file` dentro do mesmo `.yaml` de download.
-3. Prefira edições **cirúrgicas** (`replace_function`/`replace_method`/`replace_context_block`/`set_json_path`); para JS, `type: "text"` + `replace_context_block` com âncoras copiadas **literalmente** do arquivo real (indentação exata), casando **uma única vez** — só o miolo no `new_content`.
+3. Prefira edições **cirúrgicas** (`replace_function`/`replace_method`/`replace_context_block`/`set_json_path`/`insert_after_pattern`); para JS, `type: "text"` + `replace_context_block` com âncoras copiadas **literalmente** do arquivo real (indentação exata), casando **uma única vez** — só o miolo no `new_content`.
 4. **Âncoras com caractere Unicode não-ASCII (setas, box-drawing, símbolos):** nunca usar o literal em `pattern`/`before`/`after`. Usar `.*` no lugar do caractere especial, ancorando em texto ASCII estável ao redor. Aplica mesmo quando o caractere aparece corretamente na leitura do arquivo via `view` — a divergência acontece no transporte, não na leitura.
 5. Não invente campos nem use número de linha; o `INSTRUCTION_GUIDE.md` é a referência obrigatória do formato.
 6. **Antes de reenviar uma instrução que falhou:** checar primeiro se o `new_content` esperado já está presente no arquivo (via `view`/`grep` no mount, se disponível) — "casou 0 vezes" pode significar que o patch já foi aplicado com sucesso numa tentativa anterior, não que a âncora está errada. Confirmar isso evita gerar uma segunda instrução desnecessária.
 7. **Verificação (sessão seguinte):** se emitiu uma instrução ASU e os arquivos estão à vista (mount ou upload), confira no disco cada arquivo tocado antes de seguir — não confie em "deu certo".
+8. **Nome de download simples:** o arquivo para baixar usa o nome direto (ex.: `IDEAS.md`), sem prefixo de pasta (não `meta_IDEAS.md`). Só prefixar para desambiguar dois arquivos de mesmo nome.
 
-*Gerado pelo Kit de Contexto Universal — nicho Desenvolvimento. Mesclado com atualização do Kit + desvios de projeto em 2026-06-30. Edite à vontade: este arquivo é seu.*
+*Gerado pelo Kit de Contexto Universal — nicho Desenvolvimento. Mesclado com atualização do Kit + desvios de projeto em 2026-06-30, escopo do ASU refinado em 2026-07-03 (DEC-009). Edite à vontade: este arquivo é seu.*
