@@ -36,8 +36,13 @@
 
 ## Comandos / artefatos
 
-- **`vectorforge.html`** — o aplicativo completo; único arquivo distribuível.
-- **ASU** — Atualizador Automático de Scripts; ferramenta usada para aplicar patches cirúrgicos ao `vectorforge.html` via instruções YAML. Ver `INSTRUCTION_GUIDE.md` e `PROMPT_IA.md`.
+- **`vectorforge.html`** — nome do arquivo distribuível final; desde 2026-07-07 é **gerado** em `dist/vectorforge.html` por `npm run build`, não editado diretamente (ver `src/` + DEC-010).
+- **`src/`** — código-fonte modular (16 arquivos ES): `core/` (utils, state, ui, view, generate, export) + `generators/` (um por estilo + generic) + `main.js`.
+- **`dist/vectorforge.html`** — o arquivo único que o usuário final abre. Gerado, mas versionado no Git (ver DEC-010).
+- **`scripts/build.js`** — script Node que roda esbuild (bundle IIFE de `main.js`) e injeta o resultado + o CSS num template HTML, produzindo `dist/vectorforge.html`.
+- **esbuild** — bundler JS/CSS usado só em tempo de desenvolvimento (devDependency); não é dependência de runtime do app entregue.
+- **IIFE (Immediately Invoked Function Expression)** — formato de bundle escolhido (`format: 'iife'` no esbuild) para que o JS bundlado se comporte como o `<script>` clássico original (execução síncrona, sem defer de módulo). Funções declaradas dentro do IIFE não vazam para `window` automaticamente — por isso `main.js` expõe explicitamente as usadas em `onclick=""` inline (ver Armadilha 8 no CONTEXT.md).
+- **ASU** — Atualizador Automático de Scripts; ferramenta usada para aplicar patches cirúrgicos aos arquivos de `src/` (antes, ao `vectorforge.html` monolítico) via instruções YAML. Ver `INSTRUCTION_GUIDE.md` e `PROMPT_IA.md`.
 - **`instrucao.yaml`** — arquivo de instrução ASU gerado pelo assistente para aplicar mudanças no código.
 
 ## Identificadores

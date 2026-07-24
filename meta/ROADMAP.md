@@ -30,14 +30,14 @@
 
 ---
 
-## 🟡 F3 — Motor Estrutural e Geradores de Nova Categoria *(próxima)*
+## 🟡 F3 — Motor Estrutural e Geradores de Nova Categoria *(em curso — build step concluído em 2026-07-07)*
 **Objetivo:** Sair do repertório trigonometria+noise e abrir categorias de ornamento estruturalmente novas (recursão, campo de fluxo, tesselação por proximidade), com uma base de módulos que sustente esse crescimento sem o arquivo virar ingerenciável.
 **Critério de conclusão:** motor L-System funcional com ao menos 3 presets (árvore, Koch, dragon curve), Flow Fields como tipo novo, setup de build modular rodando.
-- [ ] Build step com esbuild: separar `vectorforge.html` em `src/` por estilo, bundle de volta para arquivo único no output.
-- [ ] Motor L-System (reescrita de string + turtle graphics), ~150 linhas.
+- [x] **Build step com esbuild** — `vectorforge.html` dividido em 16 módulos ES (`src/core/*`, `src/generators/*`, `src/main.js`); `scripts/build.js` bundla + injeta em `dist/vectorforge.html`. Verificado byte-a-byte idêntico ao comportamento anterior. Ver DEC-010, log de 2026-07-07.
+- [ ] Motor L-System (reescrita de string + turtle graphics), ~150 linhas, novo `src/generators/botanical.js`.
 - [ ] Novo estilo `botanical` com presets: árvore recursiva, Koch snowflake, Dragon curve.
-- [ ] Flow Fields como tipo novo em Organic/Minimal, usando o `snoise` já disponível desde F2.
-- [ ] Fechar débito técnico: sincronizar `snoiseSetSeed` em `genPixelArt` se algum gerador de pixel art vier a usar noise.
+- [ ] Flow Fields como tipo novo em Organic/Minimal, usando o `snoise` já disponível em `src/core/utils.js`.
+- [ ] Fechar débito técnico: sincronizar `snoiseSetSeed` em `genPixelArt` (agora em `src/generators/generic.js`) se algum gerador de pixel art vier a usar noise.
 - [ ] JSDoc pendente do F2 (funções geradoras do v0.1.0).
 - [ ] Teste cross-browser (Firefox, Safari) pendente do F2.
 

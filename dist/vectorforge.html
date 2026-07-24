@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VectorForge — Procedural Art Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,500;1,300&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #161616;
+    --bg3: #1e1e1e;
+    --bg4: #252525;
+    --border: #2a2a2a;
+    --border2: #363636;
+    --txt: #e8e8e8;
+    --txt2: #888;
+    --txt3: #555;
+    --accent: #c8a96e;
+    --accent2: #8b6f3e;
+    --gold: #d4a843;
+    --panel: 240px;
+    --epanel: 170px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--txt); font-family: 'DM Mono', monospace; font-size: 12px; overflow: hidden; }
+
+  /* ── Layout ── */
+  .app { display: grid; grid-template-columns: var(--panel) 1fr var(--epanel); grid-template-rows: 44px 1fr; height: 100vh; }
+  .topbar { grid-column: 1/-1; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); background: var(--bg2); }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-hex { width: 22px; height: 22px; }
+  .logo-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 500; color: var(--accent); letter-spacing: 0.04em; }
+  .logo-sub { font-size: 9px; color: var(--txt3); letter-spacing: 0.12em; text-transform: uppercase; }
+  .tb-sep { width: 1px; height: 20px; background: var(--border2); margin: 0 4px; }
+  .tb-status { margin-left: auto; font-size: 10px; color: var(--txt3); }
+  .tb-status span { color: var(--accent); }
+  .tb-btn { background: none; border: 1px solid var(--border2); color: var(--txt2); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.05em; }
+  .tb-btn:hover { border-color: var(--accent2); color: var(--accent); }
+
+  /* ── Panels ── */
+  .left-panel { border-right: 1px solid var(--border); background: var(--bg2); overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+  .right-panel { border-left: 1px solid var(--border); background: var(--bg2); overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+  .canvas-area { background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; overflow: hidden; position: relative; }
+
+  .section { border-bottom: 1px solid var(--border); padding: 10px 12px; }
+  .sec-label { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--txt3); margin-bottom: 8px; }
+
+  /* ── Style tiles ── */
+  .style-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .stile { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 8px 4px 6px; cursor: pointer; text-align: center; transition: all .15s; }
+  .stile:hover { border-color: var(--border2); background: var(--bg4); }
+  .stile.active { border-color: var(--accent); background: #1c1810; }
+  .stile-ico { width: 32px; height: 32px; margin: 0 auto 4px; display: block; }
+  .stile-name { font-size: 8.5px; color: var(--txt2); letter-spacing: 0.04em; }
+  .stile.active .stile-name { color: var(--accent); }
+
+  /* ── Type chips ── */
+  .type-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tchip { font-size: 9px; padding: 3px 8px; border: 1px solid var(--border2); border-radius: 99px; cursor: pointer; color: var(--txt3); background: var(--bg3); transition: all .12s; }
+  .tchip:hover { color: var(--txt); border-color: var(--txt3); }
+  .tchip.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
+
+  /* ── Sliders ── */
+  .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .slider-row label { font-size: 9px; color: var(--txt3); width: 72px; flex-shrink: 0; letter-spacing: 0.04em; }
+  .slider-row input[type=range] { flex: 1; -webkit-appearance: none; appearance: none; height: 2px; background: var(--border2); border-radius: 2px; outline: none; }
+  .slider-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+  .slider-row input[type=range]::-webkit-slider-thumb:hover { background: var(--gold); }
+  .sv { font-size: 9px; color: var(--txt2); min-width: 26px; text-align: right; }
+
+  /* ── Color palettes ── */
+  .pal-row { display: flex; gap: 5px; flex-wrap: wrap; }
+  .pal-swatch { width: 16px; height: 16px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; }
+  .pal-swatch.active { border-color: var(--txt); }
+
+  /* ── Canvas ── */
+  .cv-wrap { position: relative; }
+  .cv-shadow { box-shadow: 0 8px 48px rgba(0,0,0,.7); }
+  #main-svg { display: block; }
+  .cv-bar { display: flex; gap: 2px; background: var(--bg2); border: 1px solid var(--border); border-radius: 99px; padding: 4px; }
+  .cvb { width: 26px; height: 26px; background: none; border: none; color: var(--txt3); cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all .12s; }
+  .cvb:hover { color: var(--txt); background: var(--bg4); }
+  .cvb.active { color: var(--accent); }
+  .cvb-txt { width: auto; padding: 0 8px; font-size: 9px; font-family: 'DM Mono', monospace; border-radius: 99px; }
+
+  /* ── Canvas size ── */
+  .size-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .sz-inp { width: 54px; font-size: 9px; background: var(--bg3); border: 1px solid var(--border); color: var(--txt); padding: 4px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; }
+  .sz-inp:focus { outline: none; border-color: var(--accent2); }
+  .sz-pre { font-size: 8px; padding: 3px 6px; background: var(--bg3); border: 1px solid var(--border); color: var(--txt3); border-radius: 4px; cursor: pointer; font-family: 'DM Mono', monospace; }
+  .sz-pre:hover { border-color: var(--border2); color: var(--txt); }
+
+  /* ── Text input for text-to-vector ── */
+  .tv-ta { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--txt); padding: 7px 8px; border-radius: 5px; font-family: 'DM Mono', monospace; font-size: 10px; resize: none; height: 52px; }
+  .tv-ta:focus { outline: none; border-color: var(--accent2); }
+  .font-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+  .font-chip { font-size: 8px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 3px; cursor: pointer; color: var(--txt3); background: var(--bg3); }
+  .font-chip:hover { color: var(--txt); }
+  .font-chip.active { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Generate button ── */
+  .gen-btn { width: 100%; padding: 10px; font-size: 11px; font-weight: 500; cursor: pointer; border-radius: 6px; background: var(--accent); color: #0f0f0f; border: none; font-family: 'DM Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; transition: all .15s; }
+  .gen-btn:hover { background: var(--gold); }
+  .gen-btn:active { transform: scale(.98); }
+  .gen-btn:disabled { opacity: .4; cursor: default; }
+
+  /* ── Export panel ── */
+  .xbtn { width: 100%; padding: 7px 10px; font-size: 10px; cursor: pointer; border-radius: 5px; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'DM Mono', monospace; transition: all .12s; margin-bottom: 5px; }
+  .xbtn-p { background: var(--accent); color: #0f0f0f; border: none; }
+  .xbtn-p:hover { background: var(--gold); }
+  .xbtn-s { background: var(--bg3); border: 1px solid var(--border2); color: var(--txt2); }
+  .xbtn-s:hover { border-color: var(--accent2); color: var(--accent); }
+
+  /* ── Variations ── */
+  .var-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .vthumb { border: 1px solid var(--border); border-radius: 5px; aspect-ratio: 1; overflow: hidden; cursor: pointer; background: #fff; display: flex; align-items: center; justify-content: center; }
+  .vthumb:hover { border-color: var(--border2); }
+  .vthumb.active { border: 1.5px solid var(--accent); }
+  .vthumb svg { width: 100%; height: 100%; }
+
+  /* ── Info ── */
+  .info-box { font-size: 9px; color: var(--txt3); line-height: 1.9; }
+  .info-box b { color: var(--txt2); font-weight: 500; }
+
+  /* ── Canvas grid overlay ── */
+  .grid-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .2s; }
+  .grid-svg.visible { opacity: .35; }
+
+  /* ── Pixel art canvas ── */
+  #px-canvas { display: none; image-rendering: pixelated; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .mode-bar { display: flex; gap: 4px; }
+  .mode-btn { font-size: 9px; padding: 3px 9px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg3); color: var(--txt3); font-family: 'DM Mono', monospace; }
+  .mode-btn.active { border-color: var(--accent); color: var(--accent); background: #1c1810; }
+
+  .tag { font-size: 8px; padding: 1px 5px; border-radius: 3px; background: var(--bg4); border: 1px solid var(--border); color: var(--txt3); }
+
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Top bar ── -->
+  <header class="topbar">
+    <div class="logo">
+      <svg class="logo-hex" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,6.5 20,15.5 11,20 2,15.5 2,6.5" fill="none" stroke="#c8a96e" stroke-width="1"/>
+        <polygon points="11,5 17,8.5 17,13.5 11,17 5,13.5 5,8.5" fill="#c8a96e20"/>
+        <circle cx="11" cy="11" r="2" fill="#c8a96e"/>
+      </svg>
+      <span class="logo-title">VectorForge</span>
+      <span class="logo-sub">Procedural</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="mode-bar">
+      <button class="mode-btn active" id="mb-vec" onclick="setMode('vector')">Vector SVG</button>
+      <button class="mode-btn" id="mb-px" onclick="setMode('pixel')">Pixel Art</button>
+    </div>
+    <div class="tb-sep"></div>
+    <span class="tag" id="dim-tag">400 × 400</span>
+    <div class="tb-status" id="tb-status"><span>Ready</span></div>
+    <button class="tb-btn" onclick="doGenRandom()">↻ Regenerate</button>
+  </header>
+
+  <!-- ── Left Panel ── -->
+  <aside class="left-panel">
+
+    <div class="section">
+      <div class="sec-label">Art Style</div>
+      <div class="style-grid" id="style-grid"></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Output Type</div>
+      <div class="type-wrap" id="type-wrap"></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Parameters</div>
+      <div class="slider-row"><label>Complexity</label><input type="range" id="s-comp" min="0" max="100" value="55" step="1"><span class="sv" id="sv-comp">55</span></div>
+      <div class="slider-row"><label>Symmetry</label><input type="range" id="s-sym" min="0" max="100" value="50" step="1"><span class="sv" id="sv-sym">50</span></div>
+      <div class="slider-row"><label>Stroke w.</label><input type="range" id="s-sw" min="2" max="36" value="12" step="1"><span class="sv" id="sv-sw">1.2</span></div>
+      <div class="slider-row"><label>Fill opac.</label><input type="range" id="s-fill" min="0" max="100" value="0" step="1"><span class="sv" id="sv-fill">0%</span></div>
+      <div class="slider-row"><label>Seed</label><input type="range" id="s-seed" min="1" max="999" value="42" step="1"><span class="sv" id="sv-seed">42</span></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Canvas Size</div>
+      <div class="size-row">
+        <input type="number" id="cw" class="sz-inp" value="400" min="50" max="3000">
+        <span style="color:var(--txt3);font-size:10px">×</span>
+        <input type="number" id="ch" class="sz-inp" value="400" min="50" max="3000">
+      </div>
+      <div class="size-row" style="margin-top:5px">
+        <button class="sz-pre" onclick="setRatio(1,1)">1:1</button>
+        <button class="sz-pre" onclick="setRatio(4,3)">4:3</button>
+        <button class="sz-pre" onclick="setRatio(16,9)">16:9</button>
+        <button class="sz-pre" onclick="setRatio(3,4)">3:4</button>
+        <button class="sz-pre" onclick="setRatio(210,297)">A4</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Color Theme</div>
+      <div class="pal-row" id="pal-row"></div>
+    </div>
+
+    <div class="section" id="text-section">
+      <div class="sec-label">Text → Form <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0">(type to shape)</span></div>
+      <textarea class="tv-ta" id="tv-ta" maxlength="64" placeholder="ex: AURA, ☽, OM..."></textarea>
+      <div class="font-chips" id="font-chips"></div>
+    </div>
+
+    <div class="section" style="border-bottom:none; flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:14px;">
+      <button class="gen-btn" id="gen-btn" onclick="doGen()">Generate</button>
+    </div>
+  </aside>
+
+  <!-- ── Canvas ── -->
+  <main class="canvas-area" id="canvas-area">
+    <div class="cv-wrap" id="cv-wrap">
+      <div class="cv-shadow" id="svg-holder">
+        <svg id="main-svg" xmlns="http://www.w3.org/2000/svg" width="340" height="340" viewBox="0 0 400 400">
+          <rect width="400" height="400" fill="#ffffff"/>
+          <text x="200" y="200" text-anchor="middle" dominant-baseline="middle"
+            font-family="DM Mono,monospace" font-size="11" fill="#bbb">Click Generate</text>
+        </svg>
+        <canvas id="px-canvas" width="64" height="64"></canvas>
+      </div>
+      <svg class="grid-svg" id="grid-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="cv-bar">
+      <button class="cvb" onclick="zoom(-0.25)" title="Zoom out">−</button>
+      <button class="cvb cvb-txt" onclick="zoom(0)" title="Fit">Fit</button>
+      <button class="cvb" onclick="zoom(0.25)" title="Zoom in">+</button>
+      <span style="width:1px;height:16px;background:var(--border);margin:5px 2px"></span>
+      <button class="cvb" id="btn-bg" onclick="toggleBg()" title="Toggle background">◐</button>
+      <button class="cvb" id="btn-grid" onclick="toggleGrid()" title="Grid">⊞</button>
+      <button class="cvb" id="btn-draw" onclick="toggleDraw()" title="Draw mode">✏</button>
+    </div>
+  </main>
+
+  <!-- ── Right Panel (Export) ── -->
+  <aside class="right-panel">
+    <div class="section">
+      <div class="sec-label">Export</div>
+      <button class="xbtn xbtn-p" onclick="xSVG()">↓ SVG</button>
+      <button class="xbtn xbtn-s" onclick="xPNG()">↓ PNG</button>
+      <button class="xbtn xbtn-s" onclick="copySVG()">⎘ Copy SVG</button>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Variations</div>
+      <div class="var-grid" id="var-grid">
+        <div class="vthumb active" id="vt0" onclick="applyVar(0)"></div>
+        <div class="vthumb" id="vt1" onclick="applyVar(1)"></div>
+        <div class="vthumb" id="vt2" onclick="applyVar(2)"></div>
+        <div class="vthumb" id="vt3" onclick="applyVar(3)"></div>
+      </div>
+    </div>
+
+    <div class="section" style="border-bottom:none;flex:1">
+      <div class="sec-label">Info</div>
+      <div class="info-box" id="info-box">—</div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+(()=>{var a={style:"artdeco",type:"medallion",comp:.55,sym:.5,sw:1.2,fill:0,seed:42,pal:0,w:400,h:400,font:"serif",mode:"vector",darkBg:!1,grid:!1,draw:!1,zoom:1,vars:[null,null,null,null],activeVar:0},lt=[{id:"artdeco",name:"Art Deco",icon:"ad"},{id:"baroque",name:"Baroque",icon:"bq"},{id:"geometric",name:"Geometric",icon:"geo"},{id:"victorian",name:"Victorian",icon:"vic"},{id:"celtic",name:"Celtic",icon:"cel"},{id:"islamic",name:"Islamic",icon:"isl"},{id:"minimal",name:"Minimal",icon:"min"},{id:"organic",name:"Organic",icon:"org"}],$t={artdeco:["medallion","frame","divider","corner","pattern","ornament"],baroque:["medallion","frame","divider","cartouche","swag","acanthus"],geometric:["mandala","frame","divider","tessellation","star","symbol"],victorian:["medallion","frame","divider","flourish","wreath","cartouche"],celtic:["knot","border","medallion","cross","knotwork","spiral"],islamic:["star","girih","arabesque","border","medallion","pattern"],minimal:["symbol","line","grid","circle","mark","glyph"],organic:["leaf","spiral","branch","flower","mandala","wave","phyllotaxis"]},P=[{name:"Noir & Gold",stroke:"#1a1a1a",fill:"#c8a96e",bg:"#ffffff",fill2:"#f0e8d8"},{name:"Midnight",stroke:"#e8e8e8",fill:"#c8a96e",bg:"#0f0f0f",fill2:"#1e1e1e"},{name:"Sepia",stroke:"#4a2e0a",fill:"#8b6f3e",bg:"#f5ede0",fill2:"#e8d5ba"},{name:"Cobalt",stroke:"#1a2a5e",fill:"#4a7ab5",bg:"#f0f4ff",fill2:"#d8e4f0"},{name:"Forest",stroke:"#1a3a1a",fill:"#4a8a4a",bg:"#f0f5f0",fill2:"#d0e8d0"},{name:"Crimson",stroke:"#3a0a0a",fill:"#8a1a1a",bg:"#fff0f0",fill2:"#f0d0d0"},{name:"Lilac",stroke:"#2a1a4a",fill:"#7a4a9a",bg:"#f5f0ff",fill2:"#e8d8f8"},{name:"Copper",stroke:"#2a1a0a",fill:"#9a5a2a",bg:"#fff8f0",fill2:"#f0e0c8"}],dt=["serif","sans-serif","monospace","cursive","fantasy"];function O(){let e=document.getElementById("style-grid"),o={ad:'<polygon points="20,4 36,12 36,28 20,36 4,28 4,12" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="5" fill="currentColor" opacity=".4"/><line x1="20" y1="4" x2="20" y2="8" stroke="currentColor"/><line x1="20" y1="32" x2="20" y2="36" stroke="currentColor"/>',bq:'<path d="M20 4 C10 4 4 10 4 20 S10 36 20 36 36 30 36 20 30 4 20 4Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M20 10 C13 14 13 26 20 30 C27 26 27 14 20 10Z" fill="currentColor" opacity=".25"/>',geo:'<polygon points="20,4 36,14 36,26 20,36 4,26 4,14" fill="none" stroke="currentColor" stroke-width="1.2"/><polygon points="20,9 31,16 31,24 20,31 9,24 9,16" fill="none" stroke="currentColor" stroke-width="0.8"/>',vic:'<circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="20" cy="20" r="8" fill="none" stroke="currentColor" stroke-width="0.8"/><path d="M20 6 L20 34 M6 20 L34 20" stroke="currentColor" stroke-width="0.6"/>',cel:'<path d="M20 8 C24 8 28 12 28 20 C28 28 24 32 20 32 C16 32 12 28 12 20 C12 12 16 8 20 8Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M14 14 C20 18 26 14 26 20 C26 26 20 22 14 26" fill="none" stroke="currentColor" stroke-width="0.8"/>',isl:'<path d="M20 4 L23.5 13 L33 13 L25 19 L28.5 29 L20 23 L11.5 29 L15 19 L7 13 L16.5 13 Z" fill="none" stroke="currentColor" stroke-width="1.2"/>',min:'<line x1="8" y1="20" x2="32" y2="20" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="4" fill="currentColor"/>',org:'<path d="M20 34 C20 34 8 26 8 16 C8 10 14 6 20 12 C26 6 32 10 32 16 C32 26 20 34 20 34Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M20 34 L20 18" stroke="currentColor" stroke-width="0.8"/>'};e.innerHTML=lt.map(n=>`
+    <div class="stile ${n.id===a.style?"active":""}" onclick="selectStyle('${n.id}')">
+      <svg class="stile-ico" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">${o[n.icon]}</svg>
+      <div class="stile-name">${n.name}</div>
+    </div>`).join("")}function _(){let e=document.getElementById("type-wrap"),o=$t[a.style]||[];o.includes(a.type)||(a.type=o[0]),e.innerHTML=o.map(n=>`
+    <button class="tchip ${n===a.type?"active":""}" onclick="selectType('${n}')">${n}</button>`).join("")}function z(){let e=document.getElementById("pal-row"),o=["#1a1a1a","#0f0f0f","#4a2e0a","#1a2a5e","#1a3a1a","#3a0a0a","#2a1a4a","#2a1a0a"];e.innerHTML=P.map((n,r)=>`
+    <div class="pal-swatch ${r===a.pal?"active":""}" style="background:${o[r]}" title="${n.name}" onclick="selectPal(${r})"></div>`).join("")}function tt(){let e=document.getElementById("font-chips"),o=["Serif","Sans","Mono","Cursive","Fantasy"];e.innerHTML=dt.map((n,r)=>`
+    <button class="font-chip ${n===a.font?"active":""}" onclick="selectFont('${n}')" style="font-family:${n}">${o[r]}</button>`).join("")}function ht(){for(let e=0;e<4;e++){let o=document.getElementById("vt"+e);o.className="vthumb"+(e===a.activeVar?" active":""),a.vars[e]?o.innerHTML=a.vars[e]:o.innerHTML='<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="60" fill="#f5f5f5"/><line x1="15" y1="30" x2="45" y2="30" stroke="#ddd" stroke-width="0.8"/><circle cx="30" cy="30" r="8" fill="none" stroke="#ddd" stroke-width="0.8"/></svg>'}}function ut(e){a.style=e,O(),_()}function pt(e){a.type=e,_()}function ft(e){a.pal=e,z()}function mt(e){a.font=e,tt()}function gt(e,o){let r=e/o;r>=1?(a.w=400,a.h=Math.round(400/r)):(a.h=400,a.w=Math.round(400*r)),document.getElementById("cw").value=a.w,document.getElementById("ch").value=a.h,U()}function U(){document.getElementById("dim-tag").textContent=`${a.w} \xD7 ${a.h}`}function Mt(e){a.mode=e,document.getElementById("mb-vec").className="mode-btn"+(e==="vector"?" active":""),document.getElementById("mb-px").className="mode-btn"+(e==="pixel"?" active":""),document.getElementById("main-svg").style.display=e==="vector"?"block":"none",document.getElementById("px-canvas").style.display=e==="pixel"?"block":"none"}[["s-comp","sv-comp",e=>(a.comp=e/100,e)],["s-sym","sv-sym",e=>(a.sym=e/100,e)],["s-sw","sv-sw",e=>(a.sw=e/10,(e/10).toFixed(1))],["s-fill","sv-fill",e=>(a.fill=e/100,e+"%")],["s-seed","sv-seed",e=>(a.seed=e,e)]].forEach(([e,o,n])=>{document.getElementById(e).addEventListener("input",r=>{document.getElementById(o).textContent=n(+r.target.value)})});document.getElementById("cw").addEventListener("change",e=>{a.w=+e.target.value,U()});document.getElementById("ch").addEventListener("change",e=>{a.h=+e.target.value,U()});var C=Math.PI*2,t=e=>Math.round(e*100)/100;function Q(e){let o=(e^3735928559)>>>0;return()=>(o=Math.imul(o^o>>>15,o|1),o^=o+Math.imul(o^o>>>7,o|61),((o^o>>>14)>>>0)/4294967296)}var et=[[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]],H=new Uint8Array(512),Y=new Uint8Array(512);function xt(e){let o=Q(e),n=Array.from({length:256},(r,p)=>p);for(let r=255;r>0;r--){let p=Math.floor(o()*(r+1));[n[r],n[p]]=[n[p],n[r]]}for(let r=0;r<512;r++)H[r]=n[r&255],Y[r]=H[r]%12}function F(e,o){let n=.5*(Math.sqrt(3)-1),r=(3-Math.sqrt(3))/6,p=(e+o)*n,m=Math.floor(e+p),g=Math.floor(o+p),M=(m+g)*r,y=e-(m-M),c=o-(g-M),u=y>c?1:0,s=y>c?0:1,i=y-u+r,d=c-s+r,h=y-1+2*r,$=c-1+2*r,l=m&255,f=g&255,x=(L,A,R)=>L[0]*A+L[1]*R,v=0,w=0,b=0,k=.5-y*y-c*c;k>=0&&(k*=k,v=k*k*x(et[Y[l+H[f]]],y,c));let I=.5-i*i-d*d;I>=0&&(I*=I,w=I*I*x(et[Y[l+u+H[f+s]]],i,d));let B=.5-h*h-$*$;return B>=0&&(B*=B,b=B*B*x(et[Y[l+1+H[f+1]]],h,$)),70*(v+w+b)}function E(e,o,n,r){return[e+n*Math.cos(r),o+n*Math.sin(r)]}function T(e,o,n,r,p=-Math.PI/2){return"M "+Array.from({length:r},(g,M)=>E(e,o,n,p+M*C/r)).map(g=>`${t(g[0])} ${t(g[1])}`).join(" L ")+" Z"}function j(e,o,n,r,p,m=-Math.PI/2){let g=[];for(let M=0;M<p*2;M++){let y=M%2===0?n:r;g.push(E(e,o,y,m+M*Math.PI/p))}return"M "+g.map(M=>`${t(M[0])} ${t(M[1])}`).join(" L ")+" Z"}function yt(e,o=!1){if(e.length<2)return"";let n=`M ${t(e[0][0])} ${t(e[0][1])}`;for(let r=1;r<e.length;r++){let p=e[r-1],m=e[r],g=(p[0]+m[0])/2,M=(p[1]+m[1])/2;n+=` Q ${t(p[0])} ${t(p[1])} ${t(g)} ${t(M)}`}return o&&(n+=" Z"),n}function vt(e){if(e===0){X();return}a.zoom=Math.max(.1,Math.min(4,a.zoom+e)),wt()}function X(){let e=document.getElementById("canvas-area"),o=e.clientWidth-48,n=e.clientHeight-80;a.zoom=Math.min(o/a.w,n/a.h,2),wt()}function wt(){let e=document.getElementById("main-svg"),o=document.getElementById("px-canvas"),n=Math.round(a.w*a.zoom),r=Math.round(a.h*a.zoom);e.setAttribute("width",n),e.setAttribute("height",r),o.style.width=n+"px",o.style.height=r+"px",Et()}function bt(){a.darkBg=!a.darkBg;let e=document.getElementById("svg-holder");e.style.background=a.darkBg?"#111":"#fff",document.getElementById("main-svg").querySelector("rect.bg-rect")&&document.getElementById("main-svg").querySelector("rect.bg-rect").setAttribute("fill",a.darkBg?"#111":"#fff"),document.getElementById("btn-bg").style.color=a.darkBg?"var(--accent)":""}function kt(){a.grid=!a.grid,document.getElementById("grid-svg").className="grid-svg"+(a.grid?" visible":""),document.getElementById("btn-grid").style.color=a.grid?"var(--accent)":"",Et()}function Et(){if(!a.grid)return;let e=document.getElementById("grid-svg"),o=Math.round(a.w*a.zoom),n=Math.round(a.h*a.zoom),r=Math.max(20,Math.round(50*a.zoom)),p="";for(let y=0;y<o;y+=r)p+=`<line x1="${y}" y1="0" x2="${y}" y2="${n}" stroke="#888" stroke-width="0.4"/>`;for(let y=0;y<n;y+=r)p+=`<line x1="0" y1="${y}" x2="${o}" y2="${y}" stroke="#888" stroke-width="0.4"/>`;let m=document.getElementById("cv-wrap"),g=document.getElementById("svg-holder").getBoundingClientRect(),M=m.getBoundingClientRect();e.style.left=g.left-M.left+"px",e.style.top=g.top-M.top+"px",e.style.width=o+"px",e.style.height=n+"px",e.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="${o}" height="${n}">${p}</svg>`}var W=!1,V=[];function It(){a.draw=!a.draw,document.getElementById("btn-draw").style.color=a.draw?"var(--accent)":"";let e=document.getElementById("svg-holder");e.style.cursor=a.draw?"crosshair":"default",a.draw||(V=[])}document.getElementById("svg-holder").addEventListener("mousedown",e=>{a.draw&&(W=!0,V=[[e.offsetX/a.zoom,e.offsetY/a.zoom]])});document.addEventListener("mousemove",e=>{if(!W||!a.draw)return;let o=document.getElementById("svg-holder").getBoundingClientRect();V.push([(e.clientX-o.left)/a.zoom,(e.clientY-o.top)/a.zoom]),ne()});document.addEventListener("mouseup",()=>{!W||!a.draw||(W=!1,V.length>4&&oe())});function ne(){let e=document.getElementById("draw-overlay");e&&e.remove();let o=document.getElementById("main-svg"),n=yt(V),r=document.createElementNS("http://www.w3.org/2000/svg","path");r.setAttribute("id","draw-overlay"),r.setAttribute("d",n),r.setAttribute("fill","none"),r.setAttribute("stroke","#c8a96e"),r.setAttribute("stroke-width","1.5"),r.setAttribute("opacity","0.5"),o.appendChild(r)}function oe(){let e=V.map($=>$[0]),o=V.map($=>$[1]),n=Math.min(...e),r=Math.max(...e),p=Math.min(...o),m=Math.max(...o),g=(n+r)/2,M=(p+m)/2,y=Math.max(r-n,m-p);a.seed=Math.floor(Math.random()*999)+1,document.getElementById("s-seed").value=a.seed,document.getElementById("sv-seed").textContent=a.seed;let c=P[a.pal],u=a.sw,s=K(a.style,a.type,g,M,y*.5,a.comp,a.sym,a.seed,c,u,a.fill),i=document.getElementById("main-svg"),d=document.getElementById("draw-overlay");d&&d.remove();let h=document.createElementNS("http://www.w3.org/2000/svg","g");h.innerHTML=s,i.appendChild(h),G("Ornament placed from sketch")}function Bt(e,o,n,r,p,m,g,M,y,c,u){let s=[],i=Math.round(6+m*14),d=n*.48,h=n*(.1+.08*m);s.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(d)}" ${M}/>`);for(let l=0;l<i;l++){let f=l/i*C-Math.PI/2,x=Math.PI/i*.42,[v,w]=E(e,o,h,f-x),[b,k]=E(e,o,d*.92,f),[I,B]=E(e,o,h,f+x);s.push(`<path d="M ${t(v)} ${t(w)} L ${t(b)} ${t(k)} L ${t(I)} ${t(B)} Z" ${y}/>`)}let $=2+Math.round(m*4);for(let l=1;l<=$;l++){let f=h+(d*.6-h)*l/$;s.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(f)}" ${M}/>`)}if(s.push(`<path d="${T(e,o,h*.85,8,Math.PI/8)}" ${M}/>`),s.push(`<path d="${T(e,o,h*.52,4,Math.PI/4)}" ${y}/>`),s.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(h*.22)}" ${M}/>`),m>.4){let l=2+Math.round(m*3);for(let f=0;f<l;f++){let x=d+4+f*5,v=Math.PI*.3;for(let w=0;w<4;w++){let b=w*Math.PI/2,[k,I]=E(e,o,x,b-v/2),[B,L]=E(e,o,x,b+v/2);s.push(`<path d="M ${t(k)} ${t(I)} A ${x} ${x} 0 0 1 ${t(B)} ${t(L)}" ${M}/>`)}}}return s.join(`
+`)}function J(e,o,n,r,p,m,g,M,y,c){let u=[];u.push(`<rect x="14" y="14" width="${n-2*14}" height="${r-2*14}" ${M}/>`),u.push(`<rect x="22" y="22" width="${n-2*22}" height="${r-2*22}" ${M}/>`);let i=Math.min(n,r)*.12,d=3+Math.round(p*5),h=[[14,14,1,1],[n-14,14,-1,1],[n-14,r-14,-1,-1],[14,r-14,1,-1]];for(let[b,k,I,B]of h){for(let L=1;L<=d;L++){let A=L/d,R=i*A,S=i*(1-A);u.push(`<line x1="${t(b)}" y1="${t(k+B*R)}" x2="${t(b+I*S)}" y2="${t(k+B*R)}" ${M}/>`),u.push(`<line x1="${t(b+I*R)}" y1="${t(k)}" x2="${t(b+I*R)}" y2="${t(k+B*S)}" ${M}/>`)}u.push(`<circle cx="${t(b)}" cy="${t(k)}" r="${t(i*.08)}" ${y}/>`)}let $=18,l=27,f=Math.max(2,Math.floor((n-2*(14+i+12))/($+6))),x=(n-f*($+6)+6)/2;for(let b=0;b<f;b++){let k=x+b*($+6);for(let[I,B]of[[l,-1],[r-l,1]])u.push(`<polyline points="${t(k)},${I} ${t(k+$/2)},${t(I+B*8)} ${t(k+$)},${I}" ${M}/>`)}let v=Math.max(2,Math.floor((r-2*(14+i+12))/($+6))),w=(r-v*($+6)+6)/2;for(let b=0;b<v;b++){let k=w+b*($+6);for(let[I,B]of[[l,1],[n-l,-1]])u.push(`<polyline points="${I},${t(k)} ${t(I+B*8)},${t(k+$/2)} ${I},${t(k+$)}" ${M}/>`)}return u.join(`
+`)}function Ct(e,o,n,r,p,m,g,M){let y=[],c=4+Math.round(r*8);for(let s=0;s<=c;s++){let i=s/c,d=n*i;y.push(`<line x1="${t(e)}" y1="${t(o+d)}" x2="${t(e+n-d)}" y2="${t(o+d)}" ${m}/>`),y.push(`<line x1="${t(e+d)}" y1="${t(o)}" x2="${t(e+d)}" y2="${t(o+n-d)}" ${m}/>`)}let u=2+Math.round(r*4);for(let s=0;s<=u;s++){let i=s/u*Math.PI/2,[d,h]=E(e,o,n,i);y.push(`<line x1="${t(e)}" y1="${t(o)}" x2="${t(d)}" y2="${t(h)}" ${m}/>`)}return y.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.07)}" ${g}/>`),y.join(`
+`)}function Pt(e,o,n,r,p,m,g,M,y,c){let u=[],s=Math.round(3+r*5);for(let i=-s;i<=s;i++)for(let d=-s;d<=s;d++)if(Math.abs(i)+Math.abs(d)<=s){let h=e+i*n*.4/s,$=o+d*n*.4/s,l=n*.4/s*.42;u.push(`<path d="M ${t(h)} ${t($-l)} L ${t(h+l)} ${t($)} L ${t(h)} ${t($+l)} L ${t(h-l)} ${t($)} Z" ${g}/>`)}return u.push(`<path d="${T(e,o,n*.09,8,Math.PI/8)}" ${M}/>`),u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.035)}" fill="${P[a.pal].bg}"/>`),u.join(`
+`)}function Lt(e,o,n,r,p,m,g,M,y,c,u){let s=[],i=n*.48,d=n*.44;s.push(`<ellipse cx="${t(e)}" cy="${t(o)}" rx="${t(i)}" ry="${t(d)}" ${M}/>`),s.push(`<ellipse cx="${t(e)}" cy="${t(o)}" rx="${t(i*.82)}" ry="${t(d*.82)}" ${M}/>`);function h(f,x,v,w){let b=f+w*v*.7,k=x+v*.55,I=f+w*v*.9,B=x-v*.05,L=f+w*v*1.1,A=x+v*.35;s.push(`<path d="M ${t(f)} ${t(x)} C ${t(I)} ${t(B)} ${t(L)} ${t(A)} ${t(b)} ${t(k)}" ${M}/>`),s.push(`<circle cx="${t(b+w*v*.1)}" cy="${t(k)}" r="${t(v*.12)}" ${M}/>`)}let $=2+Math.round(p*4);for(let f=0;f<$;f++){let x=f/($-1||1),v=o+(x-.5)*n*.75,w=n*.18*(1.1-x*.4);h(e,v,w,1),h(e,v,w,-1),p>.5&&(h(e+w*.4,v-w*.15,w*.42,1),h(e-w*.4,v-w*.15,w*.42,-1))}for(let[f,x,v]of[[0,-n*.5-10,9],[10,-n*.5-5,6],[-10,-n*.5-5,6]])s.push(`<circle cx="${t(e+f)}" cy="${t(o+x)}" r="${v}" ${M}/>`),s.push(`<circle cx="${t(e+f)}" cy="${t(o+x)}" r="${t(v*.38)}" ${y}/>`);let l=n*.1;return s.push(`<path d="M ${t(e-l*2.5)} ${t(o+d)} Q ${t(e)} ${t(o+d+l)} ${t(e+l*2.5)} ${t(o+d)}" ${M}/>`),s.join(`
+`)}function Tt(e,o,n,r,p,m,g,M,y){let c=[],s=Math.min(n,r)*.08;function i(l,f,x,v,w){return`M ${t(l+w)} ${f} L ${t(l+x-w)} ${f} Q ${l+x} ${f} ${l+x} ${t(f+w)} L ${l+x} ${t(f+v-w)} Q ${l+x} ${f+v} ${t(l+x-w)} ${f+v} L ${t(l+w)} ${f+v} Q ${l} ${f+v} ${l} ${t(f+v-w)} L ${l} ${t(f+w)} Q ${l} ${f} ${t(l+w)} ${f} Z`}c.push(`<path d="${i(12,12,n-2*12,r-2*12,s)}" ${g}/>`),c.push(`<path d="${i(21,21,n-2*21,r-2*21,s*.65)}" ${g}/>`);function d(l,f,x,v,w){let b=l+x*w,k=f+v*w,I=l+x*w*.3,B=f+v*w*.9,L=l+x*w*.7,A=f+v*w*.1;c.push(`<path d="M ${t(l)} ${t(f)} C ${t(I)} ${t(B)} ${t(L)} ${t(A)} ${t(b)} ${t(k)}" ${g}/>`),c.push(`<circle cx="${t(l)}" cy="${t(f)}" r="5" ${g}/>`),c.push(`<circle cx="${t(b)}" cy="${t(k)}" r="5" ${g}/>`),c.push(`<circle cx="${t(l)}" cy="${t(f)}" r="2" ${M}/>`),c.push(`<circle cx="${t(b)}" cy="${t(k)}" r="2" ${M}/>`)}let h=Math.min(n,r)*.14;d(12+s+8,20,1,1,h),d(n-12-s-8,20,-1,1,h),d(n-12-s-8,r-12-8,-1,-1,h),d(12+s+8,r-12-8,1,-1,h);let $=1+Math.round(p*2);for(let l=0;l<$;l++){let f=(l+.5)/$,x=12+(r-2*12)*f,v=14+p*12;for(let[w,b]of[[15,1],[n-12-3,-1]])c.push(`<path d="M ${w} ${t(x)} C ${t(w+b*v*.6)} ${t(x-v*.5)} ${t(w+b*v*.9)} ${t(x-v*.9)} ${t(w+b*v*.65)} ${t(x-v*1.1)}" ${g}/>`),c.push(`<path d="M ${w} ${t(x)} C ${t(w+b*v*.6)} ${t(x+v*.5)} ${t(w+b*v*.9)} ${t(x+v*.9)} ${t(w+b*v*.65)} ${t(x+v*1.1)}" ${g}/>`),c.push(`<circle cx="${w}" cy="${t(x)}" r="3" ${M}/>`)}return c.join(`
+`)}function nt(e,o,n,r,p,m,g,M,y){let c=[],u=n*.45,s=n*.35;c.push(`<ellipse cx="${t(e)}" cy="${t(o)}" rx="${t(u)}" ry="${t(s)}" ${m}/>`),c.push(`<ellipse cx="${t(e)}" cy="${t(o)}" rx="${t(u*.85)}" ry="${t(s*.8)}" ${m}/>`);for(let i of[-1,1]){let d=e+i*u;c.push(`<path d="M ${t(d)} ${t(o-s*.3)} C ${t(d+i*n*.1)} ${t(o-s*.5)} ${t(d+i*n*.18)} ${t(o)} ${t(d+i*n*.1)} ${t(o+s*.5)} L ${t(d)} ${t(o+s*.3)}" ${m}/>`)}return c.join(`
+`)}function At(e,o,n,r,p,m,g,M){let y=[],c=2+Math.round(r*4),u=n/c;for(let s=0;s<c;s++){let i=e+s*u,d=i+u,h=20+r*30;y.push(`<path d="M ${t(i)} ${t(o)} Q ${t(i+u/2)} ${t(o+h)} ${t(d)} ${t(o)}" ${m}/>`);let $=l=>{y.push(`<line x1="${t(l)}" y1="${t(o+h)}" x2="${t(l)}" y2="${t(o+h+15+r*10)}" ${m}/>`),y.push(`<ellipse cx="${t(l)}" cy="${t(o+h+20+r*10)}" rx="5" ry="7" ${g}/>`)};s===0&&$(i),$(d)}return y.push(`<line x1="${e}" y1="${t(o)}" x2="${n}" y2="${t(o)}" ${m}/>`),y.join(`
+`)}function ot(e,o,n,r,p,m,g,M,y){let c=[];c.push(`<line x1="${t(e)}" y1="${t(o-n*.48)}" x2="${t(e)}" y2="${t(o+n*.48)}" ${g}/>`);function u(i,d,h,$){let l=i+$*h*.72,f=d+h*.52,x=i+$*h*.85,v=d-h*.08,w=i+$*h*1.05,b=d+h*.32;c.push(`<path d="M ${t(i)} ${t(d)} C ${t(x)} ${t(v)} ${t(w)} ${t(b)} ${t(l)} ${t(f)}" ${g}/>`);let k=h*.13;c.push(`<circle cx="${t(l+$*k*.28)}" cy="${t(f)}" r="${t(k)}" ${g}/>`),r>.4&&c.push(`<path d="M ${t(i+$*h*.3)} ${t(d+h*.08)} C ${t(i+$*h*.5)} ${t(d-h*.15)} ${t(i+$*h*.7)} ${t(d+h*.02)} ${t(i+$*h*.55)} ${t(d+h*.25)}" ${g}/>`)}let s=2+Math.round(r*4);for(let i=0;i<s;i++){let d=i/(s-1||1),h=o+(d-.5)*n*.8,$=n*.2*(1.2-d*.5);u(e,h,$,1),u(e,h,$,-1)}return c.join(`
+`)}function q(e,o,n,r,p,m,g,M,y,c,u){let s=[];for(let h=0;h<p;h++){let $=(h+1)/(p+1),l=n*.48*$,f=h===0?n*.015:n*.48*h/(p+1);for(let x=0;x<r;x++){let v=x/r*C-Math.PI/2,w=(x+1)/r*C-Math.PI/2,b=(v+w)/2,[k,I]=E(e,o,l,b),[B,L]=E(e,o,f,v),[A,R]=E(e,o,f,w),S=h%2===0?M:y;s.push(`<path d="M ${t(B)} ${t(L)} Q ${t(k)} ${t(I)} ${t(A)} ${t(R)} Q ${t(e+(A-e)*.1)} ${t(o+(R-o)*.1)} ${t(B)} ${t(L)}" ${S}/>`)}s.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(l)}" ${M}/>`)}let i=n*.055,d=n*.022;return s.push(`<path d="${j(e,o,i,d,r)}" ${y}/>`),s.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.016)}" fill="${P[a.pal].bg}"/>`),s.join(`
+`)}function jt(e,o,n,r,p,m,g,M,y,c){let u=[];u.push(`<rect x="14" y="14" width="${n-2*14}" height="${r-2*14}" ${M}/>`);let i=Math.round(4+m*4),d=Math.min(n,r)*.09;for(let[b,k]of[[14,14],[n-14,14],[n-14,r-14],[14,r-14]])u.push(`<circle cx="${b}" cy="${k}" r="${t(d)}" ${M}/>`),u.push(`<path d="${j(b,k,d*.72,d*.3,i)}" ${M}/>`),u.push(`<circle cx="${b}" cy="${k}" r="${t(d*.16)}" ${y}/>`);let h=d*1.7,$=n-2*14-2*d*1.2,l=Math.max(2,Math.floor($/h)),f=(n-l*h)/2;for(let b=0;b<l;b++){let k=f+(b+.5)*h;for(let I of[14,r-14])u.push(`<path d="${T(k,I,h*.28,i)}" ${M}/>`)}let x=r-2*14-2*d*1.2,v=Math.max(2,Math.floor(x/h)),w=(r-v*h)/2;for(let b=0;b<v;b++){let k=w+(b+.5)*h;for(let I of[14,n-14])u.push(`<path d="${T(I,k,h*.28,i)}" ${M}/>`)}return u.join(`
+`)}function Gt(e,o,n,r,p,m,g,M,y,c,u){let s=[];for(let i=p;i>=0;i--){let d=n*.48*(i+1)/(p+1),h=d*(.35+m*.2),$=i*Math.PI/(r*2),l=i%2===0?M:y;s.push(`<path d="${j(e,o,d,h,r,-Math.PI/2+$)}" ${l}/>`)}return s.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.05)}" ${y}/>`),s.join(`
+`)}function Rt(e,o,n,r,p,m,g,M,y,c){let u=[],s=Math.round(3+p*5);u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.48)}" ${g}/>`),u.push(`<path d="${T(e,o,n*.42,s)}" ${g}/>`);for(let i=0;i<s;i++){let d=i/s*C-Math.PI/2,[h,$]=E(e,o,n*.42,d);u.push(`<line x1="${t(e)}" y1="${t(o)}" x2="${t(h)}" y2="${t($)}" ${g}/>`),u.push(`<circle cx="${t(h)}" cy="${t($)}" r="${t(n*.04)}" ${M}/>`)}return u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.14)}" ${M}/>`),u.join(`
+`)}function Ft(e,o,n,r,p,m,g,M,y,c,u){let s=[],i=Math.round(8+m*8),d=2+Math.round(p*3);for(let $=d;$>=1;$--){let l=n*.48*$/d;s.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(l)}" ${M}/>`),s.push(`<path d="${T(e,o,l*.9,8,Math.PI/8)}" ${M}/>`)}let h=n*.48;for(let $=0;$<i;$++){let l=$/i*C-Math.PI/2,[f,x]=E(e,o,h*.88,l),[v,w]=E(e,o,h*1.08,l+C/(i*2)),b=(f+v)/2+Math.cos(l+Math.PI/2)*n*.12,k=(x+w)/2+Math.sin(l+Math.PI/2)*n*.12;s.push(`<path d="M ${t(f)} ${t(x)} Q ${t(b)} ${t(k)} ${t(v)} ${t(w)}" ${M}/>`),s.push(`<circle cx="${t(v)}" cy="${t(w)}" r="3.5" ${M}/>`),s.push(`<circle cx="${t(v)}" cy="${t(w)}" r="1.4" ${y}/>`)}return s.push(`<path d="${j(e,o,n*.1,n*.04,8)}" ${y}/>`),s.join(`
+`)}function Vt(e,o,n,r,p,m,g,M,y){let c=[];for(let l of[12,16,22])c.push(`<rect x="${l}" y="${l}" width="${n-2*l}" height="${r-2*l}" ${g}/>`);let s=Math.min(n,r)*.08;for(let[l,f]of[[12,12],[n-12,12],[n-12,r-12],[12,r-12]])c.push(`<circle cx="${l}" cy="${f}" r="${t(s)}" ${g}/>`),c.push(`<path d="${T(l,f,s*.72,8,Math.PI/8)}" ${g}/>`),c.push(`<path d="${j(l,f,s*.52,s*.2,8)}" ${g}/>`),c.push(`<circle cx="${l}" cy="${f}" r="${t(s*.14)}" ${M}/>`);let i=24+p*12,d=15+p*7,h=Math.max(2,Math.floor((n-2*(12+s*2+10))/(i+12))),$=(n-h*(i+12)+12)/2;for(let l=0;l<h;l++){let f=$+l*(i+12)+i/2;for(let[x,v]of[[15,-1],[r-12-3,1]])c.push(`<path d="M ${t(f)} ${x} C ${t(f+i*.14)} ${t(x+v*d*.5)} ${t(f+i*.42)} ${t(x+v*d*.28)} ${t(f+i*.28)} ${t(x+v*d)}" ${g}/>`),c.push(`<path d="M ${t(f)} ${x} C ${t(f-i*.14)} ${t(x+v*d*.5)} ${t(f-i*.42)} ${t(x+v*d*.28)} ${t(f-i*.28)} ${t(x+v*d)}" ${g}/>`),c.push(`<circle cx="${t(f)}" cy="${x}" r="2" ${M}/>`)}return c.join(`
+`)}function qt(e,o,n,r,p,m,g,M,y,c){let u=[],s=Math.round(12+r*16),i=n*.42;for(let d=0;d<s;d++){let h=d/s*C-Math.PI/2,[$,l]=E(e,o,i,h),f=h+Math.PI/4,x=n*.1+m()*n*.05,[v,w]=[$+Math.cos(f)*x,l+Math.sin(f)*x],b=$+Math.cos(f-.4)*x*.5,k=l+Math.sin(f-.4)*x*.5;u.push(`<path d="M ${t($)} ${t(l)} Q ${t(b)} ${t(k)} ${t(v)} ${t(w)}" ${g}/>`),m()>.55&&u.push(`<circle cx="${t(v)}" cy="${t(w)}" r="${t(n*.018)}" ${M}/>`)}return u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(i*.85)}" ${g}/>`),u.push(`<path d="${j(e,o,n*.12,n*.05,8)}" ${M}/>`),u.join(`
+`)}function rt(e,o,n,r,p,m,g,M,y){let c=[],u=n*.42,s=Math.round(r*.5+p*6)*2,i=Array.from({length:s},(l,f)=>{let x=f/s*C,v=f%2===0?u:u*(.6+p*.2);return E(e,o,v,x)}),d=`M ${t(i[0][0])} ${t(i[0][1])}`;for(let l=1;l<i.length;l++){let f=i[l-1],x=i[l],v=e+(x[0]-e)*.5,w=o+(x[1]-o)*.5;d+=` Q ${t(v)} ${t(w)} ${t(x[0])} ${t(x[1])}`}d+=" Z",c.push(`<path d="${d}" ${g}/>`);let h=i.map(([l,f])=>[e+(l-e)*.55,o+(f-o)*.55]),$=`M ${t(h[0][0])} ${t(h[0][1])}`;for(let l=1;l<h.length;l++)$+=` L ${t(h[l][0])} ${t(h[l][1])}`;return $+=" Z",c.push(`<path d="${$}" ${g}/>`),c.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.06)}" ${M}/>`),c.join(`
+`)}function Qt(e,o,n,r,p,m,g,M,y){let c=[],u=n*.48,s=n*.16,i=n*.22;c.push(`<rect x="${t(e-s/2)}" y="${t(o-u)}" width="${t(s)}" height="${t(u*2)}" ${m}/>`),c.push(`<rect x="${t(e-u)}" y="${t(o-s/2)}" width="${t(u*2)}" height="${t(s)}" ${m}/>`),c.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(i)}" ${m}/>`);let d=4+Math.round(r*4);for(let h=0;h<d;h++){let $=h/d*C,[l,f]=E(e,o,i,$);c.push(`<circle cx="${t(l)}" cy="${t(f)}" r="${t(n*.03)}" ${g}/>`)}return c.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.07)}" ${g}/>`),c.join(`
+`)}function st(e,o,n,r,p,m,g,M,y,c){let u=[],s=2+Math.round(p*3);for(let i=s;i>=0;i--){let d=n*.48*(i+1)/(s+1),h=d*(.28+p*.15);u.push(`<path d="${j(e,o,d,h,r)}" ${i%2===0?g:M}/>`),u.push(`<path d="${T(e,o,h*.9,r)}" ${g}/>`)}return u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.04)}" ${M}/>`),u.join(`
+`)}function Dt(e,o,n,r,p,m,g,M,y){let c=[],u=Math.round(4+p*4);for(let s=0;s<u;s++){let i=s/u*C,[d,h]=E(e,o,n*.1,i),[$,l]=E(e,o,n*.45,i),[f,x]=E(e,o,n*.25,i+Math.PI/(u*.8)),[v,w]=E(e,o,n*.35,i-Math.PI/(u*.8));if(c.push(`<path d="M ${t(d)} ${t(h)} C ${t(f)} ${t(x)} ${t(v)} ${t(w)} ${t($)} ${t(l)}" ${g}/>`),c.push(`<circle cx="${t($)}" cy="${t(l)}" r="${t(n*.03)}" ${M}/>`),r>.5){let[b,k]=E(e,o,n*.3,i),[I,B]=E(b,k,n*.1,i+Math.PI/2),[L,A]=E(b,k,n*.1,i-Math.PI/2);c.push(`<path d="M ${t(I)} ${t(B)} Q ${t(b+Math.cos(i)*n*.06)} ${t(k+Math.sin(i)*n*.06)} ${t(L)} ${t(A)}" ${g}/>`)}}return c.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.08)}" ${g}/>`),c.join(`
+`)}function at(e,o,n,r,p,m,g,M,y){let c=[],u=Math.round(3+p*3);c.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.46)}" ${g}/>`);for(let s=0;s<u;s++){let i=s/u*C-Math.PI/2,[d,h]=E(e,o,n*.18,i),[$,l]=E(e,o,n*.42,i);c.push(`<line x1="${t(d)}" y1="${t(h)}" x2="${t($)}" y2="${t(l)}" ${g}/>`)}return r>.3&&c.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.15)}" ${M}/>`),c.join(`
+`)}function Ut(e,o,n,r,p,m,g,M,y){let c=[],u=Math.round(3+p*8),s=g;for(let i=0;i<=u;i++){let d=i/u;c.push(`<line x1="${t(n*d)}" y1="0" x2="${t(n*d)}" y2="${r}" ${s}/>`),c.push(`<line x1="0" y1="${t(r*d)}" x2="${n}" y2="${t(r*d)}" ${s}/>`)}if(p>.5){let i=n/2,d=r/2;c.push(`<circle cx="${t(i)}" cy="${t(d)}" r="${t(Math.min(n,r)*.38)}" ${M}/>`)}return c.join(`
+`)}function Ht(e,o,n,r,p,m,g,M){let y=[],c=2+Math.round(r*6);for(let u=c;u>=1;u--){let s=n*.48*u/c;y.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(s)}" ${u%2===0?m:g}/>`)}return y.join(`
+`)}function Nt(e,o,n,r,p,m,g,M,y){let c=document.getElementById("tv-ta").value.trim()||"\u2726",u=a.font,s=n*.9;return`<text x="${t(e)}" y="${t(o)}" text-anchor="middle" dominant-baseline="middle" font-family="${u}" font-size="${t(s)}" fill="none" stroke="${P[a.pal].stroke}" stroke-width="${y*.5}">${c}</text>`}function Zt(e,o,n,r,p,m,g,M,y){let c=[],u=Math.round(3+p*4);for(let s=0;s<u;s++){let i=s/u*C-Math.PI/2,d=F(Math.cos(i)*2.4+.5,Math.sin(i)*2.4+.5)*.5,h=n*(.38+d*.11+m()*.04),[$,l]=E(e,o,h,i),f=F(Math.cos(i-.5)*2.1,Math.sin(i-.5)*2.1)*n*.048,x=F(Math.cos(i+.5)*2.1,Math.sin(i+.5)*2.1)*n*.048,[v,w]=E(e,o,h*.4+f,i-.5),[b,k]=E(e,o,h*.7+x,i+.5);if(c.push(`<path d="M ${t(e)} ${t(o)} C ${t(v)} ${t(w)} ${t(b)} ${t(k)} ${t($)} ${t(l)} C ${t(b)} ${t(k)} ${t(v)} ${t(w)} ${t(e)} ${t(o)}" ${g}/>`),r>.4){let I=(e+$)/2+F(i*1.4,h*.03)*n*.018,B=(o+l)/2+F(i*1.4+7,h*.03)*n*.018;c.push(`<line x1="${t(e)}" y1="${t(o)}" x2="${t(I)}" y2="${t(B)}" ${g}/>`)}}return c.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.05)}" ${M}/>`),c.join(`
+`)}function it(e,o,n,r,p,m,g,M){let y=[],c=2+r*4,u=Math.round(80+r*120),s=`M ${t(e)} ${t(o)}`;for(let i=1;i<=u;i++){let d=i/u,h=d*c*C,$=d*n*.48,[l,f]=E(e,o,$,h);s+=` L ${t(l)} ${t(f)}`}if(y.push(`<path d="${s}" fill="none" stroke="${P[a.pal].stroke}" stroke-width="${M}"/>`),r>.4){let i=`M ${t(e)} ${t(o)}`;for(let d=1;d<=u;d++){let h=d/u,$=h*c*C+Math.PI,l=h*n*.48,[f,x]=E(e,o,l,$);i+=` L ${t(f)} ${t(x)}`}y.push(`<path d="${i}" fill="none" stroke="${P[a.pal].fill}" stroke-width="${M*.6}"/>`)}return y.join(`
+`)}function St(e,o,n,r,p,m,g,M){let y=[];function c(s,i,d,h,$){if($<=0||h<n*.04)return;let l=s+Math.cos(d)*h,f=i+Math.sin(d)*h;y.push(`<line x1="${t(s)}" y1="${t(i)}" x2="${t(l)}" y2="${t(f)}" stroke="${P[a.pal].stroke}" stroke-width="${t(M*($/5))}" fill="none"/>`);let x=.4+r*.5;c(l,f,d-x,h*(.6+p()*.15),$-1),c(l,f,d+x,h*(.6+p()*.15),$-1),r>.5&&$<3&&p()>.5&&c(l,f,d,h*.5,$-1)}let u=3+Math.round(r*3);return c(e,o+n*.4,-Math.PI/2,n*.4,u),y.join(`
+`)}function _t(e,o,n,r,p,m,g,M,y,c){let u=[],s=Math.round(4+p*8),i=n*.42,d=i*(.25+p*.2);for(let h=0;h<s;h++){let $=h/s*C-Math.PI/2,[l,f]=E(e,o,i,$),[x,v]=E(e,o,i*.5,$-.45),[w,b]=E(e,o,i*.5,$+.45),k=h%2===0?g:M;u.push(`<path d="M ${t(e)} ${t(o)} C ${t(x)} ${t(v)} ${t(w)} ${t(b)} ${t(l)} ${t(f)} C ${t(w)} ${t(b)} ${t(x)} ${t(v)} ${t(e)} ${t(o)}" ${k}/>`)}return u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.1)}" ${M}/>`),u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.04)}" fill="${P[a.pal].bg}"/>`),u.join(`
+`)}function Yt(e,o,n,r,p,m,g,M,y){let c=[],u=2+Math.round(p*5),s=r*.08+p*r*.12;for(let i=0;i<u;i++){let d=o-u/2*s*.4+i*s*.4,h=1+i*.5,$=120,l=`M 0 ${t(d)}`;for(let f=1;f<=$;f++){let x=f/$,v=n*x,w=F(x*3.8,i*2.1+.6)*s*(.22+p*.28),b=d+Math.sin(x*C*h+i*.7)*s+w;l+=` L ${t(v)} ${t(b)}`}c.push(`<path d="${l}" fill="none" stroke="${P[a.pal].stroke}" stroke-width="${y*(1-i*.15)}"/>`)}return c.join(`
+`)}function Wt(e,o,n,r,p,m,g,M,y,c){let u=[],s=Math.round(60+r*220),i=Math.PI*(3-Math.sqrt(5)),d=n*.47,h=Math.max(n*.008,n*(.018-.007*r)),$=Math.round(2+p*5),l=Math.round(1+p*4);for(let f=0;f<s;f++){let x=d*Math.sqrt(f/s),v=f*i,w=F(Math.cos(v)*1.9+.3,Math.sin(v)*1.9+.7)*n*.016,b=e+(x+w)*Math.cos(v),k=o+(x+w)*Math.sin(v);u.push(`<circle cx="${t(b)}" cy="${t(k)}" r="${t(h)}" ${f%$===0?M:g}/>`)}for(let f=1;f<=l;f++){let x=d*Math.sqrt(f/l)*.97;u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(x)}" fill="none" stroke="${P[a.pal].stroke}" stroke-width="${c*.22}" opacity="0.22"/>`)}return u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.035)}" ${M}/>`),u.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.013)}" fill="${P[a.pal].bg}"/>`),u.join(`
+`)}function D(e,o,n,r,p,m,g,M,y,c){let u=[];u.push(`<line x1="${e+16}" y1="${t(o)}" x2="${n-16}" y2="${t(o)}" ${g}/>`);let s=n/2;if(c==="artdeco"){u.push(`<path d="M ${s} ${t(o-12-r*10)} L ${t(s+8+r*6)} ${t(o)} L ${s} ${t(o+12+r*10)} L ${t(s-8-r*6)} ${t(o)} Z" ${M}/>`);let i=2+Math.round(r*3);for(let d=1;d<=i;d++){let h=20+d*18;for(let $ of[-1,1])u.push(`<rect x="${t(s+$*h-5)}" y="${t(o-8-r*4)}" width="10" height="${t(16+r*8)}" ${g}/>`)}}else if(c==="baroque"){let i=40+r*25,d=16+r*8;u.push(`<ellipse cx="${t(s)}" cy="${t(o)}" rx="${t(i)}" ry="${t(d)}" ${g}/>`),u.push(`<ellipse cx="${t(s)}" cy="${t(o)}" rx="${t(i*.8)}" ry="${t(d*.65)}" ${g}/>`);for(let h of[-1,1]){let $=s+h*i;u.push(`<path d="M ${t($)} ${t(o)} C ${t($+h*16)} ${t(o-d*1.1)} ${t($+h*28)} ${t(o-d*.3)} ${t($+h*28)} ${t(o+d*.3)} C ${t($+h*28)} ${t(o+d*1.1)} ${t($+h*16)} ${t(o+d*.8)} ${t($+h*6)} ${t(o+d*.3)}" ${g}/>`)}}else if(c==="geo"||c==="geometric"){let i=Math.round(4+p*6);u.push(`<path d="${j(s,o,16+r*12,7+r*5,i)}" ${g}/>`),u.push(`<circle cx="${t(s)}" cy="${t(o)}" r="${t(4+r*3)}" ${M}/>`);let d=2+Math.round(r*3);for(let h=1;h<=d;h++){let $=28+h*14;for(let l of[-1,1])u.push(`<circle cx="${t(s+l*$)}" cy="${t(o)}" r="${t(3+r*2)}" ${g}/>`)}}else if(c==="victorian"){u.push(`<path d="${j(s,o,14+r*10,6+r*4,8)}" ${g}/>`);let i=2+Math.round(r*3);for(let d=1;d<=i;d++){let h=22+d*14;for(let $ of[-1,1])u.push(`<path d="M ${t(s+$*h)} ${t(o-5)} L ${t(s+$*h+$*4)} ${t(o)} L ${t(s+$*h)} ${t(o+5)} L ${t(s+$*h-$*4)} ${t(o)} Z" ${M}/>`)}}else{u.push(`<circle cx="${t(s)}" cy="${t(o)}" r="${t(5+r*4)}" ${M}/>`);for(let i of[-1,1])u.push(`<circle cx="${t(s+i*20)}" cy="${t(o)}" r="3" ${g}/>`),u.push(`<circle cx="${t(s+i*35)}" cy="${t(o)}" r="2" ${g}/>`)}return u.join(`
+`)}function N(e,o,n,r,p,m,g,M,y,c,u){let s=[],i=40+Math.round((1-p)*35);for(let d=-1;d<=Math.ceil(r/i)+1;d++)for(let h=-1;h<=Math.ceil(n/i)+1;h++){let $=u==="geo"||u==="girih"?d%2===0?0:i/2:0,l=h*i+i/2+$,f=d*(u==="geo"?i*.866:i)+i/2;if(l<-i||l>n+i||f<-i||f>r+i)continue;let x=u==="girih"||u==="islamic"?6:Math.round(3+m*4);s.push(`<path d="${T(l,f,i*.47,x)}" ${M}/>`),s.push(`<path d="${T(l,f,i*.22,x,Math.PI/x)}" ${y}/>`)}return s.join(`
+`)}function Xt(){let e=document.getElementById("px-canvas"),o=64;e.width=o,e.height=o;let n=e.getContext("2d"),r=Q(a.seed),p=P[a.pal];n.fillStyle=a.darkBg?"#111":"#fff",n.fillRect(0,0,o,o);let m=o/2,g=o/2,M=o*.45*a.comp,y=Math.round(4+a.sym*8);for(let c=0;c<o;c++)for(let u=0;u<o;u++){let s=u-m,i=c-g,d=Math.sqrt(s*s+i*i),h=Math.atan2(i,s),$=Math.floor((h+Math.PI)/(C/y)),l=(d*.4+$*2.7)%1;d<M&&(l<a.comp*.6||d<M*.1)&&(n.fillStyle=l<.15?p.fill:p.stroke,n.fillRect(u,c,1,1))}}function Kt(e,o,n,r,p,m,g,M,y){let c=document.getElementById("tv-ta").value.trim();if(!c)return q(e,o,n,8,3,r,m,g,M,M,y);let u=a.font,s=Math.min(n*.85,n*1.8/c.length),i=[];i.push(`<text x="${t(e)}" y="${t(o)}" text-anchor="middle" dominant-baseline="middle" font-family="${u}" font-size="${t(s)}" fill="none" stroke="${P[a.pal].stroke}" stroke-width="${y*.5}">${c}</text>`),i.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.47)}" ${g}/>`),i.push(`<circle cx="${t(e)}" cy="${t(o)}" r="${t(n*.38)}" ${g}/>`);let d=c.length;for(let h=0;h<d;h++){let $=h/d*C,[l,f]=E(e,o,n*.38,$),[x,v]=E(e,o,n*.47,$);i.push(`<line x1="${t(l)}" y1="${t(f)}" x2="${t(x)}" y2="${t(v)}" ${g}/>`)}return i.join(`
+`)}function K(e,o,n,r,p,m,g,M,y,c,u){xt(M);let s=Q(M),i=Math.round(4+g*12),d=2+Math.round(m*6),h={stroke:y.stroke,fill:y.fill,fill2:y.fill2},$=`fill="none" stroke="${h.stroke}" stroke-width="${c}"`,l=`fill="${h.fill}" stroke="${h.fill}" stroke-width="${c*.3}" fill-opacity="${u}"`,f=`fill="${h.fill2}" stroke="${h.stroke}" stroke-width="${c*.5}" fill-opacity="${Math.min(u+.3,1)}"`,x={artdeco:{medallion:()=>Bt(n,r,p,i,d,m,s,$,l,f,c),frame:()=>J(0,0,a.w,a.h,m,i,s,$,l,c),divider:()=>D(0,r,a.w,m,g,s,$,l,c,"artdeco"),corner:()=>Ct(n-p*.5,r-p*.5,p,m,s,$,l,c),pattern:()=>N(0,0,a.w,a.h,m,g,s,$,l,c,"artdeco"),ornament:()=>Pt(n,r,p,m,g,s,$,l,f,c)},baroque:{medallion:()=>Lt(n,r,p,d,m,g,s,$,l,f,c),frame:()=>Tt(0,0,a.w,a.h,m,s,$,l,c),divider:()=>D(0,r,a.w,m,g,s,$,l,c,"baroque"),cartouche:()=>nt(n,r,p,m,s,$,l,f,c),swag:()=>At(0,r,a.w,m,s,$,l,c),acanthus:()=>ot(n,r,p,m,g,s,$,l,c)},geometric:{mandala:()=>q(n,r,p,i,d,m,s,$,l,f,c),frame:()=>jt(0,0,a.w,a.h,m,g,s,$,l,c),divider:()=>D(0,r,a.w,m,g,s,$,l,c,"geo"),tessellation:()=>N(0,0,a.w,a.h,m,g,s,$,l,c,"geo"),star:()=>Gt(n,r,p,i,d,m,s,$,l,f,c),symbol:()=>Rt(n,r,p,m,g,s,$,l,f,c)},victorian:{medallion:()=>Ft(n,r,p,d,m,g,s,$,l,f,c),frame:()=>Vt(0,0,a.w,a.h,m,s,$,l,c),divider:()=>D(0,r,a.w,m,g,s,$,l,c,"victorian"),flourish:()=>ot(n,r,p,m,g,s,$,l,c),wreath:()=>qt(n,r,p,m,g,s,$,l,f,c),cartouche:()=>nt(n,r,p,m,s,$,l,f,c)},celtic:{knot:()=>rt(n,r,p,i,m,s,$,l,c),border:()=>J(0,0,a.w,a.h,m,6,s,$,l,c),medallion:()=>q(n,r,p,6,d,m,s,$,l,f,c),cross:()=>Qt(n,r,p,m,s,$,l,f,c),knotwork:()=>rt(n,r,p*1.2,8,m,s,$,l,c),spiral:()=>it(n,r,p,m,s,$,l,c)},islamic:{star:()=>st(n,r,p,i,m,s,$,l,f,c),girih:()=>N(0,0,a.w,a.h,m,g,s,$,l,c,"girih"),arabesque:()=>Dt(n,r,p,m,g,s,$,l,c),border:()=>J(0,0,a.w,a.h,m,8,s,$,l,c),medallion:()=>st(n,r,p,12,m,s,$,l,f,c),pattern:()=>N(0,0,a.w,a.h,m,g,s,$,l,c,"islamic")},minimal:{symbol:()=>at(n,r,p,m,g,s,$,l,c),line:()=>D(0,r,a.w,m*.3,g,s,$,l,c,"min"),grid:()=>Ut(0,0,a.w,a.h,m,s,$,l,c),circle:()=>Ht(n,r,p,m,s,$,l,c),mark:()=>at(n,r,p*.7,m*.5,g,s,$,l,c),glyph:()=>Nt(n,r,p,m,g,s,$,l,c)},organic:{leaf:()=>Zt(n,r,p,m,g,s,$,l,c),spiral:()=>it(n,r,p,m,s,$,l,c),branch:()=>St(n,r,p,m,s,$,l,c),flower:()=>_t(n,r,p,i,m,s,$,l,f,c),mandala:()=>q(n,r,p,8,d,m,s,$,l,f,c),phyllotaxis:()=>Wt(n,r,p,m,g,s,$,l,f,c),wave:()=>Yt(0,r,a.w,a.h,m,s,$,l,c)}},v=x[e]&&x[e][o];return v?v():q(n,r,p,i,d,m,s,$,l,f,c)}function Z(){let e=document.getElementById("gen-btn");e.disabled=!0,G("Generating\u2026");let o=+document.getElementById("cw").value,n=+document.getElementById("ch").value;a.w=o||400,a.h=n||400,a.comp=+document.getElementById("s-comp").value/100,a.sym=+document.getElementById("s-sym").value/100,a.sw=+document.getElementById("s-sw").value/10,a.fill=+document.getElementById("s-fill").value/100,a.seed=+document.getElementById("s-seed").value;let r=P[a.pal],p=a.darkBg?"#111":"#fff";if(a.mode==="pixel"){Xt(),document.getElementById("main-svg").style.display="none",document.getElementById("px-canvas").style.display="block",G(`Pixel Art \xB7 ${a.w}\xD7${a.h}`),e.disabled=!1,X();return}let m=document.getElementById("tv-ta").value.trim(),g=a.w/2,M=a.h/2,y=Math.min(a.w,a.h)*.46,c;m&&(a.type==="glyph"||a.type==="symbol"||a.type==="mark")?c=Kt(g,M,y,a.comp,a.sym,Q(a.seed),"","",a.sw):c=K(a.style,a.type,g,M,y,a.comp,a.sym,a.seed,r,a.sw,a.fill);let u=`<svg xmlns="http://www.w3.org/2000/svg" width="${a.w}" height="${a.h}" viewBox="0 0 ${a.w} ${a.h}">
+  <rect class="bg-rect" width="${a.w}" height="${a.h}" fill="${p}"/>
+  ${c}
+</svg>`;document.getElementById("main-svg").outerHTML=u.replace("<svg ",'<svg id="main-svg" '),setTimeout(()=>{let s=document.querySelector("#svg-holder svg");s&&(s.id="main-svg"),X(),re(),se(),G(`Done \xB7 ${a.style} / ${a.type}`),e.disabled=!1},20)}function Jt(){a.seed=Math.ceil(Math.random()*999),document.getElementById("s-seed").value=a.seed,document.getElementById("sv-seed").textContent=a.seed,Z()}function re(){let e=[a.seed,a.seed+111,a.seed+222,a.seed+333],o=P[a.pal],n=a.sw,r=50,p=60,m=60,g=p/2,M=m/2,y=Math.min(p,m)*.44;for(let c=0;c<4;c++){let u=K(a.style,a.type,g,M,y,a.comp,a.sym,e[c],o,.8,0),s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${p} ${m}"><rect width="${p}" height="${m}" fill="#fff"/>${u}</svg>`;a.vars[c]=s,a.vars[c+"_seed"]=e[c],document.getElementById("vt"+c).innerHTML=s,document.getElementById("vt"+c).className="vthumb"+(c===a.activeVar?" active":"")}}function Ot(e){a.activeVar=e,a.vars[e+"_seed"]!==void 0&&(a.seed=a.vars[e+"_seed"],document.getElementById("s-seed").value=a.seed,document.getElementById("sv-seed").textContent=a.seed);for(let o=0;o<4;o++)document.getElementById("vt"+o).className="vthumb"+(o===e?" active":"");Z()}function se(){let e=document.getElementById("info-box"),o=document.querySelectorAll("#main-svg path, #main-svg circle, #main-svg line, #main-svg rect, #main-svg ellipse, #main-svg polygon").length;e.innerHTML=`<b>Style</b> ${a.style}<br><b>Type</b> ${a.type}<br><b>Canvas</b> ${a.w}\xD7${a.h}<br><b>Palette</b> ${P[a.pal].name}<br><b>Elements</b> ~${o}<br><b>Seed</b> ${a.seed}`}function G(e){document.getElementById("tb-status").innerHTML=`<span>${e}</span>`}function ct(){let e=document.getElementById("main-svg");if(!e)return"";let o=e.cloneNode(!0);return o.setAttribute("xmlns","http://www.w3.org/2000/svg"),`<?xml version="1.0" encoding="UTF-8"?>
+`+o.outerHTML}function zt(){let e=ct();if(!e)return;let o=new Blob([e],{type:"image/svg+xml"}),n=document.createElement("a");n.href=URL.createObjectURL(o),n.download=`vectorforge-${a.style}-${a.type}-${a.seed}.svg`,n.click(),G("SVG exported \u2713")}function te(){if(a.mode==="pixel"){let p=document.getElementById("px-canvas");if(!p)return;let m=document.createElement("canvas");m.width=a.w||400,m.height=a.h||400;let g=m.getContext("2d");g.imageSmoothingEnabled=!1,g.drawImage(p,0,0,m.width,m.height),m.toBlob(M=>{let y=document.createElement("a");y.href=URL.createObjectURL(M),y.download=`vectorforge-pixel-${a.seed}.png`,y.click(),G("Pixel Art PNG exported \u2713")});return}let e=ct();if(!e)return;let o=new Blob([e],{type:"image/svg+xml"}),n=URL.createObjectURL(o),r=new Image;r.onload=()=>{let p=document.createElement("canvas");p.width=a.w*2,p.height=a.h*2;let m=p.getContext("2d");m.scale(2,2),m.drawImage(r,0,0),p.toBlob(g=>{let M=document.createElement("a");M.href=URL.createObjectURL(g),M.download=`vectorforge-${a.style}-${a.type}-${a.seed}.png`,M.click(),G("PNG exported @2x \u2713")})},r.src=n}function ee(){let e=ct();navigator.clipboard.writeText(e).then(()=>G("SVG code copied \u2713"))}Object.assign(window,{setMode:Mt,doGenRandom:Jt,selectStyle:ut,selectType:pt,selectPal:ft,selectFont:mt,setRatio:gt,doGen:Z,zoom:vt,toggleBg:bt,toggleGrid:kt,toggleDraw:It,xSVG:zt,xPNG:te,copySVG:ee,applyVar:Ot});O();_();z();tt();ht();U();setTimeout(()=>Z(),200);})();
+
+</script>
+</body>
+</html>

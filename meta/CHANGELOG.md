@@ -6,7 +6,8 @@
 ---
 
 ## [Não lançado]
-*(vazio — todos os itens planejados estão no ROADMAP.md)*
+### Alterado
+- **Reestruturação interna (F3): `vectorforge.html` dividido em 16 módulos ES** sob `src/` (`core/{utils,state,ui,view,generate,export}.js` + `generators/{artdeco,baroque,geometric,victorian,celtic,islamic,minimal,organic,generic}.js` + `main.js`). Build via `npm run build` (esbuild, bundle IIFE + inlining de CSS/JS num template HTML) gera `dist/vectorforge.html` — o mesmo arquivo único distribuível de sempre. **Nenhuma mudança de comportamento para o usuário final** — verificado byte-a-byte idêntico ao `vectorforge.html` anterior em todas as 49 combinações estilo×tipo, mais Text→Form, Draw mode, Pixel Art, Export e controles de canvas. Ver DEC-010. Por não haver mudança visível ao usuário, não há bump de versão ainda — isso deve acontecer quando o motor L-System (próximo item de F3) entregar o estilo Botanical.
 
 ---
 

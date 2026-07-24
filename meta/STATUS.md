@@ -7,7 +7,7 @@
 ---
 
 ## Versão Atual
-**[0.2.0]** — 2026-06-30 — F2 completa (sem mudança de versão nesta sessão: 2026-07-03 foi sessão de integração de Kit + documentação, zero código tocado).
+**[0.2.0]** — comportamento do app inalterado nesta sessão (verificado byte-a-byte). O que mudou foi a **estrutura do código-fonte**, não o produto entregue — por isso não há bump de versão ainda. F3 (build step) está em andamento; versão sobe quando F3 fechar com algo novo visível ao usuário (L-System / estilo Botanical).
 
 ---
 
@@ -17,43 +17,47 @@
 - **`↻ Regenerate`** sorteia seed novo a cada click (FIX-001).
 - **Export PNG no modo Pixel Art** exporta o `px-canvas` corretamente (FIX-002).
 - **Simplex Noise 2D** (`snoise`, `snoiseSetSeed`) integrado e reproducível por seed.
-- **`genPhyllotaxis`** — novo tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
+- **`genPhyllotaxis`** — tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
 - **`genOrganicLeaf`** e **`genWave`** — noise orgânico integrado.
-- **Kit de Contexto Universal** — 10 arquivos + CEREBRO.md + INSTRUCOES-PROJETO.md, íntegros e versionados desde a sessão de 2026-06-23.
+- **Kit de Contexto Universal** — 11 arquivos + CEREBRO.md + INSTRUCOES-PROJETO.md, íntegros e versionados.
+- **NOVO — Build step com esbuild (F3):** `vectorforge.html` foi dividido em 16 módulos ES em `src/` (`core/` + `generators/`); `npm run build` (ou `npm run watch`) gera `dist/vectorforge.html` — o mesmo arquivo único distribuível de sempre. Verificado byte-a-byte idêntico ao comportamento anterior em todas as 49 combinações estilo×tipo + Text→Form + Draw mode + Pixel Art + Export + Variations + zoom/canvas presets, via Chromium headless (Playwright). Ver DEC-010.
 
 ---
 
 ## 🔧 Em Progresso
 
-- Nada em código. Esta sessão (2026-07-03) foi 100% documentação: comparação da atualização do Kit trazida pelo usuário (`instrucoes-dev__template-update.txt`) contra o que já tínhamos, resolução do conflito de escopo do ASU (→ DEC-009), regeneração completa dos docs para handoff entre conversas.
+- **F3 aberta, build step concluído.** Faltam os outros dois itens de F3: motor L-System (~150 linhas, novo estilo Botanical) e Flow Fields. Nenhum dos dois foi iniciado ainda.
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-- Nenhum bug conhecido no momento.
+- Nenhum bug conhecido no momento. (4 bugs de import foram introduzidos durante a modularização desta sessão e corrigidos antes da entrega — ver DEC-010, não chegaram a ficar "quebrados" em nenhum momento entregue ao usuário.)
 
 ---
 
 ## 📋 Backlog (curto prazo — itens acionáveis)
 
-- [ ] **Decisão pendente para abrir F3**: motor L-System primeiro (ganho visual imediato, novo estilo Botanical) ou build step com esbuild primeiro (ganho estrutural, facilita tudo depois)? Perguntar ao usuário no início da próxima sessão antes de estruturar qualquer coisa — ver ROADMAP.md → F3.
-- [ ] Adicionar JSDoc às funções geradoras do v0.1.0 (`genADMedallion`, `genBQFrame`, etc. — os novos geradores de v0.2.0 já têm).
-- [ ] Testar `vectorforge.html` em Firefox e Safari; documentar comportamentos divergentes do `outerHTML` replacement.
+- [ ] **Motor L-System** (próximo item de F3): reescrita de string + turtle graphics, ~150 linhas, novo arquivo `src/generators/botanical.js`. Presets: árvore recursiva, Koch snowflake, Dragon curve. Ver ROADMAP.md → F3.
+- [ ] **Flow Fields** (F3): campo de direções via `snoise` já disponível em `src/core/utils.js` — partículas traçando caminhos curvos, tipo novo em Organic/Minimal.
+- [ ] Adicionar JSDoc às funções geradoras do v0.1.0 (`genADMedallion`, `genBQFrame`, etc. — os novos geradores de v0.2.0 já têm). Agora que cada uma vive num arquivo pequeno em `src/generators/`, é mais barato fazer isso incrementalmente.
+- [ ] Testar `dist/vectorforge.html` em Firefox e Safari; documentar comportamentos divergentes do `outerHTML` replacement.
 - [ ] Avaliar fallback de `DM Mono`/`Fraunces` (Google Fonts) offline.
-- [ ] Sincronizar `snoiseSetSeed` em `genPixelArt()` caso um gerador de pixel art baseado em noise seja adicionado (Armadilha 7 no CONTEXT.md).
-- [ ] **Criar `.gitignore`** adequado ao stack (projeto sem build tem pouco a ignorar, mas convém cobrir editores/OS: `.vscode/`, `.DS_Store`, `Thumbs.db`, backups do ASU). Novo item — identificado nesta sessão ao integrar o Kit atualizado.
-- [ ] **Expandir `README.md`** (hoje é só `"# vectorforge"`) — adiado deliberadamente: a estrutura ainda vai mudar em F3 (build step, novo estilo Botanical), expandir agora arriscaria nascer desatualizado. Reavaliar quando F3 estabilizar.
+- [ ] Sincronizar `snoiseSetSeed` em `genPixelArt()` (em `src/generators/generic.js`) caso um gerador de pixel art baseado em noise seja adicionado (Armadilha 7 no CONTEXT.md).
+- [ ] **Expandir `README.md`** (hoje é só `"# vectorforge"`) — ainda adiado: com `src/` recém-criado, faz sentido esperar o motor L-System estabilizar antes de documentar a estrutura publicamente, para não nascer desatualizado de novo.
+- [ ] **Definir política de CI** para garantir que `dist/vectorforge.html` nunca fique dessincronizado de `src/` (hoje depende de lembrar manualmente — ver trade-off registrado em DEC-010 e no `.gitignore`). Baixa prioridade enquanto for projeto de mantenedor único.
 
 ---
 
 ## 📁 Arquivos Críticos (não mexer sem contexto)
 
-- `vectorforge.html` — O aplicativo inteiro. Antes de editar: ler CONTEXT.md (seção "Como o pipeline funciona" + "Inventário de Geradores") + DEC-001 a DEC-009 no DECISIONS.md. Usar instrução ASU datada (`AAAA-MM-DD-asuNNNN.yaml`) para patches; entregar como arquivo para download, nunca como bloco inline (DEC-008).
-- `CEREBRO.md` e `INSTRUCOES-PROJETO.md` — definem o comportamento do assistente neste projeto. Qualquer atualização futura do Kit deve ser comparada contra estes dois antes de aplicar (ver seção "Canal de atualização do kit" no CEREBRO.md).
+- **`src/` (16 módulos ES)** — o código-fonte real agora vive aqui, não mais num único `vectorforge.html`. Antes de editar: ler CONTEXT.md (seção "Como o pipeline funciona" + "Inventário de Geradores" + Armadilha 8) + DEC-001 a DEC-010 no DECISIONS.md. Depois de editar, **sempre rodar `npm run build`** antes de testar — `dist/vectorforge.html` é gerado, editá-lo direto é descartado no próximo build.
+- **`dist/vectorforge.html`** — o arquivo que o usuário efetivamente abre. Versionado no Git (não é `.gitignore`d) por decisão deliberada — ver DEC-010. Nunca editar à mão.
+- **`scripts/build.js`** — a lógica de bundling + inlining. Mudar com cuidado: qualquer alteração aqui afeta como TODO o `src/` vira `dist/`.
+- **`CEREBRO.md` e `INSTRUCOES-PROJETO.md`** — definem o comportamento do assistente neste projeto. Qualquer atualização futura do Kit deve ser comparada contra estes dois antes de aplicar (ver seção "Canal de atualização do kit" no CEREBRO.md).
 
 ---
 
 ## 💬 Última Sessão
 
-**2026-07-03** — Sessão de integração de Kit + fechamento para handoff entre conversas (esta conversa ficou pesada; usuário pediu geração de todo o contexto para continuar numa conversa nova sem perder nada). Trabalho: (1) comparei a Instrução do Projeto vigente (curta, sem parágrafos de ASU/config/commit/gitignore/README) contra o `instrucoes-dev__template-update.txt` trazido pelo usuário (versão mais rica); (2) identifiquei que o Kit novo formaliza ASU para `DECISIONS.md`/`CONTEXT.md` (heading estável), o que ia além do DEC-007 original ("ASU só para código") — resolvido com DEC-009, que amplia o escopo exatamente como DEC-007 já previa como possibilidade; (3) DEC-008 (entrega sempre como download) convergiu com o padrão do Kit novo, deixou de ser desvio; (4) regenerei CEREBRO.md (ritual de releitura do mount, seção de `.gitignore`/README, seção ASU atualizada) e criei `INSTRUCOES-PROJETO.md` (a instrução curta atualizada, pronta para colar); (5) regenerei todos os 10 docs + CEREBRO + INSTRUCOES-PROJETO com máximo detalhe para handoff completo, incluindo um Inventário de Geradores novo no CONTEXT.md. Nenhuma linha de `vectorforge.html` foi tocada nesta sessão. Próximo passo: abrir F3, decidindo primeiro L-System vs. esbuild.
+**2026-07-07** — Sessão de estruturação: F3 abriu pela decisão pendente (L-System vs. esbuild), usuário escolheu esbuild. Trabalho: (1) pesquisei práticas de bundling para o caso específico de single-file HTML inline (rejeitei plugins prontos tipo `esbuild-plugin-html`, feitos para outdir multi-arquivo); (2) propus o recorte de 16 módulos (`src/core/*` + `src/generators/*` + `src/main.js`) organizados por estilo, confirmado com o usuário antes de executar; (3) extraí o `vectorforge.html` original (1554 linhas de `<script>`) por parser Python de contagem de chaves — não retype manual — garantindo cópia byte-exata das ~73 funções; (4) montei os 16 módulos + `scripts/build.js` (esbuild IIFE + inlining custom) + `package.json` + `.gitignore`; (5) build rodou e gerou `dist/vectorforge.html` (53.8KB minificado vs. 86KB original não-minificado); (6) testei com Chromium headless via Playwright: TODAS as 49 combinações estilo×tipo comparadas byte-a-byte contra o original, mais Text→Form, Draw mode, Pixel Art (hash de pixels), Export SVG/PNG, Regenerate, Variations, zoom, presets de canvas — encontrei e corrigi 4 bugs reais de import faltante (`TAU` em 7 arquivos, `starPath`/`polyPath` em islamic.js, `setStatus` em export.js e view.js, `genMandala` em generic.js) antes de considerar a entrega pronta; (7) documentei tudo em DEC-010; (8) regenerei CONTEXT.md, STATUS.md, ROADMAP.md, CHANGELOG.md, IDEAS.md, GLOSSARY.md e o log da sessão. Próximo passo: motor L-System (próximo item de F3, ver Backlog acima).

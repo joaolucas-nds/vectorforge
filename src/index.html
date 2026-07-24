@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VectorForge — Procedural Art Generator</title>
+<style>
+/*__STYLES__*/
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Top bar ── -->
+  <header class="topbar">
+    <div class="logo">
+      <svg class="logo-hex" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,6.5 20,15.5 11,20 2,15.5 2,6.5" fill="none" stroke="#c8a96e" stroke-width="1"/>
+        <polygon points="11,5 17,8.5 17,13.5 11,17 5,13.5 5,8.5" fill="#c8a96e20"/>
+        <circle cx="11" cy="11" r="2" fill="#c8a96e"/>
+      </svg>
+      <span class="logo-title">VectorForge</span>
+      <span class="logo-sub">Procedural</span>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="mode-bar">
+      <button class="mode-btn active" id="mb-vec" onclick="setMode('vector')">Vector SVG</button>
+      <button class="mode-btn" id="mb-px" onclick="setMode('pixel')">Pixel Art</button>
+    </div>
+    <div class="tb-sep"></div>
+    <span class="tag" id="dim-tag">400 × 400</span>
+    <div class="tb-status" id="tb-status"><span>Ready</span></div>
+    <button class="tb-btn" onclick="doGenRandom()">↻ Regenerate</button>
+  </header>
+
+  <!-- ── Left Panel ── -->
+  <aside class="left-panel">
+
+    <div class="section">
+      <div class="sec-label">Art Style</div>
+      <div class="style-grid" id="style-grid"></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Output Type</div>
+      <div class="type-wrap" id="type-wrap"></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Parameters</div>
+      <div class="slider-row"><label>Complexity</label><input type="range" id="s-comp" min="0" max="100" value="55" step="1"><span class="sv" id="sv-comp">55</span></div>
+      <div class="slider-row"><label>Symmetry</label><input type="range" id="s-sym" min="0" max="100" value="50" step="1"><span class="sv" id="sv-sym">50</span></div>
+      <div class="slider-row"><label>Stroke w.</label><input type="range" id="s-sw" min="2" max="36" value="12" step="1"><span class="sv" id="sv-sw">1.2</span></div>
+      <div class="slider-row"><label>Fill opac.</label><input type="range" id="s-fill" min="0" max="100" value="0" step="1"><span class="sv" id="sv-fill">0%</span></div>
+      <div class="slider-row"><label>Seed</label><input type="range" id="s-seed" min="1" max="999" value="42" step="1"><span class="sv" id="sv-seed">42</span></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Canvas Size</div>
+      <div class="size-row">
+        <input type="number" id="cw" class="sz-inp" value="400" min="50" max="3000">
+        <span style="color:var(--txt3);font-size:10px">×</span>
+        <input type="number" id="ch" class="sz-inp" value="400" min="50" max="3000">
+      </div>
+      <div class="size-row" style="margin-top:5px">
+        <button class="sz-pre" onclick="setRatio(1,1)">1:1</button>
+        <button class="sz-pre" onclick="setRatio(4,3)">4:3</button>
+        <button class="sz-pre" onclick="setRatio(16,9)">16:9</button>
+        <button class="sz-pre" onclick="setRatio(3,4)">3:4</button>
+        <button class="sz-pre" onclick="setRatio(210,297)">A4</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Color Theme</div>
+      <div class="pal-row" id="pal-row"></div>
+    </div>
+
+    <div class="section" id="text-section">
+      <div class="sec-label">Text → Form <span style="color:var(--txt3);font-weight:400;text-transform:none;letter-spacing:0">(type to shape)</span></div>
+      <textarea class="tv-ta" id="tv-ta" maxlength="64" placeholder="ex: AURA, ☽, OM..."></textarea>
+      <div class="font-chips" id="font-chips"></div>
+    </div>
+
+    <div class="section" style="border-bottom:none; flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:14px;">
+      <button class="gen-btn" id="gen-btn" onclick="doGen()">Generate</button>
+    </div>
+  </aside>
+
+  <!-- ── Canvas ── -->
+  <main class="canvas-area" id="canvas-area">
+    <div class="cv-wrap" id="cv-wrap">
+      <div class="cv-shadow" id="svg-holder">
+        <svg id="main-svg" xmlns="http://www.w3.org/2000/svg" width="340" height="340" viewBox="0 0 400 400">
+          <rect width="400" height="400" fill="#ffffff"/>
+          <text x="200" y="200" text-anchor="middle" dominant-baseline="middle"
+            font-family="DM Mono,monospace" font-size="11" fill="#bbb">Click Generate</text>
+        </svg>
+        <canvas id="px-canvas" width="64" height="64"></canvas>
+      </div>
+      <svg class="grid-svg" id="grid-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="cv-bar">
+      <button class="cvb" onclick="zoom(-0.25)" title="Zoom out">−</button>
+      <button class="cvb cvb-txt" onclick="zoom(0)" title="Fit">Fit</button>
+      <button class="cvb" onclick="zoom(0.25)" title="Zoom in">+</button>
+      <span style="width:1px;height:16px;background:var(--border);margin:5px 2px"></span>
+      <button class="cvb" id="btn-bg" onclick="toggleBg()" title="Toggle background">◐</button>
+      <button class="cvb" id="btn-grid" onclick="toggleGrid()" title="Grid">⊞</button>
+      <button class="cvb" id="btn-draw" onclick="toggleDraw()" title="Draw mode">✏</button>
+    </div>
+  </main>
+
+  <!-- ── Right Panel (Export) ── -->
+  <aside class="right-panel">
+    <div class="section">
+      <div class="sec-label">Export</div>
+      <button class="xbtn xbtn-p" onclick="xSVG()">↓ SVG</button>
+      <button class="xbtn xbtn-s" onclick="xPNG()">↓ PNG</button>
+      <button class="xbtn xbtn-s" onclick="copySVG()">⎘ Copy SVG</button>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Variations</div>
+      <div class="var-grid" id="var-grid">
+        <div class="vthumb active" id="vt0" onclick="applyVar(0)"></div>
+        <div class="vthumb" id="vt1" onclick="applyVar(1)"></div>
+        <div class="vthumb" id="vt2" onclick="applyVar(2)"></div>
+        <div class="vthumb" id="vt3" onclick="applyVar(3)"></div>
+      </div>
+    </div>
+
+    <div class="section" style="border-bottom:none;flex:1">
+      <div class="sec-label">Info</div>
+      <div class="info-box" id="info-box">—</div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+//__SCRIPT__
+</script>
+</body>
+</html>

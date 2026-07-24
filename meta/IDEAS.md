@@ -54,11 +54,11 @@ Campo de direções derivado de Simplex Noise → partículas traçam caminhos c
 ### 2026-06-30 — Voronoi/Worley (F3 ou F4)
 Diagrama de Voronoi para tesselações islâmicas variáveis e padrão celular orgânico. Implementável com Fortune's algorithm em ~100 linhas ou via `d3-delaunay` (2KB). Worley noise (distância ao ponto Voronoi mais próximo) para texturas de pedra/osso.
 
-### 2026-06-30 — Build step com esbuild (F3 estrutural)
-Separar `vectorforge.html` em `src/` com módulos por estilo (`artdeco.js`, `organic.js`, `noise.js`, `lsystem.js`, etc.) durante o desenvolvimento; esbuild bundle tudo de volta para um único `.html` portável. Setup em ~15 min; zero impacto no output final (ainda arquivo único para o usuário). Facilita manutenção quando o arquivo crescer além de ~1500 linhas.
-
 ### 2026-06-23 — Adicionar JSDoc a todas as funções geradoras
 As funções `genADMedallion`, `genBQFrame`, etc. ainda sem docstrings completas. Convenção do projeto exige docstring em toda função pública. Baixo esforço via ASU; melhora manutenibilidade. (Parcialmente feito em v0.2.0 — novos geradores já têm JSDoc; os antigos ficam pendentes.)
+
+### 2026-07-07 — Verificação por comparação headless em migrações de código (F4+ ou qualquer refactor grande)
+Durante a divisão de `vectorforge.html` em módulos (DEC-010), a técnica que pegou os 4 bugs reais antes da entrega foi: renderizar TODAS as combinações relevantes (aqui, as 49 de `TYPES_BY_STYLE`) em Chromium headless (Playwright) tanto na versão antiga quanto na nova, com o mesmo seed, e comparar a saída byte-a-byte. Vale generalizar como prática padrão para qualquer refactor grande futuro (ex.: quando o motor L-System for integrado, comparar saída antes/depois nos estilos que não deveriam ter mudado). Custo: ~alguns minutos de execução; benefício: pega regressões silenciosas que smoke-test manual não pegaria (ex.: `onclick` que não faz nada, sem erro no console).
 
 ---
 
@@ -77,6 +77,7 @@ As funções `genADMedallion`, `genBQFrame`, etc. ainda sem docstrings completas
 - **genPhyllotaxis (ângulo áureo)** — implementado em v0.2.0.
 - **genOrganicLeaf com noise orgânico** — implementado em v0.2.0.
 - **genWave com noise orgânico** — implementado em v0.2.0.
+- **Build step com esbuild (F3)** — implementado em 2026-07-07 (DEC-010): `vectorforge.html` dividido em 16 módulos ES sob `src/`, `npm run build` gera `dist/vectorforge.html`. Zero mudança de comportamento, verificada byte-a-byte.
 
 ---
 

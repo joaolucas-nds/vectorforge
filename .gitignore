@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+
+# NOTA: dist/vectorforge.html NÃO está aqui de propósito (não é dist/ inteiro
+# ignorado). DEC-001 diz "compartilhar o .html já é o deploy" — gitignorar o
+# build quebraria isso para quem clona o repo sem rodar `npm install && npm run
+# build`. Trade-off aceito: lembrar de rodar `npm run build` e incluir
+# dist/vectorforge.html no commit sempre que mexer em src/. Se preferir o
+# padrão convencional (gitignorar dist/ e aceitar que o repo sozinho exige
+# Node para virar arquivo usável), avise que eu troco.
+
+# Editores / OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Backups do ASU (a ferramenta cria backup automático antes de aplicar patch)
+*.asu-backup/
+.asu-backup/

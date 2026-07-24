@@ -8,7 +8,7 @@
 ---
 
 ## DEC-001 — Arquivo HTML único, sem build e sem framework
-**Data:** 2026-06-23 · **Status:** aceita
+**Data:** 2026-06-23 · **Status:** aceita — **ver nota em DEC-010:** o *output* continua sendo um `.html` único; o que DEC-010 muda é só o fluxo de desenvolvimento (agora há um build step opcional entre `src/` e `dist/`).
 
 ### Contexto
 O projeto precisava ser abrível em qualquer máquina sem instalação de Node, Python ou qualquer runtime. A alternativa seria um projeto Vite/React com bundler, mas isso adicionaria fricção no setup e complicaria a distribuição como arquivo único.
@@ -210,3 +210,37 @@ Ampliar o escopo do ASU neste projeto para cobrir, além de código:
 - Próxima vez que uma DEC-N ou FIX-N nova precisar ser registrada, avaliar se cabe como patch ASU (`insert_after_pattern` no final do arquivo) em vez de arquivo completo — reduz volume de texto reenviado.
 - CONTEXT.md ainda é candidato conservador: só usar ASU quando a edição for comprovadamente isolada (uma armadilha nova, uma linha na stack); em caso de dúvida, arquivo completo continua sendo o padrão seguro.
 - Ver seção "Saída de código via ASU" no CEREBRO.md — atualizada para refletir este escopo.
+
+---
+
+## DEC-010 — F3 inicia por esbuild: `vectorforge.html` dividido em módulos ES; script custom de inlining em vez de plugin HTML
+**Data:** 2026-07-07 · **Status:** aceita
+
+### Contexto
+F3 tinha uma decisão pendente desde 2026-06-30: começar pelo motor L-System (ganho visual) ou pelo build step com esbuild (ganho estrutural). O usuário escolheu esbuild nesta sessão. Antes de estruturar, pesquisei as práticas atuais de bundling para o caso específico deste projeto — produzir um `.html` **único** com JS e CSS **inline**, não um `outdir` com arquivos linkados por tag, que é o caso de uso mais comum de bundlers.
+
+### Decisão
+1. **Divisão de módulos** — `vectorforge.html` (1554 linhas de `<script>`) foi dividido em:
+   - `src/core/{utils,state,ui,view,generate,export}.js` — helpers matemáticos/noise, estado global, construção de UI, controles de view/zoom/draw, dispatcher central (`generateContent`) + orquestração (`doGen`), export.
+   - `src/generators/{artdeco,baroque,geometric,victorian,celtic,islamic,minimal,organic,generic}.js` — um arquivo por estilo (espelha o Inventário de Geradores do CONTEXT.md), mais `generic.js` para `genDivider`/`genPattern`/`genPixelArt`/`genTextShape`.
+   - `src/main.js` — entry point; importa tudo e expõe no `window` as funções referenciadas via `onclick=""` inline no HTML (ver Armadilha 8 no CONTEXT.md).
+   - `src/index.html` + `src/styles/main.css` — template e CSS extraídos tal qual.
+2. **Extração por parsing, não retype manual** — os corpos de função foram extraídos do `vectorforge.html` original por um parser Python de contagem de chaves/parênteses (respeitando strings, template literals e comentários), garantindo cópia byte-exata. Reescrever ~1500 linhas à mão introduziria risco real de erro de transcrição num arquivo-chave.
+3. **Build: esbuild bundla, um script Node de ~60 linhas faz o inlining** — `scripts/build.js` chama `esbuild.build({ entryPoints: ['src/main.js'], bundle: true, format: 'iife' })` para produzir um único JS (mantendo o comportamento de `<script>` clássico: execução síncrona, sem `defer` de módulo), depois lê `src/index.html`, substitui os placeholders `/*__STYLES__*/` e `//__SCRIPT__` pelo CSS e pelo JS bundlado, e escreve `dist/vectorforge.html` — o mesmo arquivo único distribuível de sempre.
+
+### Alternativas consideradas
+- **`esbuild-plugin-html` / `@chialab/esbuild-plugin-html`** — plugins prontos para gerar HTML a partir de entry points. Rejeitados: são feitos para o caso comum (múltiplos arquivos de saída referenciados via `<script src>`/`<link>`), não para inlining num único arquivo; adicionariam uma dependência e uma camada de indireção para resolver algo que um script de ~60 linhas resolve de forma mais previsível e auditável.
+- **Bundle em formato `esm`** — rejeitado porque um `<script type="module">` tem `defer` implícito e escopo de módulo (não vaza para `window`); trocar todos os `onclick="..."` inline do HTML para `addEventListener` teria um diff muito maior no arquivo-chave sem ganho real aqui. `iife` + `Object.assign(window, {...})` explícito preserva o HTML inalterado.
+- **Divisão por camada (`dom.js`, `math.js`, `generators.js` monolítico)** em vez de por estilo — rejeitada; o Inventário de Geradores do CONTEXT.md já documenta por estilo, e a Armadilha 6 (reuso cruzado entre estilos) fica mais visível quando cada arquivo de estilo é pequeno e autocontido.
+
+### Consequências
+- **Funções expostas via `onclick=""` inline precisam estar em `Object.assign(window, {...})` em `main.js`.** Lista atual: `setMode, doGenRandom, selectStyle, selectType, selectPal, selectFont, setRatio, doGen, zoom, toggleBg, toggleGrid, toggleDraw, xSVG, xPNG, copySVG, applyVar`. Qualquer novo handler chamado via `onclick=""` no HTML (estático ou gerado em template string por `buildStyleGrid`/`buildTypeChips`/etc.) precisa entrar nesta lista, ou o clique silenciosamente não faz nada (sem erro visível). Ver Armadilha 8 no CONTEXT.md.
+- **Fluxo de desenvolvimento mudou:** `npm install && npm run build` (ou `npm run watch`) agora é necessário antes de abrir o app no browser. `src/index.html` sozinho **não** é abrível diretamente (tem placeholders não substituídos) — sempre abrir `dist/vectorforge.html`.
+- **`dist/vectorforge.html` continua versionado no Git** (não está no `.gitignore`) — decisão deliberada para preservar o modelo de distribuição do DEC-001 ("compartilhar o `.html` já é o deploy"). Trade-off aceito:é preciso lembrar de rodar `npm run build` e commitar `dist/` junto com mudanças em `src/`; nenhum CI garante isso ainda (projeto de mantenedor único, aceitável por ora — revisitar se o projeto ganhar colaboradores).
+- **Metodologia de verificação usada, vale repetir em migrações futuras:** as 49 combinações estilo×tipo (`TYPES_BY_STYLE` inteiro) foram renderizadas via Chromium headless (Playwright) tanto no `vectorforge.html` original quanto no `dist/vectorforge.html` novo, com o mesmo seed, e comparadas byte-a-byte (SVG normalizado sem `id`/`width`/`height`, que variam por zoom). Também testados: Text→Form, Draw mode (traço → ornamento), Pixel Art (hash de pixels via `getImageData`), Export (SVG/PNG download), Regenerate (mudança de seed), Variations (4 thumbnails + `applyVar`), zoom/Fit, presets de canvas, toggle de fundo. **Essa bateria pegou 4 bugs reais antes da entrega** (todos de import faltante — ver abaixo) que um smoke-test visual manual provavelmente deixaria passar.
+- **4 bugs reais encontrados e corrigidos durante a extração** (todos "esqueci de importar X no módulo Y" — risco inerente a dividir 1500 linhas em 16 arquivos):
+  1. `TAU` não importado em 7 dos 9 módulos de geradores (artdeco, celtic, geometric, islamic, minimal, organic, victorian) — `genADMedallion` e outras usam `TAU` diretamente, não só via parâmetro.
+  2. `starPath`/`polyPath` não importados em `islamic.js` (`genIslamicStar` usa ambos).
+  3. `setStatus` não importado em `export.js` (`xSVG`/`xPNG`/`copySVG`) nem em `view.js` (`convertDrawToOrnament`) — ambos chamam `setStatus(...)` no fim, mas a função mora em `generate.js`.
+  4. `genMandala` não importado em `generic.js` — é o fallback de `genTextShape()` quando a textarea de texto está vazia (`if (!text) return genMandala(...)`).
+- Depois das correções, todas as 49 combinações + os fluxos extras batem byte-a-byte / hash-a-hash entre original e build, com zero erros de JS em ambos. Nenhuma lógica de gerador mudou — é reposicionamento de código puro.
