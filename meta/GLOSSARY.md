@@ -22,6 +22,10 @@
 - **`snoiseSetSeed(seed)`** — reembaralha a tabela de permutação do Simplex Noise deterministicamente via `mkRand(seed)`. Precisa ser chamada antes de qualquer uso de `snoise()` para garantir reproducibilidade; já é chamada automaticamente no início de `generateContent()`.
 - **Phyllotaxis** — padrão de disposição espiral presente em girassóis, pinhas e alcachofras, gerado pelo ângulo áureo (φ → ≈137.507°). Tipo `phyllotaxis` no estilo Organic desde v0.2.0 (`genPhyllotaxis`).
 - **Ângulo áureo (golden angle)** — `π × (3 − √5)`, deriva de φ (proporção áurea); usado em `genPhyllotaxis` para distribuir pontos sem sobreposição visual, replicando o padrão de crescimento vegetal real.
+- **L-System (Lindenmayer system)** — sistema de reescrita de strings onde um axioma inicial é expandido N vezes aplicando regras símbolo→substituição; a string final é interpretada como comandos de desenho (turtle graphics). Motor genérico em `lsystemExpand`/`turtleToPath` (`src/generators/botanical.js`), desde v0.3.0 (DEC-011).
+- **Axioma** — a string inicial de um L-System (ex.: `"X"` para a árvore, `"F--F--F"` para o Koch snowflake, `"FX"` para a Dragon curve), antes de qualquer reescrita.
+- **Turtle graphics** — modelo de desenho onde um cursor ("turtle") se move por comandos relativos: `F`/`G` desenha para frente, `f` move sem desenhar, `+`/`-` giram, `[`/`]` empilham/desempilham posição+ângulo (usado para ramificação, ex. na árvore). Implementado em `turtleToPath`.
+- **Estilo Botanical** — estilo introduzido em v0.3.0 (F3), com 3 tipos: `tree` (árvore recursiva), `koch` (floco de neve de Koch) e `dragon` (Dragon curve) — todos gerados pelo motor L-System, ver DEC-011.
 
 ## Arquiteturas / módulos
 

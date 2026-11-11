@@ -6,8 +6,17 @@
 ---
 
 ## [Não lançado]
+*(vazio — próxima entrega prevista: Flow Fields, item restante de F3)*
+
+---
+
+## [0.3.0] — 2026-07-24
+### Adicionado
+- **Motor L-System + novo estilo Botanical (F3)**: `lsystemExpand` (reescrita de string) e `turtleToPath` (interpretação turtle graphics) em `src/generators/botanical.js`, reaproveitáveis para futuras formas L-System. 3 presets novos: `tree` (árvore recursiva, regra clássica de Lindenmayer), `koch` (floco de neve de Koch), `dragon` (Dragon curve). `comp` controla iterações/profundidade em todos; `sym` controla o ângulo de ramificação na árvore e jitter/alternância decorativa nos outros dois (o ângulo de Koch/Dragon é fixo por definição da curva). Ver DEC-011.
+- **`index.html` de redirect na raiz do repo** — GitHub Pages a partir da raiz caía no fallback do `README.md`; agora redireciona para `dist/vectorforge.html`.
+
 ### Alterado
-- **Reestruturação interna (F3): `vectorforge.html` dividido em 16 módulos ES** sob `src/` (`core/{utils,state,ui,view,generate,export}.js` + `generators/{artdeco,baroque,geometric,victorian,celtic,islamic,minimal,organic,generic}.js` + `main.js`). Build via `npm run build` (esbuild, bundle IIFE + inlining de CSS/JS num template HTML) gera `dist/vectorforge.html` — o mesmo arquivo único distribuível de sempre. **Nenhuma mudança de comportamento para o usuário final** — verificado byte-a-byte idêntico ao `vectorforge.html` anterior em todas as 49 combinações estilo×tipo, mais Text→Form, Draw mode, Pixel Art, Export e controles de canvas. Ver DEC-010. Por não haver mudança visível ao usuário, não há bump de versão ainda — isso deve acontecer quando o motor L-System (próximo item de F3) entregar o estilo Botanical.
+- **Reestruturação interna (F3): `vectorforge.html` dividido em 16 módulos ES** sob `src/` (`core/{utils,state,ui,view,generate,export}.js` + `generators/{artdeco,baroque,geometric,victorian,celtic,islamic,minimal,organic,generic}.js` + `main.js`). Build via `npm run build` (esbuild, bundle IIFE + inlining de CSS/JS num template HTML) gera `dist/vectorforge.html` — o mesmo arquivo único distribuível de sempre. Verificado byte-a-byte idêntico ao `vectorforge.html` anterior em todas as 49 combinações estilo×tipo pré-existentes, mais Text→Form, Draw mode, Pixel Art, Export e controles de canvas. Ver DEC-010.
 
 ---
 

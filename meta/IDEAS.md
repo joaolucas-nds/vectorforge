@@ -45,9 +45,6 @@ Definir um ponto de "peso" no canvas onde a complexidade se concentra (clique pa
 ### 2026-06-30 — Verificar seed de noise em genPixelArt (débito técnico F3)
 `genPixelArt()` é pipeline paralelo que não passa por `generateContent()`. Se futuramente um gerador de pixel art baseado em `snoise` for adicionado, precisa chamar `snoiseSetSeed()` explicitamente; do contrário, usará tabela residual da última geração SVG. Baixo risco agora (pixel art atual não usa noise), alto risco se expandido.
 
-### 2026-06-30 — L-System engine + estilo Botanical (F3 prioritário)
-Motor de reescrita de strings + turtle graphics em ~150 linhas de JS puro. Abre categoria nova de ornamentos: árvores botânicas matematicamente corretas, Koch snowflake como borda, Dragon curve como tessellation. Cada preset = um axioma + regras + ângulo. Ver análise detalhada na sessão de 2026-06-30.
-
 ### 2026-06-30 — Flow Fields (F3)
 Campo de direções derivado de Simplex Noise → partículas traçam caminhos curvos. Cria ornamentos tipo "fluxo de cabelo"/marmorizado. ~120 linhas JS, usa o `snoise` já integrado em v0.2.0. Perf: 500 partículas × 200 passos ≈ 50ms em V8 moderno; usar requestAnimationFrame ou Web Worker para não bloquear UI durante variações.
 
@@ -78,6 +75,7 @@ Durante a divisão de `vectorforge.html` em módulos (DEC-010), a técnica que p
 - **genOrganicLeaf com noise orgânico** — implementado em v0.2.0.
 - **genWave com noise orgânico** — implementado em v0.2.0.
 - **Build step com esbuild (F3)** — implementado em 2026-07-07 (DEC-010): `vectorforge.html` dividido em 16 módulos ES sob `src/`, `npm run build` gera `dist/vectorforge.html`. Zero mudança de comportamento, verificada byte-a-byte.
+- **Motor L-System + estilo Botanical (F3)** — implementado em 2026-07-24 (DEC-011): `lsystemExpand`/`turtleToPath` + 3 presets (tree/koch/dragon) em `src/generators/botanical.js`. Zero regressão nos 8 estilos anteriores, verificada byte-a-byte.
 
 ---
 
@@ -104,6 +102,9 @@ O padrão atual prescreve bloco YAML inline. Copiar/colar blocos com caracteres 
 ### 2026-07-03 — Convergência confirmada: Kit validou DEC-007/DEC-008 de forma independente
 A atualização do Kit trazida pelo usuário nesta data (`instrucoes-dev__template-update.txt`) formalizou, sem que tivéssemos avisado ninguém do time do Kit, exatamente os dois pontos que tínhamos especulado como "candidatos a reavaliar no futuro" em DEC-007: (a) ASU pode tocar docs de heading estável (DECISIONS/CONTEXT), não só código; (b) entrega de instrução ASU sempre como arquivo para download é o novo padrão, não só bloco inline. Isso não gerou um feedback novo para o Kit — é uma confirmação de que o Kit chegou à mesma conclusão pelo próprio caminho. Registrado aqui só para fechar o loop e não reabrir a discussão. Ver DEC-009 em DECISIONS.md para a integração formal deste projeto.
 
+### 2026-07-24 — Convenção de nome de instrução ASU mudou: `AAAA-MM-DD-asuNNNN.yaml` → `AAMMDD-asuNNNN.yaml`
+O usuário trouxe, como adendo direto nas instruções (não como atualização formal de arquivo do Kit), uma convenção de nome mais compacta para a instrução ASU — ano com 2 dígitos, sem hífens entre ano/mês/dia (`260724-asu0001.yaml` em vez de `2026-07-24-asu0001.yaml`). Isso substitui o formato específico fixado em DEC-008 (o *princípio* de DEC-008 — sempre entregar como arquivo para download — continua valendo; só o *formato do nome* mudou). Aplicado a partir desta sessão. Não abri uma DEC nova para isso por ser um detalhe de nomenclatura, não uma decisão de arquitetura — mas fica registrado aqui para não reabrir dúvida se `AAAA-MM-DD` reaparecer em alguma instrução antiga como referência.
+
 ---
 
 ## 📝 Feedback para o ASU
@@ -118,3 +119,6 @@ Um arquivo `.asu-applied.json` na raiz do projeto (ou hash do conteúdo de cada 
 
 ### 2026-06-30 — Aviso sobre caracteres não-ASCII em âncoras
 O guia já é rigoroso sobre indentação exata; vale adicionar nota explícita recomendando evitar caracteres Unicode não-ASCII (setas, box-drawing) como literais em `pattern`/`before`/`after`. Sugestão prática: preferir `.*` para saltar sobre eles e ancorar em texto ASCII estável ao redor — é uma prática que evita um round-trip de debug independente da causa (corrupção de encoding, diferença de plataforma, copy/paste). O guia poderia incluir este caso como exemplo na tabela de "O que NÃO fazer".
+
+### 2026-07-24 — Confirmação prática: acentuação em português também quebra âncora, não só símbolos
+Ao gerar a instrução para DEC-011, escrevi uma âncora com "correc" (sem cedilha) esperando que ela fosse prefixo de "correções" — mas "correções" é c-o-r-r-e-**ç**-õ-e-s: o "ç" vem logo depois do "e", não existe um "c" puro ali. A âncora falhou silenciosamente na validação local (0 matches) até eu inspecionar caractere a caractere. Isso é uma instância nova do padrão já registrado em 2026-06-30 (âncoras não-ASCII), mas mostra que o risco não é só de símbolos "exóticos" (setas, box-drawing) — palavras comuns em PT-BR com acento/cedilha têm o mesmo problema, e são muito mais fáceis de "achar que é ASCII" porque visualmente parecem uma palavra normal. Reforça a sugestão: para qualquer projeto com docs em PT-BR, vale o ASU (ou o gerador da instrução) sinalizar quando uma âncora contém um caractere fora do intervalo ASCII básico, independente de "parecer" um símbolo especial ou uma letra acentuada comum.

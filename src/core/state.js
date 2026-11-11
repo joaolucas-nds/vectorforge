@@ -30,6 +30,7 @@ export const STYLES = [
   { id: 'islamic',  name: 'Islamic',     icon: 'isl' },
   { id: 'minimal',  name: 'Minimal',     icon: 'min' },
   { id: 'organic',  name: 'Organic',     icon: 'org' },
+  { id: 'botanical',name: 'Botanical',   icon: 'bot' },
 ];
 
 export const TYPES_BY_STYLE = {
@@ -41,6 +42,7 @@ export const TYPES_BY_STYLE = {
   islamic:   ['star','girih','arabesque','border','medallion','pattern'],
   minimal:   ['symbol','line','grid','circle','mark','glyph'],
   organic:   ['leaf','spiral','branch','flower','mandala','wave','phyllotaxis'],
+  botanical: ['tree','koch','dragon'],
 };
 
 export const PALETTES = [

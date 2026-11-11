@@ -13,6 +13,7 @@ export function buildStyleGrid() {
     isl: '<path d="M20 4 L23.5 13 L33 13 L25 19 L28.5 29 L20 23 L11.5 29 L15 19 L7 13 L16.5 13 Z" fill="none" stroke="currentColor" stroke-width="1.2"/>',
     min: '<line x1="8" y1="20" x2="32" y2="20" stroke="currentColor" stroke-width="1.5"/><circle cx="20" cy="20" r="4" fill="currentColor"/>',
     org: '<path d="M20 34 C20 34 8 26 8 16 C8 10 14 6 20 12 C26 6 32 10 32 16 C32 26 20 34 20 34Z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M20 34 L20 18" stroke="currentColor" stroke-width="0.8"/>',
+    bot: '<path d="M20 34 L20 20" stroke="currentColor" stroke-width="1.4"/><path d="M20 24 L13 17 M20 24 L27 17 M20 17 L15 11 M20 17 L25 11" stroke="currentColor" stroke-width="1" fill="none"/><circle cx="13" cy="17" r="1.3" fill="currentColor"/><circle cx="27" cy="17" r="1.3" fill="currentColor"/><circle cx="15" cy="11" r="1.1" fill="currentColor"/><circle cx="25" cy="11" r="1.1" fill="currentColor"/>',
   };
   grid.innerHTML = STYLES.map(s => `
     <div class="stile ${s.id === state.style ? 'active' : ''}" onclick="selectStyle('${s.id}')">
