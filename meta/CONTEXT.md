@@ -141,6 +141,7 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 | **islamic** | `src/generators/islamic.js` | star, girih, arabesque, border, medallion, pattern | `genIslamicStar`, `genPattern('girih')`†, `genArabesque`, `genADFrame`‡ (reuso, n=8), `genIslamicStar` (reuso, n=12), `genPattern('islamic')`† |
 | **minimal** | `src/generators/minimal.js` | symbol, line, grid, circle, mark, glyph | `genMinimalSymbol`, `genDivider('min', comp×0.3)`†, `genMinGrid`, `genMinCircles`, `genMinimalSymbol` (reuso menor), `genGlyph` |
 | **organic** | `src/generators/organic.js` | leaf, spiral, branch, flower, mandala, wave, phyllotaxis | `genOrganicLeaf` (usa `snoise`), `genOrganicSpiral`, `genOrganicBranch`, `genOrganicFlower`, `genMandala`‡ (reuso, n=8), `genWave` (usa `snoise`), `genPhyllotaxis` (usa `snoise`) |
+| **botanical** | `src/generators/botanical.js` | tree, koch, dragon | `genLSysTree`, `genLSysKoch`, `genLSysDragon` (motor generico reaproveitavel: `lsystemExpand`, `turtleToPath`) |
 
 † = gerador genérico, vive em `src/generators/generic.js`, despachado por parâmetro `style`.
 ‡ = reuso de gerador definido em OUTRO arquivo de estilo — a chamada cruzada é feita pelo dispatcher em `generate.js`, não dentro do próprio arquivo do estilo. Isto é intencional: `generate.js` é o único módulo que importa de todos os `generators/*.js` ao mesmo tempo; cada arquivo de estilo importa só de `core/utils.js` e `core/state.js` (nunca de outro `generators/*.js`).

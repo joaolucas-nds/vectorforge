@@ -244,3 +244,28 @@ F3 tinha uma decisão pendente desde 2026-06-30: começar pelo motor L-System (g
   3. `setStatus` não importado em `export.js` (`xSVG`/`xPNG`/`copySVG`) nem em `view.js` (`convertDrawToOrnament`) — ambos chamam `setStatus(...)` no fim, mas a função mora em `generate.js`.
   4. `genMandala` não importado em `generic.js` — é o fallback de `genTextShape()` quando a textarea de texto está vazia (`if (!text) return genMandala(...)`).
 - Depois das correções, todas as 49 combinações + os fluxos extras batem byte-a-byte / hash-a-hash entre original e build, com zero erros de JS em ambos. Nenhuma lógica de gerador mudou — é reposicionamento de código puro.
+
+
+---
+
+## DEC-011 — Design do motor L-System (F3): regras classicas, mapeamento comp/sym, ajuste por bounding-box
+**Data:** 2026-07-24 · **Status:** aceita
+
+### Contexto
+O ROADMAP ja fixava o "que" de F3: motor L-System com pelo menos 3 presets (arvore recursiva, Koch snowflake, Dragon curve). Faltava o "como": quais regras de reescrita usar, como mapear `comp`/`sym` (que em todo o resto do projeto tem significado geometrico consistente — densidade/simetria) para os parametros de um L-System, e como encaixar o resultado (que nasce em coordenadas locais arbitrarias da turtle) no sistema `cx,cy,sz` que todo gerador do projeto usa.
+
+### Decisao
+1. **Regras classicas de L-System** (Lindenmayer/Prusinkiewicz) em vez de inventar novas: arvore `F->FF, X->F-[[X]+X]+F[+FX]-X` (angulo 15-35 graus); Koch snowflake `F--F--F` com `F->F+F--F+F` (angulo fixo 60 graus, e o que DEFINE a curva); Dragon curve `FX` com `X->X+YF+, Y->-FX-Y` (angulo fixo 90 graus).
+2. **Mapeamento de parametros**: `comp` controla iteracoes/profundidade (mais denso = mais iteracoes, mesmo papel que em todo o resto do projeto). `sym` controla o angulo de ramificacao na arvore (onde variar geometricamente faz sentido); nos outros dois presets, onde o angulo e fixo por definicao da curva, `sym` vira jitter leve (Koch) ou alternancia decorativa SO/FG (Dragon) em vez de tocar na geometria.
+3. **Ajuste de bounding box via transform de grupo** (`<g transform="translate(...) scale(...)">`) envolvendo o path bruto, em vez de recalcular cada coordenada manualmente centrada em cx/cy como os outros geradores fazem ponto a ponto — mais simples e sem risco de erro de arredondamento acumulado ao longo de milhares de pontos.
+4. **Teto de iteracoes do Dragon curve reduzido de 14 para 12** depois de medir que 14 iteracoes geravam um path de 256KB sem ganho visual proporcional (a string do L-System cresce de forma proxima a exponencial por iteracao).
+
+### Alternativas consideradas
+- **Angulo variavel para Koch/Dragon** (deixar `sym` controlar o angulo livremente) — rejeitada: o angulo e o que DEFINE essas curvas; varia-lo livremente produziria "outra curva", nao uma variacao da mesma, quebrando a identidade visual esperada de quem escolhe especificamente "Koch" ou "Dragon".
+- **Recalcular coordenadas manualmente para centralizar** (como os outros geradores fazem com `pt(cx, cy, r, a)`) — rejeitada para este caso: a turtle graphics ja produz uma string de path completa: interceptar a emissao de cada ponto para centralizar exigiria reescrever o motor da turtle, sem beneficio real sobre um unico transform de grupo no final.
+
+### Consequencias
+- Novo estilo `botanical` (`src/generators/botanical.js`) com 3 tipos: `tree`, `koch`, `dragon` — registrado em `STYLES`/`TYPES_BY_STYLE` (`src/core/state.js`), no dispatcher (`src/core/generate.js`) e com icone proprio (`src/core/ui.js`, chave `bot`).
+- Zero regressao nos 8 estilos existentes — confirmado via a mesma metodologia de comparacao headless de DEC-010 (as 49 combinacoes antigas continuam byte-a-byte identicas com o novo estilo adicionado).
+- `lsystemExpand`/`turtleToPath` em `botanical.js` sao utilitarios genericos (nao amarrados a nenhum preset especifico) — reaproveitaveis se um F4/F5 quiser adicionar mais formas L-System (ex.: Sierpinski, Hilbert curve) sem duplicar o motor.
+- ROADMAP F3 segue aberto: falta Flow Fields para fechar a fase.
