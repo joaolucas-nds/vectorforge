@@ -150,7 +150,7 @@ Implementar Simplex Noise 2D (algoritmo de Stefan Gustavson, domínio público/M
 ---
 
 ## DEC-007 — Modelo híbrido: ASU para código, arquivo completo para documentação rolante
-**Data:** 2026-06-30 · **Status:** SUPERADA parcialmente por DEC-009 (2026-07-03) — o corpo abaixo é o registro histórico original; DEC-009 é a regra vigente para o escopo do ASU em docs.
+**Data:** 2026-06-30 · **Status:** substituída por DEC-012 (2026-11-11; antes, parcialmente por DEC-009) — o corpo abaixo é registro histórico.
 
 ### Contexto
 Após o ASU funcionar bem no `vectorforge.html` (86KB, patch cirúrgico evita reenviar o arquivo inteiro), surgiu a pergunta de usar o mesmo mecanismo nos arquivos de documentação (STATUS, CHANGELOG, IDEAS, DECISIONS, CONTEXT, GLOSSARY).
@@ -169,7 +169,7 @@ ASU fica reservado para código (`vectorforge.html` e futuros módulos `.js`). D
 ---
 
 ## DEC-008 — Instruções ASU entregues como arquivo para download (desvio do padrão do Kit)
-**Data:** 2026-06-30 · **Status:** aceita — desvio registrado
+**Data:** 2026-06-30 · **Status:** substituída por DEC-012 (2026-11-11) — ASU descontinuado; corpo mantido como registro histórico.
 
 ### Contexto
 O CEREBRO.md (ambas as versões, original e atualizada) prescreve por padrão entregar instrução ASU como bloco `yaml` inline no chat ("Nunca arquivos soltos"). Na prática, isso expôs um ponto de fricção: copiar/colar um bloco com caracteres Unicode não-ASCII (↻, ──) em âncoras de patch tem risco real de divergência de encoding entre o que foi gerado e o que chega no disco do usuário, gerando falhas de match difíceis de diagnosticar (ver sessão de 2026-06-30, FIX da âncora do botão Regenerate).
@@ -188,7 +188,7 @@ Para este projeto, instruções ASU passam a ser entregues como arquivo `.yaml` 
 ---
 
 ## DEC-009 — Escopo do ASU ampliado para docs de heading estável (DECISIONS, CONTEXT); rolantes continuam full-file
-**Data:** 2026-07-03 · **Status:** aceita — supera DEC-007 neste ponto específico
+**Data:** 2026-07-03 · **Status:** substituída por DEC-012 (2026-11-11) — ASU descontinuado; corpo mantido como registro histórico.
 
 ### Contexto
 A atualização do Kit trazida pelo usuário nesta data (`instrucoes-dev__template-update.txt`) formaliza uma regra que o DEC-007 original já cogitava como possibilidade futura: "ASU: editar código, doc de heading estável (DECISIONS/CONTEXT) ou trecho localizado de capítulo → instrução yaml para baixar. Escrita nova, reescrita profunda e docs rolantes (STATUS/CHANGELOG/IDEAS/HISTORY...) → arquivo inteiro." Isso amplia o escopo do ASU além do que DEC-007 permitia ("ASU é usado somente para código").
@@ -269,3 +269,30 @@ O ROADMAP ja fixava o "que" de F3: motor L-System com pelo menos 3 presets (arvo
 - Zero regressao nos 8 estilos existentes — confirmado via a mesma metodologia de comparacao headless de DEC-010 (as 49 combinacoes antigas continuam byte-a-byte identicas com o novo estilo adicionado).
 - `lsystemExpand`/`turtleToPath` em `botanical.js` sao utilitarios genericos (nao amarrados a nenhum preset especifico) — reaproveitaveis se um F4/F5 quiser adicionar mais formas L-System (ex.: Sierpinski, Hilbert curve) sem duplicar o motor.
 - ROADMAP F3 segue aberto: falta Flow Fields para fechar a fase.
+
+
+---
+
+## DEC-012 — Método de trabalho migra de ASU (chat + patch YAML) para modo Code (chat com pasta vinculada + Claude Code); merge do Kit v1.135.0
+**Data:** 2026-11-11 · **Status:** aceita — substitui DEC-007, DEC-008 e DEC-009
+
+### Contexto
+Até aqui o projeto rodava no chat do claude.ai com o repositório chegando por mount achatado (FlatDrop) e as mudanças voltando por instrução ASU (`AAMMDD-asuNNNN.yaml`) ou arquivo inteiro para download — DEC-007/008/009 fixavam o escopo de cada canal. O dono passou a trabalhar direto no PC: o chat lê e grava na pasta do projeto, e o Claude Code roda no repositório. Junto veio o template-update do Kit v1.135.0, gerado com `Code sim · ASU nao`.
+
+### Decisão
+1. **Duas raias.** Chat (planejamento): autora inteiros CEREBRO, CONTEXT, Instruções e GLOSSARY, e escreve WOs (`meta/workorders/AAMMDD-woNNNN-desc.md`) para documento grande e vivo. Claude Code (execução): código, `npm run build`, append em STATUS/DECISIONS/CHANGELOG, aplica WOs (`/apply-wo`), fecha com `/wrap`, commita e empurra. IDEAS muda por WO. É a divisão-padrão do kit, adotada sem desvio.
+2. **ASU e FlatDrop descontinuados.** Seção ASU sai do CEREBRO (sobra de modo desligado, pelo marcador do manifesto); `meta/ASU/`, `meta/README.md`, `.flatdropignore`, os `.yaml` ASU arquivados e os backups do aplicador (`zz_backups/`) foram MOVIDOS para `zz_para-excluir\` na pasta-pai, para o dono apagar.
+3. **CEREBRO e Instruções refeitos sobre o pacote v1.135.0**, não remendados: o vivo era base de junho com ~40 versões de atraso; os 19 princípios eram os mesmos (o pacote só acrescentou frases a 4). Transplantado o específico deste projeto para «Técnicas específicas deste projeto». Os dois blocos «Mudanças nesta revisão» (relato) foram para `HISTORICO.md` §5. Instruções antigas (6.552 caracteres) descartadas a pedido do dono; novas com 5.515.
+4. **Desvios registrados (nomes vivos mantidos):** `INSTRUCOES-PROJETO.md` (kit: `INSTRUCOES-DO-PROJETO.md`; skill `wrap` especializada para o nome real) e `meta/HISTORICO.md` (kit: `HISTORY.md`). Renomear arrastaria ponteiros em logs e DECs antigas sem ganho.
+5. **Exceção pontual de raia nesta migração:** o próprio merge (STATUS, DECISIONS, CHANGELOG, IDEAS incluídos) foi gravado pelo chat, com aprovação explícita do dono, porque as skills e o `CLAUDE.md` que definem a raia do Code nasceram neste mesmo ciclo. Daqui em diante vale o item 1.
+
+### Alternativas consideradas
+- **Manter ASU para código** — rejeitada: com o Code no repositório, o patch YAML vira um intermediário que o executor não precisa; o próprio pacote vem com `ASU nao`.
+- **Remendar o CEREBRO vivo seção a seção** — rejeitada: a distância de versões tornava o remendo mais arriscado (linhas revogadas espalhadas) que reconstruir sobre o pacote e transplantar o pouco que era deste projeto.
+- **Manter `.flatdropignore` como canal de reserva** — rejeitada pelo dono (sem uso previsto); volta pelo template se fizer falta.
+
+### Consequências
+- `CLAUDE.md`, `.claude/settings.json` (com `npm run build`, `git log`, `date` e `../` em `additionalDirectories`), skills `apply-wo`/`wrap`/`sondar`, `meta/workorders/_TEMPLATE.md` e `meta/SPEC.md` passam a existir.
+- O chat faz git só leitura (`GIT_OPTIONAL_LOCKS=0`); commit e push são do Code ou do dono.
+- As Instruções no painel do Projeto (claude.ai) precisam ser recoladas a partir do arquivo do repo — a fonte é o arquivo.
+- Carimbos do kit (CEREBRO, 3 skills, modelo de WO) em v1.135.0.

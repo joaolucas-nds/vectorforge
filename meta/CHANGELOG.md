@@ -6,7 +6,10 @@
 ---
 
 ## [Não lançado]
-*(vazio — próxima entrega prevista: Flow Fields, item restante de F3)*
+### Alterado
+- **Método de trabalho (só tooling/docs, sem mudança no produto):** ASU e FlatDrop descontinuados; modo Code instalado (`CLAUDE.md`, `.claude/` com skills `apply-wo`/`wrap`/`sondar`, `meta/workorders/`, `meta/SPEC.md`). CEREBRO, Instruções e docs vivos migrados ao Kit v1.135.0. Ver DEC-012.
+
+*(Próxima entrega de produto prevista: Flow Fields, item restante de F3.)*
 
 ---
 

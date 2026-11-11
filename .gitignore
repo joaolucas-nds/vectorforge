@@ -9,11 +9,10 @@ node_modules/
 # padrão convencional (gitignorar dist/ e aceitar que o repo sozinho exige
 # Node para virar arquivo usável), avise que eu troco.
 
-# Editores / OS
+# Editores / OS — NAO ignore .claude/, meta/ nem logs/ (versionados de proposito)
 .vscode/
+.idea/
+*.swp
 .DS_Store
 Thumbs.db
 
-# Backups do ASU (a ferramenta cria backup automático antes de aplicar patch)
-*.asu-backup/
-.asu-backup/

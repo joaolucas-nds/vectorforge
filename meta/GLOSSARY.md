@@ -1,6 +1,6 @@
 # GLOSSARY.md — Termos do Projeto
 
-> **Opcional.** Use quando o projeto tem vocabulário próprio (nomes de módulos, conceitos, identificadores) que o assistente reexplicaria a cada sessão sem isto.
+> **Opcional.** Use quando o projeto tem vocabulário próprio (nomes de módulos, conceitos, identificadores) que o assistente reexplicaria a cada conversa sem isto.
 > Mantenha curto: só o que não é óbvio para alguém de fora.
 
 ---
@@ -46,8 +46,10 @@
 - **`scripts/build.js`** — script Node que roda esbuild (bundle IIFE de `main.js`) e injeta o resultado + o CSS num template HTML, produzindo `dist/vectorforge.html`.
 - **esbuild** — bundler JS/CSS usado só em tempo de desenvolvimento (devDependency); não é dependência de runtime do app entregue.
 - **IIFE (Immediately Invoked Function Expression)** — formato de bundle escolhido (`format: 'iife'` no esbuild) para que o JS bundlado se comporte como o `<script>` clássico original (execução síncrona, sem defer de módulo). Funções declaradas dentro do IIFE não vazam para `window` automaticamente — por isso `main.js` expõe explicitamente as usadas em `onclick=""` inline (ver Armadilha 8 no CONTEXT.md).
-- **ASU** — Atualizador Automático de Scripts; ferramenta usada para aplicar patches cirúrgicos aos arquivos de `src/` (antes, ao `vectorforge.html` monolítico) via instruções YAML. Ver `INSTRUCTION_GUIDE.md` e `PROMPT_IA.md`.
-- **`instrucao.yaml`** — arquivo de instrução ASU gerado pelo assistente para aplicar mudanças no código.
+- **ASU** *(descontinuado em 2026-11-11, DEC-012)* — Atualizador Automático de Scripts; aplicava patches YAML (`AAMMDD-asuNNNN.yaml`) em `src/` e em anexos de DECISIONS/CONTEXT. Mantido aqui porque DEC-007/008/009 e os logs antigos o citam.
+- **WO (work order)** — ordem de trabalho do chat para o Claude Code, em `meta/workorders/AAMMDD-woNNNN-desc.md`, aplicada com `/apply-wo`. Âncora exata ou para e reporta.
+- **`/apply-wo` · `/wrap` · `/sondar`** — skills do Claude Code em `.claude/skills/`: aplicar WO; fechar a tarefa (append em STATUS/DECISIONS, log, commit, push, relatório); passada exploratória que devolve candidatos, não veredito.
+- **Relatório de trabalho** — `../AAMMDD-HHMM-code-vectorforge-<ato>-<alvo>.txt` na pasta-pai, gravado pelo Code ao fechar qualquer tarefa.
 
 ## Identificadores
 

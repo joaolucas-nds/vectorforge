@@ -1,6 +1,6 @@
 # CONTEXT.md — VectorForge
 
-> Arquivo **estável**. O assistente lê no início de cada sessão para se ambientar.
+> Arquivo **estável**. O assistente lê ao abrir cada conversa para se ambientar.
 > Muda pouco: só em alteração estrutural (stack, arquitetura, escopo, nova armadilha descoberta).
 > Mantenha enxuto — descreve o que o projeto É, não o que está acontecendo agora (isso é o STATUS).
 
@@ -29,7 +29,7 @@ VectorForge é um gerador procedural de arte vetorial que roda inteiramente no b
 - **Fontes:** Google Fonts (DM Mono + Fraunces) via `@import` — única dependência externa do runtime, removível.
 - **Persistência:** nenhuma — tudo em memória/estado JS local.
 - **Deploy:** `dist/vectorforge.html`, abrível diretamente no browser (`file://`) ou via qualquer servidor estático. **Não** é o `src/index.html` — esse é só o template com placeholders, não abrível sozinho.
-- **Build / tooling:** esbuild bundla `src/main.js` (formato IIFE) → um script Node (`scripts/build.js`) injeta esse JS + o CSS de `src/styles/main.css` no template `src/index.html` → `dist/vectorforge.html`. ASU continua sendo o mecanismo de patch cirúrgico, agora mirando arquivos de `src/` em vez de um monólito.
+- **Build / tooling:** esbuild bundla `src/main.js` (formato IIFE) → um script Node (`scripts/build.js`) injeta esse JS + o CSS de `src/styles/main.css` no template `src/index.html` → `dist/vectorforge.html`. O Claude Code edita os arquivos de `src/` direto e roda o build (DEC-012).
 
 ---
 
@@ -53,6 +53,7 @@ vectorforge/
 │   ├── generators/
 │   │   ├── artdeco.js · baroque.js · geometric.js · victorian.js
 │   │   ├── celtic.js · islamic.js · minimal.js · organic.js
+│   │   ├── botanical.js         # motor L-System (lsystemExpand/turtleToPath) + tree/koch/dragon (DEC-011)
 │   │   └── generic.js           # genDivider, genPattern, genPixelArt, genTextShape
 │   └── main.js                  # Entry point: importa tudo, expõe funções em window, roda o init
 ├── scripts/
@@ -62,29 +63,19 @@ vectorforge/
 ├── dist/
 │   └── vectorforge.html         # O ARQUIVO QUE O USUÁRIO ABRE. Gerado por `npm run build`, mas versionado.
 ├── meta/                        # Kit de Contexto (este conjunto de arquivos .md)
-│   ├── CEREBRO.md
-│   ├── CONTEXT.md
-│   ├── STATUS.md
-│   ├── DECISIONS.md
-│   ├── CHANGELOG.md
-│   ├── IDEAS.md
-│   ├── ROADMAP.md
-│   ├── GLOSSARY.md
-│   ├── HISTORICO.md
-│   ├── LOG-TEMPLATE.md
-│   ├── INSTRUCOES-PROJETO.md
-│   ├── INSTRUCTION_GUIDE.md
-│   ├── PROMPT_IA.md
-│   └── demo.yaml
-├── logs/                        # Logs de sessão — pasta irmã de meta/, não aninhada (convenção já em uso)
-│   ├── 2026-06-23.md
-│   ├── 2026-06-30.md
-│   ├── 2026-07-03.md
-│   └── 2026-07-07.md
+│   ├── CEREBRO.md · CONTEXT.md · STATUS.md · DECISIONS.md · CHANGELOG.md · IDEAS.md
+│   ├── ROADMAP.md · GLOSSARY.md · HISTORICO.md · LOG-TEMPLATE.md
+│   ├── SPEC.md                  # modelo de spec de feature (sob demanda; specs/ nasce no 1º uso)
+│   └── workorders/              # WOs chat→Code (AAMMDD-woNNNN-desc.md) + _TEMPLATE.md
+├── logs/                        # Log do dia (AAAA-MM-DD.md) — pasta irmã de meta/, não aninhada
+├── .claude/                     # settings.json (permissões) + skills/{apply-wo,wrap,sondar}
+├── CLAUDE.md                    # guia raiz do Claude Code (build, validação, push/relatório)
+├── INSTRUCOES-PROJETO.md        # Instruções do Projeto — fonte; o painel do claude.ai é cópia
+├── index.html                   # redirect da raiz para dist/vectorforge.html (GitHub Pages)
 └── README.md
 ```
 
-**Fluxo de trabalho a partir de agora:** editar arquivos em `src/` (nunca `dist/vectorforge.html` diretamente — seria sobrescrito no próximo build), rodar `npm run build` (ou deixar `npm run watch` rodando), testar `dist/vectorforge.html` no browser. ASU mira os arquivos de `src/` individualmente (cada um é pequeno o bastante para patch cirúrgico ou até reescrita completa sem custo alto).
+**Fluxo de trabalho a partir de agora:** editar arquivos em `src/` (nunca `dist/vectorforge.html` diretamente — seria sobrescrito no próximo build), rodar `npm run build` (ou deixar `npm run watch` rodando), testar `dist/vectorforge.html` no browser. Código é editado pelo Claude Code direto em `src/`; mudança de doc grande chega por WO (`meta/workorders/`, `/apply-wo`).
 
 ---
 
@@ -122,7 +113,7 @@ doGen()                                    [src/core/generate.js]
 - **Seed para reproducibilidade** — `mkRand(seed)` retorna closure PRNG; seed igual = arte igual. Ver DEC-003.
 - **`outerHTML` replacement para atualizar o canvas** — necessário para trocar `viewBox`; requer re-query pós-replace. Ver DEC-004.
 - **Modo draw (freehand) acumula `<g>` no SVG existente** — não regera; é aditivo por design. Ver DEC-005.
-- **ASU cobre código + anexos isolados em DECISIONS.md/CONTEXT.md** (DEC-009); docs rolantes (STATUS/CHANGELOG/IDEAS/GLOSSARY/ROADMAP/HISTORICO) são sempre arquivo completo. Ver DEC-007/008/009.
+- **Duas raias: chat (planeja, autora CEREBRO/CONTEXT/Instruções/GLOSSARY e WOs) e Claude Code (código, build, append em STATUS/DECISIONS/CHANGELOG, aplica WOs, commita).** ASU descontinuado. Ver DEC-012 (substitui DEC-007/008/009).
 - **Bundle IIFE + `window` explícito para handlers `onclick=""`** — o bundler não vaza funções para o escopo global como um `<script>` clássico fazia; `main.js` expõe a lista fixa de funções que o HTML referencia inline. Ver DEC-010 e Armadilha 8.
 
 ---
@@ -173,6 +164,17 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 7. **Usar `snoise()` em `genPixelArt()` sem chamar `snoiseSetSeed()` antes** — o pipeline de pixel art não passa por `generateContent()` (onde a chamada é automática), então herdaria a tabela de permutação da última geração SVG, não do seed atual do pixel art. → Se `genPixelArt()` vier a usar noise, chamar `snoiseSetSeed(state.seed)` explicitamente no início da função (em `src/generators/generic.js`).
 
 8. **Adicionar um novo handler `onclick=""` no HTML sem expor a função em `window`** *(nova — desde a modularização de 2026-07-07)* — `src/main.js` bundla tudo num IIFE; diferente do `<script>` clássico original, declarações de função dentro do bundle **não** vazam para o escopo global automaticamente. Qualquer função nova referenciada via `onclick="minhaFuncao()"` no `src/index.html` (estático) ou dentro de um template string em `buildStyleGrid`/`buildTypeChips`/`buildPalettes`/`buildFontChips`/`buildVariations` precisa ser adicionada ao `Object.assign(window, {...})` em `src/main.js` — senão o clique não faz nada, **sem erro no console**, o que torna esse bug fácil de não notar. Lista atual exposta: `setMode, doGenRandom, selectStyle, selectType, selectPal, selectFont, setRatio, doGen, zoom, toggleBg, toggleGrid, toggleDraw, xSVG, xPNG, copySVG, applyVar`. Ver DEC-010.
+
+---
+
+## 📁 Arquivos Críticos (não mexer sem contexto)
+> Conhecimento **estável** — movido do STATUS em 2026-11-11 (formato do kit v1.135.0).
+
+- **`src/` (17 módulos ES)** — o código-fonte real. Antes de editar: ler CONTEXT.md (seção "Como o pipeline funciona" + "Inventário de Geradores" + Armadilha 8) + DEC-001 a DEC-011 no DECISIONS.md. Depois de editar, **sempre rodar `npm run build`** antes de testar.
+- **`dist/vectorforge.html`** — o arquivo que o usuário efetivamente abre (e que o GitHub Pages serve). Versionado no Git — ver DEC-010. Nunca editar à mão.
+- **`index.html`** (raiz) — redirect para `dist/vectorforge.html`, existe só por causa do GitHub Pages. Não confundir com `src/index.html` (o template do build).
+- **`scripts/build.js`** — lógica de bundling + inlining. Mudar com cuidado.
+- **`meta/CEREBRO.md`, `INSTRUCOES-PROJETO.md`, `CLAUDE.md` e `.claude/`** — comportamento do assistente e permissões do Code. CEREBRO/Instruções mudam pelo chat (arquivo inteiro); `.claude/settings.json` nunca pelo próprio Code (ver CEREBRO).
 
 ---
 

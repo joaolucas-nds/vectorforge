@@ -106,3 +106,27 @@ Registro do processo de comparação/adaptação, útil se uma futura atualizaç
 4. **Parágrafos operacionais novos, sem conflito** — feedback de ASU registrado antes de fechar sessão; nome de download simples (sem prefixo de pasta); recomendação de configuração explícita a cada fim de sessão; bloco de commit sempre entregue separado; `.gitignore` entregue na primeira leva que criar estrutura; `README.md` atualizado só quando a estrutura estabilizar (com aviso se for adiado). Todos adotados sem alteração — nenhum contradizia nada que já tínhamos.
 
 **Lição para a próxima atualização do Kit:** o processo que funcionou foi (a) pedir/localizar o texto exato da versão nova (não confiar em memória do que "provavelmente" mudou), (b) diff mental categoria por categoria contra o CEREBRO.md e a Instrução do Projeto vigentes, (c) para cada diferença, perguntar "isso contradiz uma decisão já registrada (DEC-N), ou é só uma adição sem atrito?" — só o primeiro caso exige uma DEC nova; o resto é aplicação direta.
+
+---
+
+## 5. Revisões antigas do CEREBRO.md (relato, 2026-06-30 e 2026-07-03)
+
+Movido do topo do `CEREBRO.md` no merge do Kit v1.135.0 (2026-11-11, DEC-012): é relato de integração, não regra. As regras de ASU citadas aqui foram descontinuadas por DEC-012.
+
+### Mudanças nesta revisão (2026-06-30)
+
+Mesclado com a atualização do Kit trazida pelo usuário nesta data, mais dois desvios específicos deste projeto:
+
+- **Nova seção** "Recomendação de configuração (fim de sessão)" — incorporada do Kit sem alteração.
+- **Seção ASU reescrita** — incorpora a distinção do Kit entre arquivos NOVOS (sempre download) e EDIÇÃO de existentes, nomenclatura `AAAA-MM-DD-asuNNNN.yaml`, **e dois desvios registrados deste projeto**: DEC-007 (modelo híbrido — ASU só para código, arquivo completo para toda a documentação) e DEC-008 (instruções ASU deste projeto são SEMPRE entregues como arquivo para download, mesmo editando arquivo existente — o Kit por padrão pede bloco inline nesse caso; aqui não). Motivo registrado em DECISIONS.md.
+- **Tabela de arquivos**: mantido `HISTORICO.md` (nome em uso desde a fundação do projeto) em vez de `HISTORY.md` que a atualização do Kit trouxe — mesmo papel, só preservando a convenção PT-BR já estabelecida aqui.
+- Nada foi removido do conjunto de princípios universais do Kit.
+
+### Mudanças nesta revisão (2026-07-03)
+
+Nova atualização do Kit trazida pelo usuário (`instrucoes-dev__template-update.txt`, versão mais rica que a anterior) comparada e integrada:
+
+- **Seção ASU refinada via DEC-009**: o Kit novo formaliza exatamente o que DEC-007 já cogitava como possibilidade futura — ASU pode tocar `DECISIONS.md` (só anexar DEC-N/FIX-N novo) e `CONTEXT.md` (só edição isolada e aditiva), além de código. Docs rolantes (STATUS/CHANGELOG/IDEAS/GLOSSARY/ROADMAP/HISTORICO) continuam sempre arquivo completo — nisso o Kit novo concorda com DEC-007 original. Ver DEC-009 em DECISIONS.md para o ADR completo.
+- **DEC-008 convergiu com o Kit**: a entrega de instrução ASU sempre como arquivo para download, que era um desvio registrado deste projeto, agora é o padrão do próprio Kit atualizado. Deixa de ser exceção.
+- **Novos parágrafos adotados sem alteração**: protocolo de reler o mount quando o usuário sinalizar upload (mesmo sem nomear o arquivo); feedback de ASU registrado no IDEAS antes de fechar a sessão; nome de download simples (sem prefixo de pasta); recomendação de configuração explícita a cada fim de sessão; bloco de commit sempre entregue ao concluir mudança versionada; `.gitignore` entregue na primeira leva que cria estrutura; `README.md` atualizado quando a estrutura estabilizar (com aviso explícito se for adiado).
+- **Instruções do Projeto (arquivo curto, fora do CEREBRO) regeneradas** para incorporar os parágrafos acima — ver `INSTRUCOES-PROJETO.md` entregue nesta sessão.
