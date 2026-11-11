@@ -6,10 +6,16 @@
 ---
 
 ## [Não lançado]
+*(vazio)*
+
+---
+
+## [0.4.0] — 2026-11-11
+### Adicionado
+- **Flow Fields (F3)** — novo tipo `flow` no estilo Organic (`genFlowField` em `src/generators/organic.js`): partículas seguem um campo de direções do Simplex Noise dentro de um disco de raio `sz`; Complexity → densidade (30–120 partículas, 40–120 passos), Symmetry → 1 a 8 cópias rotacionais. Um único `<path>` por desenho. Fecha o critério de conclusão de F3. Ver DEC-013.
+
 ### Alterado
 - **Método de trabalho (só tooling/docs, sem mudança no produto):** ASU e FlatDrop descontinuados; modo Code instalado (`CLAUDE.md`, `.claude/` com skills `apply-wo`/`wrap`/`sondar`, `meta/workorders/`, `meta/SPEC.md`). CEREBRO, Instruções e docs vivos migrados ao Kit v1.135.0. Ver DEC-012.
-
-*(Próxima entrega de produto prevista: Flow Fields, item restante de F3.)*
 
 ---
 

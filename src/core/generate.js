@@ -10,7 +10,7 @@ import { genVicMedallion, genVicFrame, genVicWreath } from '../generators/victor
 import { genCelticKnot, genCelticCross } from '../generators/celtic.js';
 import { genIslamicStar, genArabesque } from '../generators/islamic.js';
 import { genMinimalSymbol, genMinGrid, genMinCircles, genGlyph } from '../generators/minimal.js';
-import { genOrganicLeaf, genOrganicSpiral, genOrganicBranch, genOrganicFlower, genWave, genPhyllotaxis } from '../generators/organic.js';
+import { genOrganicLeaf, genOrganicSpiral, genOrganicBranch, genOrganicFlower, genWave, genPhyllotaxis, genFlowField } from '../generators/organic.js';
 import { genDivider, genPattern, genPixelArt, genTextShape } from '../generators/generic.js';
 import { genLSysTree, genLSysKoch, genLSysDragon } from '../generators/botanical.js';
 
@@ -89,6 +89,7 @@ export function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, s
     flower:       () => genOrganicFlower(cx, cy, sz, n, comp, rnd, SO, FG, FG2, sw),
     mandala:      () => genMandala(cx, cy, sz, 8, layers, comp, rnd, SO, FG, FG2, sw),
     phyllotaxis:  () => genPhyllotaxis(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw),
+    flow:         () => genFlowField(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
       wave:    () => genWave(0, cy, state.w, state.h, comp, rnd, SO, FG, sw),
     },
     botanical: {

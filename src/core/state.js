@@ -41,7 +41,7 @@ export const TYPES_BY_STYLE = {
   celtic:    ['knot','border','medallion','cross','knotwork','spiral'],
   islamic:   ['star','girih','arabesque','border','medallion','pattern'],
   minimal:   ['symbol','line','grid','circle','mark','glyph'],
-  organic:   ['leaf','spiral','branch','flower','mandala','wave','phyllotaxis'],
+  organic:   ['leaf','spiral','branch','flower','mandala','wave','phyllotaxis','flow'],
   botanical: ['tree','koch','dragon'],
 };
 

@@ -7,7 +7,7 @@
 ---
 
 ## Versão Atual
-**[0.3.0]** — motor L-System entregue com 3 presets (árvore recursiva, Koch snowflake, Dragon curve), novo estilo **Botanical**. Zero regressão nos 8 estilos anteriores (as 49 combinações antigas continuam byte-a-byte idênticas). GitHub Pages ativado e publicado (`https://joaolucas-nds.github.io/vectorforge/`, com redirect de raiz para `dist/vectorforge.html`). F3 segue aberta: falta Flow Fields.
+**[0.4.0]** — Flow Fields entregue (tipo `flow` no estilo Organic, DEC-013) e **F3 concluída**. Zero regressão nos 52 tipos anteriores (sonda antes/depois, hashes idênticos). GitHub Pages publicado (`https://joaolucas-nds.github.io/vectorforge/`, redirect de raiz para `dist/vectorforge.html`).
 
 ---
 
@@ -21,12 +21,13 @@
 - **Build step com esbuild (F3)**: `src/` modular (16 arquivos) → `npm run build` gera `dist/vectorforge.html`. Ver DEC-010.
 - **NOVO — Motor L-System + estilo Botanical (F3)**: `src/generators/botanical.js` — `lsystemExpand`/`turtleToPath` (motor genérico) + 3 presets: `tree`, `koch`, `dragon`. Testado com verificação estrutural (contagem de subpaths/pontos condizente com cada curva) além de reprodutibilidade por seed. Ver DEC-011.
 - **NOVO — GitHub Pages publicado.** Fonte: branch `main`, pasta raiz. `index.html` na raiz redireciona para `dist/vectorforge.html` (a raiz sozinha cairia no fallback do `README.md`, que é só um placeholder de uma linha).
+- **NOVO — Flow Fields (`flow`, estilo Organic)**: partículas num campo de direções do `snoise`, dentro de um disco; Complexity → densidade, Symmetry → 1–8 cópias rotacionais. Ver DEC-013.
 
 ---
 
 ## 🔧 Em Progresso
 
-- **F3 quase fechada.** Restou só Flow Fields (campo de direções via `snoise`, partículas traçando caminhos curvos) para o critério de conclusão de F3 valer por completo.
+- Nada em curso. F3 concluída em v0.4.0; F4 ainda não aberta — próxima frente a escolher com o dono (ROADMAP F4 ou backlog abaixo).
 
 ---
 
@@ -38,7 +39,6 @@
 
 ## 📋 Backlog (curto prazo — itens acionáveis)
 
-- [ ] **Flow Fields** (último item de F3): campo de direções via `snoise` já disponível em `src/core/utils.js` — partículas traçando caminhos curvos, tipo novo em Organic/Minimal.
 - [ ] Adicionar JSDoc às funções geradoras do v0.1.0 (`genADMedallion`, `genBQFrame`, etc.).
 - [ ] Testar `dist/vectorforge.html` em Firefox e Safari.
 - [ ] Avaliar fallback de `DM Mono`/`Fraunces` (Google Fonts) offline.

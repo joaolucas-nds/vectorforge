@@ -296,3 +296,28 @@ Até aqui o projeto rodava no chat do claude.ai com o repositório chegando por 
 - O chat faz git só leitura (`GIT_OPTIONAL_LOCKS=0`); commit e push são do Code ou do dono.
 - As Instruções no painel do Projeto (claude.ai) precisam ser recoladas a partir do arquivo do repo — a fonte é o arquivo.
 - Carimbos do kit (CEREBRO, 3 skills, modelo de WO) em v1.135.0.
+
+
+---
+
+## DEC-013 — Flow Fields: disco de raio `sz`, Symmetry como cópias rotacionais, um `<path>` só
+**Data:** 2026-11-11 · **Status:** aceita
+
+### Contexto
+F3 fechava com «Flow Fields como tipo novo». Faltava o como: onde o campo vive (canvas inteiro ou região), o que `comp`/`sym` significam num campo de fluxo, e como manter o SVG pequeno — a Dragon curve já tinha mostrado (DEC-011) que o tamanho da string é o gargalo antes do tempo.
+
+### Decisão
+1. **Um tipo, `flow`, só no Organic** — onde o `snoise` já mora; menor mudança que fecha o critério.
+2. **Domínio = disco de raio `sz` em `(cx, cy)`**, não o canvas: casa com os geradores centrados e funciona nas miniaturas de variação, que passam `cx/cy/sz` próprios.
+3. **`comp` → densidade** (30–120 partículas, 40–120 passos); **`sym` → simetria rotacional** (`folds = 1 + round(sym × 7)`), com as partículas divididas entre as cópias.
+4. **Campo `θ = snoise(x/sz × 0.9, y/sz × 0.9) × π`, passo `sz × 0.015`** — escolhido por comparação visual no protótipo: `× 2π` com frequência 1,6 dava nós e quinas.
+5. **Saída achatada:** um `<path>` com subpaths, cópias giradas ponto a ponto, 1 de cada 2 pontos emitido; pontos de origem em `FG` (1 a cada 4).
+
+### Alternativas consideradas
+- **Campo no canvas inteiro (`state.w`/`state.h`)** — rejeitada: desenquadra nas miniaturas, como já acontece com o `genWave`.
+- **Cópias via `<g transform="rotate">` ou `<use>`** — rejeitada: `<g>` aninhado complica a importação em Figma/Canva, e `<use>` exige `id`, que colidiria entre o canvas e as 4 miniaturas presentes no mesmo DOM.
+- **Variante também no Minimal** — adiada (fora de escopo da spec).
+
+### Consequências
+- Medido no protótipo (Node 22, sandbox do chat): 8.755–45.432 bytes e 1–12 ms por chamada; as 312 chaves antigas da sonda ficaram com hash idêntico. A medição na máquina do dono está no relatório de aplicação da WO 0001.
+- Regra que vale para geradores futuros: **gerador não emite `id`** (o mesmo SVG é renderizado várias vezes no mesmo DOM).

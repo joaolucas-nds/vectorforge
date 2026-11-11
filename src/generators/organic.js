@@ -154,3 +154,54 @@ export function genPhyllotaxis(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw) {
   parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.013)}" fill="${PALETTES[state.pal].bg}"/>`);
   return parts.join('\n');
 }
+
+export function genFlowField(cx, cy, sz, comp, sym, rnd, SO, FG, sw) {
+  /** Flow Field: partículas seguem um campo de direções derivado do Simplex Noise
+   *  e traçam linhas curvas (aspecto de fluxo/marmorizado), contidas num disco de raio sz.
+   *  Complexity → densidade (nº de partículas e de passos);
+   *  Symmetry  → simetria rotacional: 1 (campo livre) a 8 cópias girando em torno do centro.
+   *  Todas as cópias saem num único <path> (subpaths via M) para manter o SVG enxuto. Ver DEC-013. */
+  const folds   = 1 + Math.round(sym * 7);              // 1–8 cópias rotacionais
+  const total   = Math.round(30 + comp * 90);           // 30–120 partículas somando todas as cópias
+  const perFold = Math.max(4, Math.round(total / folds));
+  const steps   = Math.round(40 + comp * 80);           // 40–120 passos por partícula
+  const stepLen = sz * 0.015;
+  const scale   = 0.9;                                  // frequência do campo, em unidades de sz (baixa = curvas largas)
+  const R2      = sz * sz;
+  const lines = [], seeds = [];
+
+  for (let p = 0; p < perFold; p++) {
+    // Origem uniforme no disco (sqrt evita concentrar partículas no centro)
+    const r0 = sz * 0.95 * Math.sqrt(rnd()), a0 = rnd() * TAU;
+    let x = r0 * Math.cos(a0), y = r0 * Math.sin(a0);   // coordenadas locais, centro em (0,0)
+    const pts = [[x, y]];
+    for (let s = 0; s < steps; s++) {
+      const theta = snoise(x / sz * scale, y / sz * scale) * Math.PI; // ±π: vira sem dar nó
+      x += Math.cos(theta) * stepLen;
+      y += Math.sin(theta) * stepLen;
+      if (x * x + y * y > R2) break;                    // partícula morre ao sair do disco
+      pts.push([x, y]);
+    }
+    if (pts.length < 3) continue;                       // traço curto demais vira ruído visual
+    lines.push(pts);
+    if (p % 4 === 0) seeds.push(pts[0]);
+  }
+
+  // Emite as cópias girando cada ponto — sem <g transform>, para o SVG continuar
+  // "achatado" ao importar em Figma/Canva; pula 1 de cada 2 pontos (o passo é curto
+  // o bastante para a curva não perder forma) e fecha sempre no último ponto.
+  let d = '';
+  const dots = [];
+  for (let k = 0; k < folds; k++) {
+    const rot = k * TAU / folds, c = Math.cos(rot), s = Math.sin(rot);
+    const tx = (q) => f(cx + q[0] * c - q[1] * s), ty = (q) => f(cy + q[0] * s + q[1] * c);
+    for (const pts of lines) {
+      d += `M ${tx(pts[0])} ${ty(pts[0])}`;
+      for (let i = 2; i < pts.length; i += 2) d += ` L ${tx(pts[i])} ${ty(pts[i])}`;
+      if ((pts.length - 1) % 2 === 1) { const q = pts[pts.length - 1]; d += ` L ${tx(q)} ${ty(q)}`; }
+      d += ' ';
+    }
+    for (const q of seeds) dots.push(`<circle cx="${tx(q)}" cy="${ty(q)}" r="${f(sz * 0.012)}" ${FG}/>`);
+  }
+  return [`<path d="${d.trim()}" ${SO} stroke-linecap="round" stroke-linejoin="round"/>`, ...dots].join('\n');
+}

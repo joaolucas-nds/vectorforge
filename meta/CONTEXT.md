@@ -131,7 +131,7 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 | **celtic** | `src/generators/celtic.js` | knot, border, medallion, cross, knotwork, spiral | `genCelticKnot`, `genADFrame`‡ (reuso, n=6), `genMandala`‡ (reuso, n=6), `genCelticCross`, `genCelticKnot` (reuso, sz×1.2/n=8), `genOrganicSpiral`‡ (reuso) |
 | **islamic** | `src/generators/islamic.js` | star, girih, arabesque, border, medallion, pattern | `genIslamicStar`, `genPattern('girih')`†, `genArabesque`, `genADFrame`‡ (reuso, n=8), `genIslamicStar` (reuso, n=12), `genPattern('islamic')`† |
 | **minimal** | `src/generators/minimal.js` | symbol, line, grid, circle, mark, glyph | `genMinimalSymbol`, `genDivider('min', comp×0.3)`†, `genMinGrid`, `genMinCircles`, `genMinimalSymbol` (reuso menor), `genGlyph` |
-| **organic** | `src/generators/organic.js` | leaf, spiral, branch, flower, mandala, wave, phyllotaxis | `genOrganicLeaf` (usa `snoise`), `genOrganicSpiral`, `genOrganicBranch`, `genOrganicFlower`, `genMandala`‡ (reuso, n=8), `genWave` (usa `snoise`), `genPhyllotaxis` (usa `snoise`) |
+| **organic** | `src/generators/organic.js` | leaf, spiral, branch, flower, mandala, wave, phyllotaxis, flow | `genOrganicLeaf` (usa `snoise`), `genOrganicSpiral`, `genOrganicBranch`, `genOrganicFlower`, `genMandala`‡ (reuso, n=8), `genWave` (usa `snoise`), `genPhyllotaxis` (usa `snoise`), `genFlowField` (usa `snoise`; disco de raio `sz`, ver DEC-013) |
 | **botanical** | `src/generators/botanical.js` | tree, koch, dragon | `genLSysTree`, `genLSysKoch`, `genLSysDragon` (motor generico reaproveitavel: `lsystemExpand`, `turtleToPath`) |
 
 † = gerador genérico, vive em `src/generators/generic.js`, despachado por parâmetro `style`.

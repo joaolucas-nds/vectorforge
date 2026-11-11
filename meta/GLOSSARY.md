@@ -26,6 +26,7 @@
 - **Axioma** — a string inicial de um L-System (ex.: `"X"` para a árvore, `"F--F--F"` para o Koch snowflake, `"FX"` para a Dragon curve), antes de qualquer reescrita.
 - **Turtle graphics** — modelo de desenho onde um cursor ("turtle") se move por comandos relativos: `F`/`G` desenha para frente, `f` move sem desenhar, `+`/`-` giram, `[`/`]` empilham/desempilham posição+ângulo (usado para ramificação, ex. na árvore). Implementado em `turtleToPath`.
 - **Estilo Botanical** — estilo introduzido em v0.3.0 (F3), com 3 tipos: `tree` (árvore recursiva), `koch` (floco de neve de Koch) e `dragon` (Dragon curve) — todos gerados pelo motor L-System, ver DEC-011.
+- **Flow Field (campo de fluxo)** — campo de direções derivado do Simplex Noise; partículas soltas nele andam passo a passo na direção local e traçam linhas de corrente. Tipo `flow` no estilo Organic desde v0.4.0 (`genFlowField`, DEC-013). **Folds** = número de cópias rotacionais (1–8), controlado por Symmetry.
 
 ## Arquiteturas / módulos
 
