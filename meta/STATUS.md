@@ -58,3 +58,5 @@
 **2026-11-11 (2)** — WO 0001 aplicada pelo Code (`a979fa7`, empurrado): tipo `flow` (Flow Fields) no estilo Organic, versão 0.4.0, F3 concluída, DEC-013. Sonda antes/depois: 312 → 318 chaves, 0 antigas diferentes; `npm run build` ok. Visual NÃO verificado (a sonda só conta hashes/bytes). Próximo passo: dono roda o roteiro visual da Flow Fields; depois escolher a próxima frente (F4 ou backlog; ver ideia da sonda versionada em IDEAS).
 
 **2026-11-12** - WO 0002 aplicada pelo Code (`2d3ac8b`, empurrado): `npm run regress` (318 chaves, DEC-014) e README publico; Flow Fields validada pelo dono (8/8) registrada; backlog ganha licenca e CI atualizado. Sem mudanca em `src/`/`dist/`.
+
+**2026-11-12 (2)** - WO 0003 aplicada pelo Code (`5ca526f`, empurrado): v0.5.0, ciclo de exploracao (Surprise, cadeados, New seed, desfazer/refazer, Like this, previa ao vivo; DEC-015) e FIX-003 (canvas vazio). Regress 0 mudancas; sonda jsdom 18/18 OK; prova de vida width=400. Visual NAO verificado (jsdom nao desenha): roteiro do dono pendente. Fases B e C aguardam decisao do dono.
