@@ -30,29 +30,32 @@
     <div class="tb-sep"></div>
     <span class="tag" id="dim-tag">400 × 400</span>
     <div class="tb-status" id="tb-status"><span>Ready</span></div>
-    <button class="tb-btn" onclick="doGenRandom()">↻ Regenerate</button>
+    <button class="tb-btn" id="btn-undo" onclick="undo()" title="Undo (Ctrl+Z)" disabled>↶</button>
+    <button class="tb-btn" id="btn-redo" onclick="redo()" title="Redo (Ctrl+Shift+Z)" disabled>↷</button>
+    <button class="tb-btn" onclick="newSeed()" title="Same settings, new seed (R)">↻ New seed</button>
+    <button class="tb-btn tb-btn-p" onclick="surprise()" title="Randomize everything that is not locked (Space)">🎲 Surprise</button>
   </header>
 
   <!-- ── Left Panel ── -->
   <aside class="left-panel">
 
     <div class="section">
-      <div class="sec-label">Art Style</div>
+      <div class="sec-label">Art Style <button class="lock" data-lock="style" data-label="the style" onclick="toggleLock('style')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button></div>
       <div class="style-grid" id="style-grid"></div>
     </div>
 
     <div class="section">
-      <div class="sec-label">Output Type</div>
+      <div class="sec-label">Output Type <button class="lock" data-lock="type" data-label="the type" onclick="toggleLock('type')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button></div>
       <div class="type-wrap" id="type-wrap"></div>
     </div>
 
     <div class="section">
       <div class="sec-label">Parameters</div>
-      <div class="slider-row"><label>Complexity</label><input type="range" id="s-comp" min="0" max="100" value="55" step="1"><span class="sv" id="sv-comp">55</span></div>
-      <div class="slider-row"><label>Symmetry</label><input type="range" id="s-sym" min="0" max="100" value="50" step="1"><span class="sv" id="sv-sym">50</span></div>
-      <div class="slider-row"><label>Stroke w.</label><input type="range" id="s-sw" min="2" max="36" value="12" step="1"><span class="sv" id="sv-sw">1.2</span></div>
-      <div class="slider-row"><label>Fill opac.</label><input type="range" id="s-fill" min="0" max="100" value="0" step="1"><span class="sv" id="sv-fill">0%</span></div>
-      <div class="slider-row"><label>Seed</label><input type="range" id="s-seed" min="1" max="999" value="42" step="1"><span class="sv" id="sv-seed">42</span></div>
+      <div class="slider-row"><label>Complexity</label><input type="range" id="s-comp" min="0" max="100" value="55" step="1"><button class="lock" data-lock="comp" data-label="Complexity" onclick="toggleLock('comp')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button><span class="sv" id="sv-comp">55</span></div>
+      <div class="slider-row"><label>Symmetry</label><input type="range" id="s-sym" min="0" max="100" value="50" step="1"><button class="lock" data-lock="sym" data-label="Symmetry" onclick="toggleLock('sym')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button><span class="sv" id="sv-sym">50</span></div>
+      <div class="slider-row"><label>Stroke w.</label><input type="range" id="s-sw" min="2" max="36" value="12" step="1"><button class="lock" data-lock="sw" data-label="Stroke width" onclick="toggleLock('sw')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button><span class="sv" id="sv-sw">1.2</span></div>
+      <div class="slider-row"><label>Fill opac.</label><input type="range" id="s-fill" min="0" max="100" value="0" step="1"><button class="lock" data-lock="fill" data-label="Fill opacity" onclick="toggleLock('fill')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button><span class="sv" id="sv-fill">0%</span></div>
+      <div class="slider-row"><label>Seed</label><input type="range" id="s-seed" min="1" max="999" value="42" step="1"><button class="lock" data-lock="seed" data-label="Seed" onclick="toggleLock('seed')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button><span class="sv" id="sv-seed">42</span></div>
     </div>
 
     <div class="section">
@@ -72,7 +75,7 @@
     </div>
 
     <div class="section">
-      <div class="sec-label">Color Theme</div>
+      <div class="sec-label">Color Theme <button class="lock" data-lock="pal" data-label="the palette" onclick="toggleLock('pal')"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.5" y="5.5" width="7" height="5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg></button></div>
       <div class="pal-row" id="pal-row"></div>
     </div>
 
@@ -83,7 +86,8 @@
     </div>
 
     <div class="section" style="border-bottom:none; flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:14px;">
-      <button class="gen-btn" id="gen-btn" onclick="doGen()">Generate</button>
+      <button class="gen-btn" id="gen-btn" onclick="surprise()" title="Randomize everything that is not locked">🎲 Surprise me</button>
+      <div class="kbd-hint">Space surprise · R new seed · Ctrl+Z undo · 🔒 keeps a setting</div>
     </div>
   </aside>
 

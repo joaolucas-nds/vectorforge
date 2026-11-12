@@ -20,6 +20,9 @@ Usuário mencionou CorelDraw, Affinity, Figma, Canva como destinos. SVG já é i
 ### 2026-06 — Compatibilidade direta com Canva / Figma via plugin
 Em vez de exportar arquivo, ter um plugin nativo que puxa o SVG gerado diretamente para o frame. Elevaria muito o valor de produto mas exigiria APIs de terceiros e processo de aprovação.
 
+### 2026-11 — Mais variedade, aleatório para tudo e uma UI mais prática
+Pedido de 2026-11-12: mais opções e variações; «apertar um botão e gerar um diferente do último»; configuração aleatória para tudo; mais possibilidades dentro de um mesmo tipo; UX/UI mais intuitiva, prática, profissional e completa, com pesquisa. Desdobrado em três fases na análise `meta/analises/261112-ANALISE-exploracao-e-ux.md`: **A** (ciclo de exploração) — entregue em v0.5.0, DEC-015; **B** (redesenho da UI: layout, seções recolhíveis, rótulos completos, seed digitável, estado na URL, favoritos, paleta aleatória harmônica) e **C** (modificadores universais de traço/camadas/espelho/deformação e sub-estilos por tipo) — aguardam decisão.
+
 ---
 
 ## 🤖 Ideias Ativas — Assistente

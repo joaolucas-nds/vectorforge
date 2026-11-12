@@ -10,7 +10,9 @@ Gerador procedural de arte vetorial no navegador: ornamentos, molduras, divisore
 - **Sliders de parâmetro:** Complexity (densidade), Symmetry (eixos/cópias), espessura do traço, opacidade do preenchimento e Seed (1–999).
 - **Reprodutível:** mesmo seed + mesmos parâmetros = o mesmo SVG, byte a byte.
 - **8 paletas** coordenadas (traço, acento, fundo) e canvas de 50 a 3000 px com proporções prontas (1:1, 4:3, 16:9, 3:4, A4).
-- **4 variações automáticas** a partir do seed atual — clique numa para adotá-la.
+- **🎲 Surprise** (tecla Espaço): sorteia estilo, tipo, paleta e parâmetros — nunca repete o anterior. **Cadeados** seguram o que você gostou.
+- **4 variações «Like this»** em volta do resultado atual — clique numa para adotá-la.
+- **Desfazer/refazer** (Ctrl+Z / Ctrl+Shift+Z) e **New seed** (R). Tudo redesenha na hora, sem botão de gerar.
 - **Text → Form:** transforma um texto curto num glifo decorado, com 5 famílias tipográficas.
 - **Modo Draw:** esboce com o mouse e o app gera um ornamento na área desenhada.
 - **Modo Pixel Art:** a mesma lógica de simetria, em pixels.

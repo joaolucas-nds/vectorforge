@@ -12,7 +12,10 @@
 - **Complexity (comp)** — parâmetro float 0–1 que controla densidade, número de elementos, camadas e detalhes nos geradores. Alto = mais denso.
 - **Symmetry (sym)** — parâmetro float 0–1 que controla o número de eixos/pontos de simetria. Alto = mais pontos/faces no polígono ou pétala.
 - **Seed** — inteiro 1–999 passado ao PRNG (`mkRand`) para tornar a geração determinística. Mesmo seed + mesmos parâmetros = SVG idêntico.
-- **Variation** — uma das 4 miniaturas geradas automaticamente com seeds offset (+0, +111, +222, +333) do seed atual. Clicar aplica o seed da variation ao estado principal.
+- **Variation («Like this»)** — uma das 4 miniaturas: a 0 é o estado atual; 1–3 mexem Complexity e Symmetry ±20 pontos e trocam o seed, respeitando os cadeados. Clicar adota os valores, e a escolhida vira a nova base. Até v0.4.0 eram só seeds +0/+111/+222/+333 (DEC-015).
+- **Surprise** — sorteio de todos os parâmetros não travados (botão 🎲 e tecla Espaço); nunca repete o estado anterior (DEC-015).
+- **Cadeado (lock)** — trava um parâmetro contra o Surprise (estilo, tipo, paleta, cada slider). Travar o tipo segura o estilo. New seed (R) ignora o cadeado do seed.
+- **Histórico** — até 60 snapshots de parâmetros para desfazer/refazer (Ctrl+Z / Ctrl+Shift+Z); entra por ação, não por quadro de arraste.
 - **Palette (pal)** — índice 0–7 que seleciona um dos 8 objetos `PALETTES`, cada um com `stroke`, `fill`, `bg` e `fill2`.
 - **SO / FG / FG2** — strings de atributos SVG geradas por `generateContent()` e passadas aos geradores: `SO` = stroke only (sem fill), `FG` = fill com a cor de acento, `FG2` = fill2 com opacidade aumentada.
 - **Draw mode** — modo freehand onde o usuário esboça com o mouse; ao soltar, `convertDrawToOrnament()` calcula o bounding box do traço e gera um ornamento centrado nessa área.
@@ -36,7 +39,7 @@
 - **`PALETTES`** — array de 8 objetos de paleta; índice `state.pal` seleciona o ativo.
 - **`mkRand(seed)`** — factory de PRNG seeded; retorna closure `() => float [0,1)`.
 - **`doGen()`** — orquestra leitura de controles, chamada a `generateContent()`, montagem do SVG e atualização do DOM.
-- **`doGenRandom()`** — handler do botão "↻ Regenerate" desde v0.2.0 (FIX-001): sorteia `state.seed`, sincroniza slider/display, então chama `doGen()`. Torna o botão não-idempotente.
+- **`doGenRandom()`** — handler do antigo botão "↻ Regenerate" (v0.2.0, FIX-001): sorteia `state.seed` e chama `doGen()`. Desde v0.5.0 o botão do topo chama `newSeed()` (`src/core/explore.js`), que garante seed diferente e registra no histórico; `doGenRandom` segue exportado só por compatibilidade.
 - **`state`** — objeto global único com todo o estado da aplicação (estilo, tipo, parâmetros, modo, zoom, vars, etc.).
 
 ## Comandos / artefatos

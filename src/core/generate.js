@@ -13,6 +13,7 @@ import { genMinimalSymbol, genMinGrid, genMinCircles, genGlyph } from '../genera
 import { genOrganicLeaf, genOrganicSpiral, genOrganicBranch, genOrganicFlower, genWave, genPhyllotaxis, genFlowField } from '../generators/organic.js';
 import { genDivider, genPattern, genPixelArt, genTextShape } from '../generators/generic.js';
 import { genLSysTree, genLSysKoch, genLSysDragon } from '../generators/botanical.js';
+import { variationSnapshots, applySnapshot, recordHistory } from './explore.js';
 
 export function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, sw, fillOp) {
   snoiseSetSeed(seed); // sincroniza tabela de permutação com o seed atual
@@ -170,32 +171,33 @@ export function doGenRandom() {
   doGen();
 }
 export function generateVariations() {
-  const seeds = [state.seed, state.seed + 111, state.seed + 222, state.seed + 333];
-  const pal = PALETTES[state.pal];
-  const sw = state.sw;
-  const thumbSz = 50;
+  // Variações «Like this» (DEC-015): a 0 é o estado atual; as outras 3 mexem Complexity/Symmetry
+  // ±20 pontos e trocam o seed (respeitando os cadeados). Antes eram só seed +111/+222/+333.
+  const snaps = variationSnapshots();
   const tw = 60, th = 60;
   const cx = tw / 2, cy = th / 2, sz = Math.min(tw, th) * 0.44;
 
   for (let i = 0; i < 4; i++) {
-    const c = generateContent(state.style, state.type, cx, cy, sz, state.comp, state.sym, seeds[i], pal, 0.8, 0);
+    const v = snaps[i];
+    const c = generateContent(v.style, v.type, cx, cy, sz, v.comp, v.sym, v.seed, PALETTES[v.pal], 0.8, 0);
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${tw} ${th}"><rect width="${tw}" height="${th}" fill="#fff"/>${c}</svg>`;
     state.vars[i] = svg;
-    state.vars[i + '_seed'] = seeds[i];
-    document.getElementById('vt' + i).innerHTML = svg;
-    document.getElementById('vt' + i).className = 'vthumb' + (i === state.activeVar ? ' active' : '');
+    state.vars[i + '_snap'] = v;
+    const el = document.getElementById('vt' + i);
+    el.innerHTML = svg;
+    el.className = 'vthumb' + (i === state.activeVar ? ' active' : '');
+    el.title = i === 0 ? 'Current' : `Like this — complexity ${Math.round(v.comp * 100)} · symmetry ${Math.round(v.sym * 100)} · seed ${v.seed}`;
   }
 }
 
 export function applyVar(i) {
-  state.activeVar = i;
-  if (state.vars[i + '_seed'] !== undefined) {
-    state.seed = state.vars[i + '_seed'];
-    document.getElementById('s-seed').value = state.seed;
-    document.getElementById('sv-seed').textContent = state.seed;
-  }
-  for (let j = 0; j < 4; j++) document.getElementById('vt' + j).className = 'vthumb' + (j === i ? ' active' : '');
+  const v = state.vars[i + '_snap'];
+  if (!v) return;
+  // A escolhida vira a nova base: as variações se recalculam em volta dela, então o destaque volta à 0.
+  state.activeVar = 0;
+  applySnapshot(v);
   doGen();
+  recordHistory();
 }
 
 export function updateInfo() {

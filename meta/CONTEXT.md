@@ -49,7 +49,8 @@ vectorforge/
 │   │   ├── view.js              # zoom/fitToView/applyZoom/toggleBg/toggleGrid/updateGrid + modo Draw
 │   │   ├── generate.js          # generateContent() (dispatcher central) + doGen/doGenRandom/
 │   │   │                        #   generateVariations/applyVar/updateInfo/setStatus
-│   │   └── export.js            # getSVGString/xSVG/xPNG/copySVG
+│   │   ├── export.js            # getSVGString/xSVG/xPNG/copySVG
+│   │   └── explore.js           # ciclo de exploração: surprise/newSeed/locks/undo/redo/«Like this»/prévia ao vivo (DEC-015)
 │   ├── generators/
 │   │   ├── artdeco.js · baroque.js · geometric.js · victorian.js
 │   │   ├── celtic.js · islamic.js · minimal.js · organic.js
@@ -100,7 +101,7 @@ doGen()                                    [src/core/generate.js]
 
 **Por que `setTimeout` após replacement:** o `outerHTML` remove o elemento do DOM e insere um novo; referências antigas ficam inválidas. O timeout garante que o browser termine o parse antes de re-querying com `document.querySelector('#svg-holder svg')`.
 
-**PRNG seeded (`mkRand`):** usa xorshift multiplicativo. Seed idêntico + parâmetros idênticos = resultado idêntico sempre. Isso é central para as Variations (seeds seed, seed+111, seed+222, seed+333).
+**PRNG seeded (`mkRand`):** usa xorshift multiplicativo. Seed idêntico + parâmetros idênticos = resultado idêntico sempre. É o que torna o histórico (desfazer/refazer) e as variações «Like this» reproduzíveis: cada um guarda só o snapshot dos parâmetros, não o SVG (DEC-015).
 
 **Simplex Noise (`snoise`, desde v0.2.0):** ruído gradiente com coerência espacial — ao contrário do `mkRand()` (ruído branco), pontos vizinhos no espaço produzem valores parecidos, permitindo transições suaves (curvatura orgânica, densidade crescente, perturbação de ondas). `snoiseSetSeed(seed)` reembaralha a tabela de permutação deterministicamente e é chamada automaticamente no início de `generateContent()` — todo gerador SVG tem noise reproducível sem esforço extra. Ver DEC-006.
 
@@ -165,7 +166,7 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 
 7. **Usar `snoise()` em `genPixelArt()` sem chamar `snoiseSetSeed()` antes** — o pipeline de pixel art não passa por `generateContent()` (onde a chamada é automática), então herdaria a tabela de permutação da última geração SVG, não do seed atual do pixel art. → Se `genPixelArt()` vier a usar noise, chamar `snoiseSetSeed(state.seed)` explicitamente no início da função (em `src/generators/generic.js`).
 
-8. **Adicionar um novo handler `onclick=""` no HTML sem expor a função em `window`** *(nova — desde a modularização de 2026-07-07)* — `src/main.js` bundla tudo num IIFE; diferente do `<script>` clássico original, declarações de função dentro do bundle **não** vazam para o escopo global automaticamente. Qualquer função nova referenciada via `onclick="minhaFuncao()"` no `src/index.html` (estático) ou dentro de um template string em `buildStyleGrid`/`buildTypeChips`/`buildPalettes`/`buildFontChips`/`buildVariations` precisa ser adicionada ao `Object.assign(window, {...})` em `src/main.js` — senão o clique não faz nada, **sem erro no console**, o que torna esse bug fácil de não notar. Lista atual exposta: `setMode, doGenRandom, selectStyle, selectType, selectPal, selectFont, setRatio, doGen, zoom, toggleBg, toggleGrid, toggleDraw, xSVG, xPNG, copySVG, applyVar`. Ver DEC-010.
+8. **Adicionar um novo handler `onclick=""` no HTML sem expor a função em `window`** *(nova — desde a modularização de 2026-07-07)* — `src/main.js` bundla tudo num IIFE; diferente do `<script>` clássico original, declarações de função dentro do bundle **não** vazam para o escopo global automaticamente. Qualquer função nova referenciada via `onclick="minhaFuncao()"` no `src/index.html` (estático) ou dentro de um template string em `buildStyleGrid`/`buildTypeChips`/`buildPalettes`/`buildFontChips`/`buildVariations` precisa ser adicionada ao `Object.assign(window, {...})` em `src/main.js` — senão o clique não faz nada, **sem erro no console**, o que torna esse bug fácil de não notar. Lista atual exposta: `setMode, doGenRandom, selectStyle, selectType, selectPal, selectFont, setRatio, doGen, zoom, toggleBg, toggleGrid, toggleDraw, xSVG, xPNG, copySVG, applyVar, surprise, newSeed, undo, redo, toggleLock` — as escolhas discretas (`setMode`, `select*`, `setRatio`) entram embrulhadas por `live()` (DEC-015). Ver DEC-010.
 
 ---
 
@@ -184,5 +185,5 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 
 - **Usuário-alvo:** designers gráficos, illustradores e criadores de conteúdo que precisam de ornamentos, frames e símbolos vetoriais customizáveis sem depender de assets pagos ou ferramentas pesadas.
 - **Dor que resolve:** gerar decorações procedurais de qualidade (Art Deco, Baroque, Victorian, etc.) normalmente exige Illustrator com scripts ou comprar packs; o VectorForge faz isso no browser em segundos.
-- **O que é sucesso:** usuário clica "Generate", ajusta parâmetros, exporta SVG e usa direto no Figma/Canva/Inkscape sem retoques manuais.
+- **O que é sucesso:** usuário aperta Surprise (ou Espaço) até algo chamar atenção, trava o que gostou, refina nos sliders e nas variações «Like this», exporta SVG e usa direto no Figma/Canva/Inkscape sem retoques manuais.
 - **O que o projeto deliberadamente NÃO é:** editor vetorial (não substitui Inkscape/Illustrator), gerador de imagens rasterizadas por IA, ferramenta colaborativa, SaaS com conta/login.

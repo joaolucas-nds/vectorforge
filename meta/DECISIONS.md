@@ -348,3 +348,39 @@ A conferência «nenhum gerador antigo mudou» foi feita três vezes com três s
 - Abre caminho para CI (backlog): o mesmo comando, num GitHub Action.
 - Fica de fora o que não passa por `generateContent` (pixel art, Text→Form com texto, Draw, export) — dito na própria saída do instrumento.
 
+
+---
+
+## DEC-015 — Ciclo de exploração: prévia ao vivo, Surprise com cadeados, histórico e «Like this», num módulo que não toca gerador
+**Data:** 2026-11-12 · **Status:** aceita
+
+### Contexto
+Pedido do dono (2026-11-12): gerar «um diferente do último» com um botão, aleatório para tudo, mais variações. Diagnóstico na análise `meta/analises/261112-ANALISE-exploracao-e-ux.md`: nada redesenhava sem o botão Generate, o único acaso era o seed, as variações só trocavam o seed e não havia desfazer. Referências: o ciclo «espaço gera, cadeado trava, gera de novo» do Coolors; Randomize × «Like this» (±20%) do Generative Design da Autodesk; feedback imediato e ações reversíveis (Nielsen/NN/g).
+
+### Decisão
+1. **`src/core/explore.js`** concentra o ciclo e não toca gerador: muda `state`, os controles e chama `doGen()`. `generateContent` fica igual, e o `npm run regress` prova isso (0 mudanças).
+2. **Prévia ao vivo:** escolhas discretas passam por `live()` (redesenha + histórico); sliders com debounce de 120 ms e histórico ao soltar.
+3. **Surprise** sorteia em unidades de slider o que não estiver travado e repete até 8 vezes para nunca devolver o estado atual; travar o tipo segura o estilo. **New seed** ignora o cadeado do seed (ação explícita).
+4. **Histórico** de snapshots de parâmetros (até 60), entrando por ação — não por quadro de arraste.
+5. **«Like this»:** miniatura 0 = atual; 1–3 = ±20 pontos em Complexity/Symmetry + seed novo, determinístico pelo estado.
+6. **Atalhos** Espaço, R, Ctrl+Z, Ctrl+Shift+Z/Ctrl+Y — ignorados enquanto se digita.
+
+### Alternativas consideradas
+- **Manter o botão Generate e só acrescentar Surprise** — rejeitada: mantém o atrito principal (controle que não responde).
+- **Guardar o SVG no histórico** — rejeitada: o snapshot de parâmetros é reproduzível (DEC-003) e ocupa bytes, não dezenas de KB por estado.
+- **Variações aleatórias a cada redesenho** — rejeitada: miniaturas que mudam sozinhas atrapalham a comparação.
+
+### Consequências
+- Rótulos novos em inglês, como o resto da UI; idioma é decisão da Fase B.
+- Testado no protótipo (VM do chat): 18 checagens de comportamento em jsdom sobre o `dist` real, zero erros de JS, regress 0 mudanças.
+
+---
+
+## FIX-003 — Canvas abria vazio quando a página carregava sem área visível
+**Data:** 2026-11-12 · **Status:** resolvida
+
+- **Sintoma:** o SVG principal aparecia com 0×0 px (medido no painel do navegador do app desktop em 2026-11-12) ou com −80 px (jsdom, sem layout); as miniaturas apareciam normalmente; clicar em Fit resolvia.
+- **Causa raiz:** `fitToView()` (`src/core/view.js`) calcula o zoom por `clientWidth/clientHeight` do `#canvas-area` sem piso; com a área ainda sem tamanho (aba em segundo plano, painel oculto), o zoom ia a 0 ou negativo, e nada recalculava depois — não havia listener de `resize`.
+- **Solução:** sem área útil, `fitToView()` mantém o zoom e tenta de novo no próximo quadro (até ~2 s); zoom com piso de 0,1; `initExplore()` re-enquadra em `resize` e `visibilitychange`.
+- **Lição:** cálculo de layout no carregamento precisa de piso e de gatilho para recalcular; o jsdom (área 0) reproduz o caso e serve de prova de vida.
+

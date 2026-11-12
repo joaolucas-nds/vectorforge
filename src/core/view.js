@@ -9,10 +9,19 @@ export function zoom(delta) {
   state.zoom = Math.max(0.1, Math.min(4, state.zoom + delta));
   applyZoom();
 }
+let fitRetries = 0;
 export function fitToView() {
   const area = document.getElementById('canvas-area');
   const aw = area.clientWidth - 48, ah = area.clientHeight - 80;
-  state.zoom = Math.min(aw / state.w, ah / state.h, 2);
+  // FIX-003: sem área útil (aba em segundo plano, painel oculto) o zoom ia a 0 ou negativo e
+  // nada o recalculava — o canvas ficava 0×0. Agora mantém o zoom atual e tenta de novo no
+  // próximo quadro (até ~2 s); depois disso, o resize/visibilitychange de initExplore() refaz.
+  if (aw <= 0 || ah <= 0) {
+    if (fitRetries++ < 120 && typeof requestAnimationFrame === 'function') requestAnimationFrame(fitToView);
+    return;
+  }
+  fitRetries = 0;
+  state.zoom = Math.max(0.1, Math.min(aw / state.w, ah / state.h, 2));
   applyZoom();
 }
 export function applyZoom() {

@@ -7,14 +7,15 @@
 ---
 
 ## Versão Atual
-**[0.4.0]** — Flow Fields entregue (tipo `flow` no estilo Organic, DEC-013) e **F3 concluída**. Zero regressão nos 52 tipos anteriores (sonda antes/depois, hashes idênticos). GitHub Pages publicado (`https://joaolucas-nds.github.io/vectorforge/`, redirect de raiz para `dist/vectorforge.html`).
+**[0.5.0]** — Ciclo de exploração (Fase A da análise 261112): prévia ao vivo, Surprise, cadeados, New seed, desfazer/refazer e variações «Like this» (DEC-015); canvas vazio corrigido (FIX-003). F3 concluída em v0.4.0. GitHub Pages publicado (`https://joaolucas-nds.github.io/vectorforge/`).
 
 ---
 
 ## ✅ Funcionando
 
 - Tudo do v0.2.0: 8 estilos originais, sliders, 8 paletas, canvas customizável, text→form, pixel art, draw mode, 4 variações automáticas, export SVG/PNG/copy.
-- **`↻ Regenerate`** sorteia seed novo a cada click (FIX-001).
+- **Ciclo de exploração (v0.5.0, DEC-015):** tudo redesenha na hora; 🎲 Surprise (Espaço) sorteia o que não estiver travado e nunca repete; cadeados; ↻ New seed (R); ↶ ↷ desfazer/refazer (60 estados); variações «Like this». FIX-001 segue valendo no New seed.
+- **Canvas nunca abre vazio** (FIX-003): enquadramento com piso e re-enquadramento ao redimensionar/voltar a aba.
 - **Export PNG no modo Pixel Art** exporta o `px-canvas` corretamente (FIX-002).
 - **Simplex Noise 2D** (`snoise`, `snoiseSetSeed`) integrado e reproducível por seed.
 - **`genPhyllotaxis`** — tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
@@ -29,7 +30,7 @@
 
 ## 🔧 Em Progresso
 
-- Nada em curso. F3 concluída em v0.4.0; F4 ainda não aberta — próxima frente a escolher com o dono (ROADMAP F4 ou backlog abaixo).
+- **Análise `meta/analises/261112-ANALISE-exploracao-e-ux.md`:** Fase A entregue em v0.5.0; Fases B (redesenho da UI) e C (variedade dentro do tipo) aguardam o Ponto de decisão do dono — idioma da UI, mockup antes de código, renumeração do ROADMAP.
 
 ---
 

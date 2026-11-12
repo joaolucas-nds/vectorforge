@@ -6,9 +6,18 @@
 ---
 
 ## [Não lançado]
+*(vazio)*
+
+---
+
+## [0.5.0] — 2026-11-12
 ### Adicionado
+- **Ciclo de exploração** (`src/core/explore.js`, DEC-015): prévia ao vivo em todos os controles (sem botão de gerar); **🎲 Surprise** (Espaço) sorteia estilo, tipo, paleta e parâmetros sem nunca repetir o anterior; **cadeados** por parâmetro; **↻ New seed** (R); **desfazer/refazer** (Ctrl+Z / Ctrl+Shift+Z, 60 estados); variações **«Like this»** (±20 em Complexity/Symmetry + seed novo).
 - **`npm run regress`** — instrumento de regressão dos geradores (`scripts/regress.mjs`): compara a saída das 318 combinações estilo × tipo × tamanho × parâmetros com a linha de base versionada `scripts/regress-baseline.json` e sai com erro se alguma saída antiga mudou. `--update` regrava a linha de base. Ver DEC-014.
 - **`README.md`** de verdade (antes, uma linha com aspas literais): o que é o projeto, como abrir (GitHub Pages ou arquivo local), os 9 estilos e 53 tipos, recursos, desenvolvimento e estrutura.
+
+### Corrigido
+- **FIX-003** — canvas podia abrir vazio (0×0 ou tamanho negativo) quando a página carregava sem área visível; `fitToView()` agora tem piso, tenta de novo no próximo quadro e re-enquadra ao redimensionar a janela ou voltar a aba.
 
 ---
 

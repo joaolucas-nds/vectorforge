@@ -134,3 +134,13 @@
   .mode-btn.active { border-color: var(--accent); color: var(--accent); background: #1c1810; }
 
   .tag { font-size: 8px; padding: 1px 5px; border-radius: 3px; background: var(--bg4); border: 1px solid var(--border); color: var(--txt3); }
+
+  /* Ciclo de exploração (DEC-015): cadeados, botões do topo, atalhos */
+  .lock { background: none; border: none; padding: 0 2px; margin-left: 4px; cursor: pointer; color: var(--txt3); vertical-align: middle; line-height: 0; }
+  .lock svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.2; }
+  .lock:hover { color: var(--txt2); }
+  .lock.on { color: var(--accent); }
+  .lock.on svg { fill: #c8a96e33; }
+  .tb-btn:disabled { opacity: .35; cursor: default; border-color: var(--border); color: var(--txt3); }
+  .tb-btn-p { border-color: var(--accent2); color: var(--accent); }
+  .kbd-hint { margin-top: 8px; font-size: 8px; color: var(--txt3); text-align: center; letter-spacing: 0.06em; }
