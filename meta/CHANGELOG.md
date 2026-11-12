@@ -6,7 +6,9 @@
 ---
 
 ## [Não lançado]
-*(vazio)*
+### Adicionado
+- **`npm run regress`** — instrumento de regressão dos geradores (`scripts/regress.mjs`): compara a saída das 318 combinações estilo × tipo × tamanho × parâmetros com a linha de base versionada `scripts/regress-baseline.json` e sai com erro se alguma saída antiga mudou. `--update` regrava a linha de base. Ver DEC-014.
+- **`README.md`** de verdade (antes, uma linha com aspas literais): o que é o projeto, como abrir (GitHub Pages ou arquivo local), os 9 estilos e 53 tipos, recursos, desenvolvimento e estrutura.
 
 ---
 

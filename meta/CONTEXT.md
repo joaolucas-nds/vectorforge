@@ -57,8 +57,10 @@ vectorforge/
 │   │   └── generic.js           # genDivider, genPattern, genPixelArt, genTextShape
 │   └── main.js                  # Entry point: importa tudo, expõe funções em window, roda o init
 ├── scripts/
-│   └── build.js                 # esbuild (bundle IIFE) + inlining de CSS/JS no template → dist/
-├── package.json                 # devDependency: esbuild. Scripts: build, watch
+│   ├── build.js                 # esbuild (bundle IIFE) + inlining de CSS/JS no template → dist/
+│   ├── regress.mjs              # instrumento de regressão dos geradores (`npm run regress`, DEC-014)
+│   └── regress-baseline.json    # linha de base versionada: 1 chave estilo/tipo/tamanho/seed por linha
+├── package.json                 # devDependency: esbuild. Scripts: build, watch, regress
 ├── .gitignore                   # node_modules/ ignorado; dist/vectorforge.html NÃO (ver DEC-010)
 ├── dist/
 │   └── vectorforge.html         # O ARQUIVO QUE O USUÁRIO ABRE. Gerado por `npm run build`, mas versionado.
@@ -72,7 +74,7 @@ vectorforge/
 ├── CLAUDE.md                    # guia raiz do Claude Code (build, validação, push/relatório)
 ├── INSTRUCOES-PROJETO.md        # Instruções do Projeto — fonte; o painel do claude.ai é cópia
 ├── index.html                   # redirect da raiz para dist/vectorforge.html (GitHub Pages)
-└── README.md
+└── README.md                    # apresentação pública: o que é, como abrir (Pages), estilos, dev
 ```
 
 **Fluxo de trabalho a partir de agora:** editar arquivos em `src/` (nunca `dist/vectorforge.html` diretamente — seria sobrescrito no próximo build), rodar `npm run build` (ou deixar `npm run watch` rodando), testar `dist/vectorforge.html` no browser. Código é editado pelo Claude Code direto em `src/`; mudança de doc grande chega por WO (`meta/workorders/`, `/apply-wo`).

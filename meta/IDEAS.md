@@ -45,17 +45,11 @@ Definir um ponto de "peso" no canvas onde a complexidade se concentra (clique pa
 ### 2026-06-30 — Verificar seed de noise em genPixelArt (débito técnico F3)
 `genPixelArt()` é pipeline paralelo que não passa por `generateContent()`. Se futuramente um gerador de pixel art baseado em `snoise` for adicionado, precisa chamar `snoiseSetSeed()` explicitamente; do contrário, usará tabela residual da última geração SVG. Baixo risco agora (pixel art atual não usa noise), alto risco se expandido.
 
-### 2026-11-11 — Promover a comparação antes/depois a instrumento versionado
-Terceira vez que o projeto compara a saída de todos os geradores antes e depois de uma mudança (DEC-010 com Playwright, DEC-011, e agora a sonda `261111-sonda-flow.mjs`, Node + esbuild, sem browser). Pela regra do kit, sonda rodada uma segunda vez para comparar já é instrumento sem teste. Candidato: `scripts/regress.mjs` versionado + `npm run regress`, saindo com código de erro quando uma chave antiga muda. Decisão do dono.
-
 ### 2026-06-30 — Voronoi/Worley (F3 ou F4)
 Diagrama de Voronoi para tesselações islâmicas variáveis e padrão celular orgânico. Implementável com Fortune's algorithm em ~100 linhas ou via `d3-delaunay` (2KB). Worley noise (distância ao ponto Voronoi mais próximo) para texturas de pedra/osso.
 
 ### 2026-06-23 — Adicionar JSDoc a todas as funções geradoras
 As funções `genADMedallion`, `genBQFrame`, etc. ainda sem docstrings completas. Convenção do projeto exige docstring em toda função pública. Baixo esforço (tarefa direta para o Claude Code); melhora manutenibilidade. (Parcialmente feito em v0.2.0 — novos geradores já têm JSDoc; os antigos ficam pendentes.)
-
-### 2026-07-07 — Verificação por comparação headless em migrações de código (F4+ ou qualquer refactor grande)
-Durante a divisão de `vectorforge.html` em módulos (DEC-010), a técnica que pegou os 4 bugs reais antes da entrega foi: renderizar TODAS as combinações relevantes (aqui, as 49 de `TYPES_BY_STYLE`) em Chromium headless (Playwright) tanto na versão antiga quanto na nova, com o mesmo seed, e comparar a saída byte-a-byte. Vale generalizar como prática padrão para qualquer refactor grande futuro (ex.: quando o motor L-System for integrado, comparar saída antes/depois nos estilos que não deveriam ter mudado). Custo: ~alguns minutos de execução; benefício: pega regressões silenciosas que smoke-test manual não pegaria (ex.: `onclick` que não faz nada, sem erro no console).
 
 ---
 
@@ -83,6 +77,7 @@ Durante a divisão de `vectorforge.html` em módulos (DEC-010), a técnica que p
 - **Build step com esbuild (F3)** — implementado em 2026-07-07 (DEC-010): `vectorforge.html` dividido em 16 módulos ES sob `src/`, `npm run build` gera `dist/vectorforge.html`. Zero mudança de comportamento, verificada byte-a-byte.
 - **Motor L-System + estilo Botanical (F3)** — implementado em 2026-07-24 (DEC-011): `lsystemExpand`/`turtleToPath` + 3 presets (tree/koch/dragon) em `src/generators/botanical.js`. Zero regressão nos 8 estilos anteriores, verificada byte-a-byte.
 - **Flow Fields (F3)** — implementada em v0.4.0 (DEC-013): tipo `flow` no Organic, `genFlowField`. Ideia original (2026-06-30) previa ~120 linhas e 500 partículas × 200 passos; a versão entregue usa 30–120 partículas × 40–120 passos num disco, porque o tamanho do SVG (não o tempo) era o gargalo.
+- **Comparação antes/depois como prática padrão → instrumento `npm run regress`** — ideias de 2026-07-07 (generalizar a comparação headless) e 2026-11-11 (promover a sonda) implementadas juntas em 2026-11-12 (DEC-014): `scripts/regress.mjs` + linha de base versionada, sai 1 quando uma saída antiga muda.
 
 ---
 

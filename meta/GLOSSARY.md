@@ -45,6 +45,7 @@
 - **`src/`** — código-fonte modular (16 arquivos ES): `core/` (utils, state, ui, view, generate, export) + `generators/` (um por estilo + generic) + `main.js`.
 - **`dist/vectorforge.html`** — o arquivo único que o usuário final abre. Gerado, mas versionado no Git (ver DEC-010).
 - **`scripts/build.js`** — script Node que roda esbuild (bundle IIFE de `main.js`) e injeta o resultado + o CSS num template HTML, produzindo `dist/vectorforge.html`.
+- **`npm run regress` / linha de base** — instrumento `scripts/regress.mjs`: renderiza as 318 chaves (estilo/tipo/tamanho/seed) e compara o hash de cada uma com `scripts/regress-baseline.json`. Reprova (sai 1) se uma chave antiga muda, some ou oscila; chave nova não reprova. `--update` regrava a linha de base (DEC-014).
 - **esbuild** — bundler JS/CSS usado só em tempo de desenvolvimento (devDependency); não é dependência de runtime do app entregue.
 - **IIFE (Immediately Invoked Function Expression)** — formato de bundle escolhido (`format: 'iife'` no esbuild) para que o JS bundlado se comporte como o `<script>` clássico original (execução síncrona, sem defer de módulo). Funções declaradas dentro do IIFE não vazam para `window` automaticamente — por isso `main.js` expõe explicitamente as usadas em `onclick=""` inline (ver Armadilha 8 no CONTEXT.md).
 - **ASU** *(descontinuado em 2026-11-11, DEC-012)* — Atualizador Automático de Scripts; aplicava patches YAML (`AAMMDD-asuNNNN.yaml`) em `src/` e em anexos de DECISIONS/CONTEXT. Mantido aqui porque DEC-007/008/009 e os logs antigos o citam.

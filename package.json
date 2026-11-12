@@ -5,7 +5,8 @@
   "description": "Gerador procedural de arte vetorial no browser — arquivo único, zero dependências de runtime.",
   "scripts": {
     "build": "node scripts/build.js",
-    "watch": "node scripts/build.js --watch"
+    "watch": "node scripts/build.js --watch",
+    "regress": "node scripts/regress.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.2"

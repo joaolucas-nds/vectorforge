@@ -21,7 +21,9 @@
 - **Build step com esbuild (F3)**: `src/` modular (16 arquivos) → `npm run build` gera `dist/vectorforge.html`. Ver DEC-010.
 - **NOVO — Motor L-System + estilo Botanical (F3)**: `src/generators/botanical.js` — `lsystemExpand`/`turtleToPath` (motor genérico) + 3 presets: `tree`, `koch`, `dragon`. Testado com verificação estrutural (contagem de subpaths/pontos condizente com cada curva) além de reprodutibilidade por seed. Ver DEC-011.
 - **NOVO — GitHub Pages publicado.** Fonte: branch `main`, pasta raiz. `index.html` na raiz redireciona para `dist/vectorforge.html` (a raiz sozinha cairia no fallback do `README.md`, que é só um placeholder de uma linha).
-- **NOVO — Flow Fields (`flow`, estilo Organic)**: partículas num campo de direções do `snoise`, dentro de um disco; Complexity → densidade, Symmetry → 1–8 cópias rotacionais. Ver DEC-013.
+- **NOVO — Flow Fields (`flow`, estilo Organic)**: partículas num campo de direções do `snoise`, dentro de um disco; Complexity → densidade, Symmetry → 1–8 cópias rotacionais. Ver DEC-013. Validada visualmente pelo dono em 2026-11-12 (roteiro 8/8) [relatado pelo dono].
+- **NOVO — `npm run regress`**: instrumento de regressão versionado (`scripts/regress.mjs` + `scripts/regress-baseline.json`, 318 chaves). Ver DEC-014.
+- **NOVO — `README.md` público**: o que é, como abrir (Pages), 9 estilos / 53 tipos, desenvolvimento.
 
 ---
 
@@ -43,9 +45,8 @@
 - [ ] Testar `dist/vectorforge.html` em Firefox e Safari.
 - [ ] Avaliar fallback de `DM Mono`/`Fraunces` (Google Fonts) offline.
 - [ ] Sincronizar `snoiseSetSeed` em `genPixelArt()` caso um gerador de pixel art baseado em noise seja adicionado (Armadilha 7 no CONTEXT.md).
-- [ ] **Expandir `README.md`** (hoje é só `"# vectorforge"`) — ainda adiado; com dois novos estilos entregues (build modular + botanical), talvez valha antecipar isso na próxima conversa em vez de esperar Flow Fields também, já que o projeto está publicamente visível agora (GitHub Pages).
-- [ ] **Colar as Instruções novas no painel do Projeto** (claude.ai) — a fonte é `INSTRUCOES-PROJETO.md` no repo (5.515 caracteres em 2026-11-11).
-- [ ] **Definir política de CI** para garantir que `dist/vectorforge.html` nunca fique dessincronizado de `src/`. Baixa prioridade enquanto for projeto de mantenedor único.
+- [ ] **Definir política de CI** (GitHub Actions) para rodar `npm run regress` e garantir que `dist/vectorforge.html` nunca fique dessincronizado de `src/` — o instrumento já existe (DEC-014). Baixa prioridade enquanto for projeto de mantenedor único.
+- [ ] **Licença:** o repositório é público e não declara licença (sem licença, ninguém tem permissão legal de reusar o código). Decisão do dono — o README não traz seção de licença até lá.
 
 ---
 

@@ -321,3 +321,30 @@ F3 fechava com «Flow Fields como tipo novo». Faltava o como: onde o campo vive
 ### Consequências
 - Medido no protótipo (Node 22, sandbox do chat): 8.755–45.432 bytes e 1–12 ms por chamada; as 312 chaves antigas da sonda ficaram com hash idêntico. A medição na máquina do dono está no relatório de aplicação da WO 0001.
 - Regra que vale para geradores futuros: **gerador não emite `id`** (o mesmo SVG é renderizado várias vezes no mesmo DOM).
+
+
+---
+
+## DEC-014 — `npm run regress`: a comparação antes/depois vira instrumento versionado com linha de base no repo
+**Data:** 2026-11-12 · **Status:** aceita
+
+### Contexto
+A conferência «nenhum gerador antigo mudou» foi feita três vezes com três scripts descartáveis: Playwright/Chromium em DEC-010 e DEC-011, sonda Node + esbuild na WO 0001 (`261111-sonda-flow.mjs`, fora do repo). A regra do kit diz que sonda rodada uma segunda vez para comparar antes/depois já é instrumento sem teste — e cada nova mudança de gerador dependia de alguém lembrar de reescrevê-la.
+
+### Decisão
+1. **`scripts/regress.mjs`, versionado, chamado por `npm run regress`.** Bundla `generate.js` + `state.js` com o esbuild que já é devDependency (arquivo temporário), stub mínimo de `document`, e renderiza 53 tipos × 2 tamanhos (canvas 400, miniatura 60) × 3 jogos de parâmetros = 318 chaves.
+2. **Linha de base versionada** em `scripts/regress-baseline.json`: só `sha1` (12 hex) e `bytes`, ordem estável, uma chave por linha — sem tempo de execução, para ser determinística e legível em diff.
+3. **Veredito por código de saída** (instrumento dá veredito, sonda não): mudou, sumiu ou oscilou → 1; chave nova → listada, não reprova; sem linha de base → 1. `--update` regrava (e se recusa se houver não-determinismo); `--baseline <arquivo>` compara com outro arquivo (prova de vida).
+4. **Mudança intencional de gerador = `--update` no mesmo commit**, com as chaves mudadas citadas no relatório — o diff da linha de base é o registro do que mudou.
+
+### Alternativas consideradas
+- **Playwright no navegador, como em DEC-010** — rejeitada como instrumento padrão: dependência pesada (Chromium) para medir o que o Node mede sozinho; os geradores são funções puras que devolvem string. Continua sendo a ferramenta para conferir o que passa pelo DOM (pixel art, Draw, export), se um dia for preciso.
+- **`"type": "module"` no `package.json` para importar `src/` direto** — rejeitada: quebraria o `scripts/build.js`, que é CommonJS.
+- **Linha de base fora do repo** — rejeitada: instrumento cuja referência não é versionada volta a ser sonda.
+
+### Consequências
+- Validação de código no `CLAUDE.md` e no CEREBRO passa a ser `npm run regress`; o `allow` do Code ganha `npm ci` e `npm run regress`.
+- Protótipo (VM do chat, Node 22): 0,9 s; linha de base de 318 chaves com hashes idênticos aos da sonda medida na máquina do dono na WO 0001. A medição na máquina do dono está no relatório da WO 0002.
+- Abre caminho para CI (backlog): o mesmo comando, num GitHub Action.
+- Fica de fora o que não passa por `generateContent` (pixel art, Text→Form com texto, Draw, export) — dito na própria saída do instrumento.
+

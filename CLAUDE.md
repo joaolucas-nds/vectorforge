@@ -9,9 +9,9 @@ Leia `meta/CEREBRO.md` → o doc de contexto do projeto (ex.: `meta/CONTEXT.md`)
 
 ## Build / validação
 - Build: `npm run build` — gera `dist/vectorforge.html` a partir de `src/` (esbuild + inlining, ver DEC-010). Rode SEMPRE depois de editar `src/`, e inclua `dist/vectorforge.html` no mesmo commit (ele é versionado de propósito — é o que o GitHub Pages serve). Nunca edite `dist/` à mão.
-- Testes/validação: não há suíte automatizada. A validação de mudança de código é a comparação headless das combinações estilo×tipo contra o build anterior (metodologia em DEC-010, reaproveitada em DEC-011): zero diferença nas combinações que a mudança não devia tocar.
+- Testes/validação: `npm run regress` — compara a saída de todas as combinações estilo×tipo com `scripts/regress-baseline.json` (DEC-014). Sai 1 se algo antigo mudou: PARE e reporte. Mudança **intencional** de gerador ou tipo novo: `npm run regress -- --update` e versione a linha de base no mesmo commit, dizendo no relatório quais chaves mudaram. O instrumento não vê aparência — visual é roteiro do dono.
 - Mudança só de doc (meta/) NÃO precisa de build; a rede é o `git diff`.
-- `npm run build` já está no `allow` de `.claude/settings.json`.
+- `npm ci`, `npm run build` e `npm run regress` já estão no `allow` de `.claude/settings.json`.
 
 ## Convenções
 - Mensagens de commit **sem acento**.
