@@ -1,6 +1,6 @@
 # ANALISE — Exploração aleatória, variedade e UX da interface
 
-> **Status:** Em discussao — a Fase A já virou spec + WO (o dono pediu «prossiga»); as Fases B e C esperam o Ponto de decisão.
+> **Status:** Decidida — Fase A implementada (v0.5.0, DEC-015); Ponto de decisão respondido em 2026-11-15 (DEC-016); Fase B em mockup; Fase C virou a F5 do ROADMAP, com prioridade subida pela medição de 2026-11-15.
 > **Data:** 2026-11-12
 
 ## Problema
@@ -57,3 +57,17 @@ Para as Fases B e C (a A já está em execução):
 1. **Idioma da interface:** manter inglês, passar a português, ou PT com um seletor EN?
 2. **Fase B:** começa por um mockup visual para você reagir antes de qualquer código?
 3. **ROADMAP:** aceitar a nova **F4 — Exploração e UX** (A+B), com C como **F5 — Variedade dentro do tipo**, empurrando as fases atuais «Geometria Avançada e Persistência» para F6 e «Export Avançado e Integrações» para F7?
+
+## Atualização 2026-11-15 — decisões do dono e medição do seed
+
+**Respostas ao Ponto de decisão** (dono, 2026-11-15): (1) interface **em português, com seletor EN**; (2) **mockup antes de código** para a Fase B; (3) **aceita a renumeração**: F4 «Exploração e Interface» (A + B), F5 «Variedade procedural» (C), as antigas F4 e F5 viram F6 e F7. Registrado em DEC-016.
+
+**Retorno do dono sobre a Fase A** (roteiro 1–10 ok): «não está tendo desenhos elaboradamente diferentes […] botanical tree é sempre praticamente o mesmo desenho, a mesma silhueta». [relatado pelo dono]
+
+**Medido** (sonda descartável na VM do chat, commit `2a8fd86`, `generateContent` com Complexity 0,55, Symmetry 0,5, canvas 400, seeds 1–40): **em 46 dos 53 tipos o seed não muda NADA** — os 40 seeds dão o mesmo SVG byte a byte. Só 7 tipos usam o seed: `organic/flow`, `botanical/koch`, `victorian/wreath`, `organic/wave`, `organic/branch`, `organic/leaf`, `organic/phyllotaxis`. Causa no código: os geradores originais recebem `rnd` e não o chamam — `grep -c "rnd()"` dá 0 em `artdeco.js`, `baroque.js`, `celtic.js`, `generic.js`, `geometric.js`, `islamic.js` e `minimal.js`. Consequência: Surprise, New seed e as variações «Like this» só variam o que os sliders variam, e o mesmo par Complexity/Symmetry desenha sempre a mesma silhueta. Isto é a Fase C — e é o defeito de produto mais importante hoje.
+
+**Prova de conceito** (VM do chat, fora do repo): a árvore como L-System **estocástico** — o seed escolhe a regra de ramificação entre 5, decide se o tronco cresce, e perturba ângulo (±7°), comprimento (±20%) e inclinação do tronco (±12°) — deu 8 silhuetas diferentes para 8 seeds, com ~18 KB de SVG em Complexity 1 (a árvore atual chega a 166 KB). Imagem: `261115-tree-seed-antes-depois.png` (pasta-pai, depois `zz_notas-arquivadas`). A mesma medição mostrou que a árvore usa ~40% do canvas (enquadramento `sz × 0,86`).
+
+**Recomendação para a ordem:** a Fase B espera o retorno do dono sobre o mockup; a F5 não depende dela (mexe nos geradores, a B mexe na UI). Rodar as duas em paralelo, começando a F5 por: (1) um **instrumento de sensibilidade ao seed** (meta: 53/53 tipos com desenhos distintos; hoje 7/53), e (2) o **lote Botânico** (árvore estocástica, dragon com variação, enquadramento maior), depois um lote por estilo, cada um com a linha de base do regress regravada de propósito e um roteiro visual.
+
+**Mockup da Fase B:** https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f — três quadros: editor desktop (PT, seções recolhíveis, rótulos completos, seed digitável, Surpreender/Novo seed no topo, «Parecidos com este» e histórico em faixa sob o canvas, exportar + link + favoritos à direita), estados e mensagens (controle sem efeito, Text→Form ignorado, tudo travado, dica, link copiado, seção recolhida) e celular (abas inferiores, botões grandes).

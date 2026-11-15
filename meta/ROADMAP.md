@@ -43,7 +43,26 @@
 
 ---
 
-## 🔵 F4 — Geometria Avançada e Persistência *(futuro)*
+## 🟡 F4 — Exploração e Interface *(em curso — Fase A entregue em v0.5.0; Fase B em mockup)*
+**Objetivo:** Tornar a ferramenta rápida de explorar e fácil de entender: cada ajuste responde na hora, o acaso é controlável e a interface explica a si mesma. Origem: análise `meta/analises/261112-ANALISE-exploracao-e-ux.md`.
+**Critério de conclusão:** ciclo de exploração no ar (A) e interface nova aprovada pelo dono no roteiro visual (B), em português com seletor EN.
+- [x] **A — Ciclo de exploração**: prévia ao vivo, Surprise, cadeados, New seed, desfazer/refazer, variações «Like this», FIX-003. v0.5.0, DEC-015.
+- [ ] **B — mockup** aprovado pelo dono: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f
+- [ ] **B — implementação**: PT com seletor EN; seções recolhíveis com resumo; rótulos completos com dica e atalho; seed digitável; controle sem efeito no tipo atual desabilitado com o motivo; Text→Form avisa quando o tipo ignora o texto; estado na URL (link reproduz o desenho); favoritos (`localStorage`, absorve a «Preset gallery» da F6); paleta harmônica aleatória; contraste AA nos rótulos; responsivo.
+
+---
+
+## 🟡 F5 — Variedade procedural *(próxima, em paralelo à F4/B)*
+**Objetivo:** O seed passar a decidir a forma em TODOS os tipos, e cada tipo ter mais de uma «cara». Medido em 2026-11-15: o seed não muda nada em 46 dos 53 tipos (DEC-016).
+**Critério de conclusão:** instrumento de sensibilidade ao seed com **53/53** tipos produzindo desenhos distintos em 40 seeds (hoje 7/53), linha de base do regress regravada de propósito, e roteiro visual do dono por lote.
+- [ ] Instrumento de sensibilidade ao seed (versionado, como o `npm run regress`).
+- [ ] Lote Botânico: árvore como L-System estocástico (prova de conceito pronta), dragon com variação, enquadramento maior.
+- [ ] Um lote por estilo: Art Deco, Barroco, Geométrico, Vitoriano, Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
+- [ ] Modificadores universais: traço tracejado/duplo/pontilhado, camadas, espelho, deformação leve por ruído.
+
+---
+
+## 🔵 F6 — Geometria Avançada e Persistência *(futuro — era a F4 até 2026-11-15)*
 **Objetivo:** Ampliar com técnicas de maior custo computacional/estrutural e permitir que o usuário salve trabalho entre sessões.
 - Voronoi/Worley noise — tesselações islâmicas variáveis, padrão celular orgânico.
 - Preset gallery via `localStorage` (serializa `state` completo como JSON); import/export de presets `.json`.
@@ -54,7 +73,7 @@
 
 ---
 
-## 🔵 F5 — Export Avançado e Integrações *(futuro, sem data)*
+## 🔵 F7 — Export Avançado e Integrações *(futuro, sem data — era a F5 até 2026-11-15)*
 **Objetivo:** Reduzir o atrito entre o VectorForge e as ferramentas de destino do usuário.
 - SVG animado (CSS keyframes embutidos no export) para uso em motion design e web.
 - Tile seamless (`<pattern>` SVG) para pattern fills.

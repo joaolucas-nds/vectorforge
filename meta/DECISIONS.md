@@ -384,3 +384,27 @@ Pedido do dono (2026-11-12): gerar «um diferente do último» com um botão, al
 - **Solução:** sem área útil, `fitToView()` mantém o zoom e tenta de novo no próximo quadro (até ~2 s); zoom com piso de 0,1; `initExplore()` re-enquadra em `resize` e `visibilitychange`.
 - **Lição:** cálculo de layout no carregamento precisa de piso e de gatilho para recalcular; o jsdom (área 0) reproduz o caso e serve de prova de vida.
 
+
+---
+
+## DEC-016 — Fase B em português com seletor EN e mockup primeiro; ROADMAP renumerado; variedade procedural (seed vivo) vira a F5, em paralelo
+**Data:** 2026-11-15 · **Status:** aceita
+
+### Contexto
+O Ponto de decisão da análise `meta/analises/261112-ANALISE-exploracao-e-ux.md` pedia três respostas ao dono, e ele as deu em 2026-11-15. No mesmo retorno ele apontou que os desenhos não variam de verdade («botanical tree é sempre praticamente o mesmo desenho, a mesma silhueta»). Medido em seguida: em 46 de 53 tipos o seed não muda nada (40 seeds → o mesmo SVG byte a byte), porque os geradores originais recebem `rnd` e não o usam.
+
+### Decisão
+1. **Interface em português, com seletor EN** (decisão do dono).
+2. **Fase B começa por mockup** (decisão do dono): https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f. A implementação só depois do retorno.
+3. **ROADMAP renumerado** (decisão do dono): F4 «Exploração e Interface» (A + B), F5 «Variedade procedural» (a antiga Fase C), F6 = antiga F4 «Geometria Avançada e Persistência», F7 = antiga F5 «Export Avançado e Integrações».
+4. **A F5 corre em paralelo à F4/B**, porque não dependem uma da outra (geradores × UI) e porque o «seed morto» é hoje o defeito de produto mais visível. Ela começa por um instrumento de sensibilidade ao seed (meta 53/53, hoje 7/53) e pelo lote Botânico.
+
+### Alternativas consideradas
+- **Esperar a B terminar para começar a C** — rejeitada: a B depende do retorno do dono sobre o mockup, e a falta de variedade é a queixa central dele.
+- **Corrigir o seed com um truque universal em `generateContent`** (por exemplo, o seed deslocar Complexity/Symmetry) — rejeitada como solução: só imita os sliders e não muda a estrutura do desenho. A variedade real precisa de escolhas semeadas dentro de cada gerador.
+
+### Consequências
+- Cada lote da F5 muda saídas de propósito: a linha de base do regress é regravada (`--update`) no mesmo commit, e o lote fecha com roteiro visual do dono.
+- O STATUS passa a listar o «seed morto» em «Quebrado / Com Problema» até a F5 fechar.
+
+

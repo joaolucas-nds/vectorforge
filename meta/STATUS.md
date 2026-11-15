@@ -30,13 +30,14 @@
 
 ## 🔧 Em Progresso
 
-- **Análise `meta/analises/261112-ANALISE-exploracao-e-ux.md`:** Fase A entregue em v0.5.0; Fases B (redesenho da UI) e C (variedade dentro do tipo) aguardam o Ponto de decisão do dono — idioma da UI, mockup antes de código, renumeração do ROADMAP.
+- **F4/B — mockup da nova interface** aguardando o retorno do dono: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN, mockup antes de código).
+- **F5 — Variedade procedural** aberta em paralelo: próximo passo é o instrumento de sensibilidade ao seed e o lote Botânico (prova de conceito da árvore estocástica pronta).
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-- Nenhum bug conhecido no momento.
+- **O seed não muda o desenho em 46 dos 53 tipos** (medido em 2026-11-15, DEC-016): os geradores originais não usam o `rnd`. Surprise, New seed e «Like this» só variam o que os sliders variam — a árvore, por exemplo, tem sempre a mesma silhueta. Tratado pela F5.
 
 ---
 
