@@ -408,3 +408,39 @@ O Ponto de decisão da análise `meta/analises/261112-ANALISE-exploracao-e-ux.md
 - O STATUS passa a listar o «seed morto» em «Quebrado / Com Problema» até a F5 fechar.
 
 
+---
+
+## DEC-017 — Instrumento de sensibilidade ao seed (catraca) e lote Botânico: L-System estocástico e famílias de curvas
+**Data:** 2026-11-15 · **Status:** aceita
+
+### Contexto
+F5 (DEC-016) começa pelo que o dono apontou: a árvore tem sempre a mesma silhueta. Medido no lote: o seed muda a estrutura em 3/53 tipos e algum número em 7/53. No Botânico, a árvore ignorava o seed, o Koch usava ±2° de ângulo e o Dragon ignorava seed e Symmetry (a docstring prometia o contrário). Os três ocupavam ~40% do canvas.
+
+### Decisão
+1. **`scripts/seeds.mjs` / `npm run seeds`**: por tipo, 40 seeds com sliders fixos; conta **distintos** e **formas** (elementos + contagem de comandos por path). **Catraca** contra `scripts/seeds-baseline.json`: perder variedade reprova; ganhar pede `--update`. Meta da F5: formas>1 em 53/53.
+2. **Árvore = L-System estocástico** (`lsystemExpandStochastic`, função nova): 5 regras para X, tronco que às vezes não dobra, jitter de ângulo e comprimento na turtle (parâmetro opcional novo de `turtleToPath`), inclinação ±8°. Symmetry segue = ângulo.
+3. **Koch e Dragon = famílias escolhidas pelo seed** (5 curvas cada), cada uma com seu ângulo próprio e teto de iterações pelo crescimento da regra. No Dragon, **Symmetry = cópias giradas (1–4)** com orçamento de dobras; o seed também escolhe orientação e espelhamento.
+4. **`FIT = 1.8`** no enquadramento do Botânico (~83% do canvas).
+5. **Compatibilidade:** `lsystemExpand` e `turtleToPath` sem o parâmetro novo produzem exatamente o que produziam.
+
+### Alternativas consideradas
+- **Meta fixa no instrumento (reprovar abaixo de 53/53)** — rejeitada: reprovaria até o último lote e ninguém leria o vermelho.
+- **Métrica só por hash** — rejeitada como critério: o Koch já tinha 40 hashes distintos (jitter de ±2°) com o mesmo floco; hash mede «mudou um número», não «mudou o desenho».
+- **Variar o ângulo do Koch/Dragon livremente** — rejeitada (como em DEC-011): o ângulo define a curva; variar a FAMÍLIA dá curvas reconhecíveis e diferentes.
+
+### Consequências
+- Placar depois do lote: formas>1 6/53, distintos>1 9/53. Pior caso de tamanho: tree 54 KB, koch 43 KB, dragon 111 KB.
+- A métrica «formas» subconta curvas de mesmo número de segmentos (Dragon: 5 famílias, «formas» = 3). O instrumento diz que não olha aparência; o roteiro visual decide.
+- Os outros estilos seguem um lote cada, com o mesmo par de redes: regress (só as chaves do lote mudam) + seeds (o lote ganha formas, ninguém perde).
+
+---
+
+## FIX-004 — O build gerava um `dist` com o JavaScript quebrado quando o minificador produzia `$&`
+**Data:** 2026-11-15 · **Status:** resolvida
+
+- **Sintoma:** na simulação da WO 0005, o `dist/vectorforge.html` não carregava (jsdom: `SyntaxError: Unexpected token '<'`), embora `npm run build` dissesse «gerado» e o regress e o seeds passassem.
+- **Causa raiz:** `scripts/build.js` (DEC-010) fazia `html.replace('//__SCRIPT__', js)`. Com string no segundo argumento, `String.replace` interpreta `$&` como «o texto casado». O código novo do `turtleToPath` levou o esbuild a chamar uma variável de `$`, e o minificado ficou com `b<$&&($=b)`: o `$&` virou `//__SCRIPT__` no meio do JS, comentando o resto da linha. O defeito existia desde julho e dependia só do nome que o minificador escolhesse.
+- **Solução:** `html.replace(marcador, () => texto)` para o CSS e o JS, e o build lança erro se o HTML final não contiver o bundle e o CSS inteiros.
+- **Lição:** regress e seeds testam o `src/`, não o arquivo distribuído; a sonda de interface (jsdom sobre o `dist`) foi a única rede que pegou. Virou a Armadilha 9 do CONTEXT, e a conferência das WOs que mexem em `src/` passa a incluir `grep -c "//__SCRIPT__" dist/vectorforge.html` = 0.
+
+

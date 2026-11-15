@@ -1,12 +1,13 @@
 {
   "name": "vectorforge",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "Gerador procedural de arte vetorial no browser — arquivo único, zero dependências de runtime.",
   "scripts": {
     "build": "node scripts/build.js",
     "watch": "node scripts/build.js --watch",
-    "regress": "node scripts/regress.mjs"
+    "regress": "node scripts/regress.mjs",
+    "seeds": "node scripts/seeds.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.2"

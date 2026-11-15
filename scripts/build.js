@@ -41,8 +41,13 @@ async function build() {
 
   // 3) Injeta no template.
   let html = fs.readFileSync(path.join(SRC, 'index.html'), 'utf-8');
-  html = html.replace('/*__STYLES__*/', css);
-  html = html.replace('//__SCRIPT__', js);
+  // FIX-004: substituição por FUNÇÃO. Com string, o String.replace interpreta `$&`, `$'`, `$\``, `$$`
+  // no texto inserido — e o minificador pode gerar `$&&` (variável `$` seguida de `&&`): o `$&`
+  // reinjetava o marcador `//__SCRIPT__` no meio do JS e comentava o resto da linha.
+  html = html.replace('/*__STYLES__*/', () => css);
+  html = html.replace('//__SCRIPT__', () => js);
+  // Rede: o bundle e o CSS têm de entrar byte a byte; se não entraram, o arquivo distribuído quebrou.
+  if (!html.includes(js) || !html.includes(css)) throw new Error('inlining falhou: o dist não contém o bundle inteiro');
 
   fs.mkdirSync(DIST, { recursive: true });
   fs.writeFileSync(path.join(DIST, 'vectorforge.html'), html, 'utf-8');

@@ -48,6 +48,9 @@ Definir um ponto de "peso" no canvas onde a complexidade se concentra (clique pa
 ### 2026-06-30 — Verificar seed de noise em genPixelArt (débito técnico F3)
 `genPixelArt()` é pipeline paralelo que não passa por `generateContent()`. Se futuramente um gerador de pixel art baseado em `snoise` for adicionado, precisa chamar `snoiseSetSeed()` explicitamente; do contrário, usará tabela residual da última geração SVG. Baixo risco agora (pixel art atual não usa noise), alto risco se expandido.
 
+### 2026-11-15 — Unificar o loader de `regress.mjs` e `seeds.mjs`
+Os dois instrumentos têm o mesmo bundle temporário com esbuild + stub de `document` (≈20 linhas duplicadas, decisão consciente do lote 1 da F5 para não mexer no regress junto). Extrair para `scripts/load-generators.mjs` quando um terceiro instrumento aparecer ou quando o stub precisar mudar.
+
 ### 2026-06-30 — Voronoi/Worley (F3 ou F4)
 Diagrama de Voronoi para tesselações islâmicas variáveis e padrão celular orgânico. Implementável com Fortune's algorithm em ~100 linhas ou via `d3-delaunay` (2KB). Worley noise (distância ao ponto Voronoi mais próximo) para texturas de pedra/osso.
 

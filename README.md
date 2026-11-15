@@ -43,6 +43,7 @@ npm ci              # instala o esbuild (única dependência, só de desenvolvim
 npm run build       # gera dist/vectorforge.html a partir de src/
 npm run watch       # rebuild automático a cada mudança em src/
 npm run regress     # confere que nenhum gerador mudou de saída sem querer
+npm run seeds       # mede quanto o seed muda cada tipo (variedade)
 ```
 
 `npm run regress` renderiza todas as combinações estilo × tipo pelo código atual e compara com a linha de base em `scripts/regress-baseline.json`: sai com erro se alguma saída antiga mudou. Quando a mudança é **intencional** (um gerador foi ajustado ou um tipo novo entrou), regrave a linha de base com `npm run regress -- --update` e versione o arquivo junto. O instrumento não olha a aparência — depois de mexer num gerador, abra o app e confira com os próprios olhos.

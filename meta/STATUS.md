@@ -7,7 +7,7 @@
 ---
 
 ## Versão Atual
-**[0.5.0]** — Ciclo de exploração (Fase A da análise 261112): prévia ao vivo, Surprise, cadeados, New seed, desfazer/refazer e variações «Like this» (DEC-015); canvas vazio corrigido (FIX-003). F3 concluída em v0.4.0. GitHub Pages publicado (`https://joaolucas-nds.github.io/vectorforge/`).
+**[0.6.0]** — F5, lote 1: o seed passa a mudar a forma da árvore, do Koch e do Dragon (L-System estocástico e famílias de curvas), que agora ocupam ~83% do canvas; instrumento `npm run seeds` (DEC-017). Antes, em v0.5.0: ciclo de exploração (DEC-015) e FIX-003. GitHub Pages: `https://joaolucas-nds.github.io/vectorforge/`.
 
 ---
 
@@ -16,6 +16,7 @@
 - Tudo do v0.2.0: 8 estilos originais, sliders, 8 paletas, canvas customizável, text→form, pixel art, draw mode, 4 variações automáticas, export SVG/PNG/copy.
 - **Ciclo de exploração (v0.5.0, DEC-015):** tudo redesenha na hora; 🎲 Surprise (Espaço) sorteia o que não estiver travado e nunca repete; cadeados; ↻ New seed (R); ↶ ↷ desfazer/refazer (60 estados); variações «Like this». FIX-001 segue valendo no New seed.
 - **Canvas nunca abre vazio** (FIX-003): enquadramento com piso e re-enquadramento ao redimensionar/voltar a aba.
+- **Botânico variado (v0.6.0, DEC-017):** árvore estocástica (40 formas em 40 seeds), Koch em 5 curvas, Dragon em 5 curvas com Symmetry = cópias giradas. Medido por `npm run seeds`.
 - **Export PNG no modo Pixel Art** exporta o `px-canvas` corretamente (FIX-002).
 - **Simplex Noise 2D** (`snoise`, `snoiseSetSeed`) integrado e reproducível por seed.
 - **`genPhyllotaxis`** — tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
@@ -31,13 +32,13 @@
 ## 🔧 Em Progresso
 
 - **F4/B — mockup da nova interface** aguardando o retorno do dono: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN, mockup antes de código).
-- **F5 — Variedade procedural** aberta em paralelo: próximo passo é o instrumento de sensibilidade ao seed e o lote Botânico (prova de conceito da árvore estocástica pronta).
+- **F5 — Variedade procedural:** lote 1 (instrumento + Botânico) entregue em v0.6.0 — placar `formas>1: 6/53`. Próximo: um lote por estilo (Art Deco, Barroco, Geométrico, Vitoriano, Celta, Islâmico, Minimal, Orgânico).
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-- **O seed não muda o desenho em 46 dos 53 tipos** (medido em 2026-11-15, DEC-016): os geradores originais não usam o `rnd`. Surprise, New seed e «Like this» só variam o que os sliders variam — a árvore, por exemplo, tem sempre a mesma silhueta. Tratado pela F5.
+- **O seed ainda não muda a forma em 47 dos 53 tipos** (placar `npm run seeds` em v0.6.0: formas>1 6/53; antes do lote 1 eram 3/53, e o seed não mexia em número nenhum em 46). Surprise, New seed e «Like this» só variam o que os sliders variam nesses tipos. Tratado pela F5, um lote por estilo.
 
 ---
 

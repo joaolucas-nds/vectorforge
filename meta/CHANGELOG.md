@@ -10,6 +10,19 @@
 
 ---
 
+## [0.6.0] — 2026-11-15
+### Adicionado
+- **`npm run seeds`** (`scripts/seeds.mjs`) — instrumento de sensibilidade ao seed: por tipo, quantos desenhos e quantas estruturas diferentes saem de 40 seeds; catraca contra perda de variedade. Ver DEC-017.
+
+### Alterado
+- **Botânico com variedade de verdade** (F5, lote 1): `tree` vira L-System estocástico (o seed escolhe a regra de cada galho e perturba ângulos, comprimentos e inclinação); `koch` sorteia entre 5 curvas (floco, anti-floco, ilha quadrática, Minkowski, hexágono) e a orientação; `dragon` sorteia entre 5 curvas (Heighway, twindragon, Lévy C, terdragon, Sierpiński), orientação e espelhamento, e o Symmetry passa a ser o número de cópias giradas. Os três ocupam ~83% do canvas (antes ~40%). Pior caso: tree 54 KB (antes 166 KB), koch 43 KB, dragon 111 KB.
+- Linha de base do `npm run regress` regravada para as 18 chaves `botanical/*` (mudança intencional).
+
+### Corrigido
+- **FIX-004** — o build podia gerar um `dist/vectorforge.html` com o JavaScript quebrado: `scripts/build.js` injetava o bundle com `String.replace` e string, que interpreta `$&`; o minificador gerou `$&&` e o marcador voltou para o meio do código. Agora substitui por função e confere que o bundle entrou inteiro.
+
+---
+
 ## [0.5.0] — 2026-11-12
 ### Adicionado
 - **Ciclo de exploração** (`src/core/explore.js`, DEC-015): prévia ao vivo em todos os controles (sem botão de gerar); **🎲 Surprise** (Espaço) sorteia estilo, tipo, paleta e parâmetros sem nunca repetir o anterior; **cadeados** por parâmetro; **↻ New seed** (R); **desfazer/refazer** (Ctrl+Z / Ctrl+Shift+Z, 60 estados); variações **«Like this»** (±20 em Complexity/Symmetry + seed novo).

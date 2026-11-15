@@ -60,7 +60,9 @@ vectorforge/
 ├── scripts/
 │   ├── build.js                 # esbuild (bundle IIFE) + inlining de CSS/JS no template → dist/
 │   ├── regress.mjs              # instrumento de regressão dos geradores (`npm run regress`, DEC-014)
-│   └── regress-baseline.json    # linha de base versionada: 1 chave estilo/tipo/tamanho/seed por linha
+│   ├── regress-baseline.json    # linha de base versionada: 1 chave estilo/tipo/tamanho/seed por linha
+│   ├── seeds.mjs                # instrumento de sensibilidade ao seed (`npm run seeds`, catraca, DEC-017)
+│   └── seeds-baseline.json      # linha de base: distintos/formas por tipo em 40 seeds
 ├── package.json                 # devDependency: esbuild. Scripts: build, watch, regress
 ├── .gitignore                   # node_modules/ ignorado; dist/vectorforge.html NÃO (ver DEC-010)
 ├── dist/
@@ -135,7 +137,7 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 | **islamic** | `src/generators/islamic.js` | star, girih, arabesque, border, medallion, pattern | `genIslamicStar`, `genPattern('girih')`†, `genArabesque`, `genADFrame`‡ (reuso, n=8), `genIslamicStar` (reuso, n=12), `genPattern('islamic')`† |
 | **minimal** | `src/generators/minimal.js` | symbol, line, grid, circle, mark, glyph | `genMinimalSymbol`, `genDivider('min', comp×0.3)`†, `genMinGrid`, `genMinCircles`, `genMinimalSymbol` (reuso menor), `genGlyph` |
 | **organic** | `src/generators/organic.js` | leaf, spiral, branch, flower, mandala, wave, phyllotaxis, flow | `genOrganicLeaf` (usa `snoise`), `genOrganicSpiral`, `genOrganicBranch`, `genOrganicFlower`, `genMandala`‡ (reuso, n=8), `genWave` (usa `snoise`), `genPhyllotaxis` (usa `snoise`), `genFlowField` (usa `snoise`; disco de raio `sz`, ver DEC-013) |
-| **botanical** | `src/generators/botanical.js` | tree, koch, dragon | `genLSysTree`, `genLSysKoch`, `genLSysDragon` (motor generico reaproveitavel: `lsystemExpand`, `turtleToPath`) |
+| **botanical** | `src/generators/botanical.js` | tree, koch, dragon | `genLSysTree` (L-System estocástico: o seed escolhe regras e perturba ângulo/comprimento), `genLSysKoch` (família de 5 curvas de Koch, escolhida pelo seed), `genLSysDragon` (família de 5 curvas dragão; Symmetry = cópias giradas) — motor `lsystemExpand`/`lsystemExpandStochastic`/`turtleToPath` (DEC-011, DEC-017) |
 
 † = gerador genérico, vive em `src/generators/generic.js`, despachado por parâmetro `style`.
 ‡ = reuso de gerador definido em OUTRO arquivo de estilo — a chamada cruzada é feita pelo dispatcher em `generate.js`, não dentro do próprio arquivo do estilo. Isto é intencional: `generate.js` é o único módulo que importa de todos os `generators/*.js` ao mesmo tempo; cada arquivo de estilo importa só de `core/utils.js` e `core/state.js` (nunca de outro `generators/*.js`).
@@ -167,6 +169,8 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 7. **Usar `snoise()` em `genPixelArt()` sem chamar `snoiseSetSeed()` antes** — o pipeline de pixel art não passa por `generateContent()` (onde a chamada é automática), então herdaria a tabela de permutação da última geração SVG, não do seed atual do pixel art. → Se `genPixelArt()` vier a usar noise, chamar `snoiseSetSeed(state.seed)` explicitamente no início da função (em `src/generators/generic.js`).
 
 8. **Adicionar um novo handler `onclick=""` no HTML sem expor a função em `window`** *(nova — desde a modularização de 2026-07-07)* — `src/main.js` bundla tudo num IIFE; diferente do `<script>` clássico original, declarações de função dentro do bundle **não** vazam para o escopo global automaticamente. Qualquer função nova referenciada via `onclick="minhaFuncao()"` no `src/index.html` (estático) ou dentro de um template string em `buildStyleGrid`/`buildTypeChips`/`buildPalettes`/`buildFontChips`/`buildVariations` precisa ser adicionada ao `Object.assign(window, {...})` em `src/main.js` — senão o clique não faz nada, **sem erro no console**, o que torna esse bug fácil de não notar. Lista atual exposta: `setMode, doGenRandom, selectStyle, selectType, selectPal, selectFont, setRatio, doGen, zoom, toggleBg, toggleGrid, toggleDraw, xSVG, xPNG, copySVG, applyVar, surprise, newSeed, undo, redo, toggleLock` — as escolhas discretas (`setMode`, `select*`, `setRatio`) entram embrulhadas por `live()` (DEC-015). Ver DEC-010.
+
+9. **Injetar código num template com `String.replace(marcador, texto)`** *(FIX-004, 2026-11-15)* — com STRING no segundo argumento, o `replace` interpreta `$&`, `$'`, `` $` `` e `$$` dentro do texto inserido; o minificador pode gerar `$&&` (uma variável chamada `$`), e o JS sai quebrado sem erro no build. → Sempre substituir por FUNÇÃO (`html.replace(m, () => js)`) e conferir que o resultado contém o texto inteiro (`scripts/build.js` já faz as duas coisas). O `npm run regress` e o `npm run seeds` NÃO pegam isso: testam o `src/`, não o `dist/` — quem pega é a sonda de interface ou `grep -c "//__SCRIPT__" dist/vectorforge.html` = 0.
 
 ---
 
