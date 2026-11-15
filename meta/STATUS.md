@@ -61,3 +61,5 @@
 **2026-11-12** - WO 0002 aplicada pelo Code (`2d3ac8b`, empurrado): `npm run regress` (318 chaves, DEC-014) e README publico; Flow Fields validada pelo dono (8/8) registrada; backlog ganha licenca e CI atualizado. Sem mudanca em `src/`/`dist/`.
 
 **2026-11-12 (2)** - WO 0003 aplicada pelo Code (`5ca526f`, empurrado): v0.5.0, ciclo de exploracao (Surprise, cadeados, New seed, desfazer/refazer, Like this, previa ao vivo; DEC-015) e FIX-003 (canvas vazio). Regress 0 mudancas; sonda jsdom 18/18 OK; prova de vida width=400. Visual NAO verificado (jsdom nao desenha): roteiro do dono pendente. Fases B e C aguardam decisao do dono.
+
+**2026-11-15** - WO 0004 aplicada pelo Code (`ead6ace`, empurrado): so doc. DEC-016 (Fase B em PT com seletor EN, mockup antes de codigo, ROADMAP renumerado: F4 Exploracao e Interface, F5 Variedade procedural, F6/F7 as antigas F4/F5); defeito «seed sem efeito em 46/53 tipos» (medido pelo chat, nao remedido aqui) em Quebrado. Sem build/regress. Proximo passo: retorno do dono sobre o mockup da F4/B; WO do instrumento de sensibilidade ao seed + lote Botanico (F5).
