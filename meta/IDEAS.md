@@ -51,6 +51,12 @@ Definir um ponto de "peso" no canvas onde a complexidade se concentra (clique pa
 ### 2026-11-15 — Unificar o loader de `regress.mjs` e `seeds.mjs`
 Os dois instrumentos têm o mesmo bundle temporário com esbuild + stub de `document` (≈20 linhas duplicadas, decisão consciente do lote 1 da F5 para não mexer no regress junto). Extrair para `scripts/load-generators.mjs` quando um terceiro instrumento aparecer ou quando o stub precisar mudar.
 
+### 2026-11-15 — Promover a sonda de interface (jsdom) a instrumento versionado
+A sonda `../261112-sonda-ui/behave.cjs` (pasta-pai, fora do repo, 18 checagens do ciclo de exploração sobre o `dist/` real em jsdom) já rodou em três WOs e foi a ÚNICA rede que pegou o FIX-004 — regress e seeds testam o `src/`, não o arquivo distribuído. Pela regra do kit (sonda rodada de novo para comparar = instrumento sem teste), candidata a `scripts/ui.mjs` + `npm run ui`, com o `jsdom` como devDependency. Custo: dependência nova de desenvolvimento (~60 pacotes). Decisão do dono.
+
+### 2026-11-15 — `.gitattributes` fixando LF
+Ver o item do backlog do STATUS: `* text=auto eol=lf` acaba com o aviso de CRLF em toda WO e com a dúvida «o arquivo está em LF ou CRLF?» nos relatórios.
+
 ### 2026-06-30 — Voronoi/Worley (F3 ou F4)
 Diagrama de Voronoi para tesselações islâmicas variáveis e padrão celular orgânico. Implementável com Fortune's algorithm em ~100 linhas ou via `d3-delaunay` (2KB). Worley noise (distância ao ponto Voronoi mais próximo) para texturas de pedra/osso.
 
@@ -96,6 +102,9 @@ As funções `genADMedallion`, `genBQFrame`, etc. ainda sem docstrings completas
 ---
 
 ## 📮 Feedback para o Kit
+
+### 2026-11-15 — `/wrap` faz o «Última conversa» do STATUS crescer sem limite
+A skill `wrap` manda acrescentar (append) uma entrada em «Última conversa» a cada fecho, e nada no ciclo a enxuga: em 5 dias o STATUS acumulou 6 entradas, contra a regra «STATUS é só o agora». Enxugado à mão pela WO 0006. Sugestão para o kit: a skill dizer «mantenha só as N mais recentes; o histórico está no log do dia», ou o template do STATUS trazer o teto.
 
 ### 2026-06-23 — Sessão inaugural de projeto novo sem histórico
 Nesta primeira sessão, todos os templates do kit estavam vazios. O assistente precisou inferir a realidade do projeto inteiramente a partir do `vectorforge.html` e da conversa. Sugestão para o Kit: adicionar instrução explícita sobre como proceder quando o projeto é recém-criado e não há CONTEXT/STATUS preenchidos — o assistente deve fazer a leitura do código-fonte antes de gerar a documentação.

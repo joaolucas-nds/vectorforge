@@ -31,8 +31,9 @@
 
 ## 🔧 Em Progresso
 
-- **F4/B — mockup da nova interface** aguardando o retorno do dono: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN, mockup antes de código).
-- **F5 — Variedade procedural:** lote 1 (instrumento + Botânico) entregue em v0.6.0 — placar `formas>1: 6/53`. Próximo: um lote por estilo (Art Deco, Barroco, Geométrico, Vitoriano, Celta, Islâmico, Minimal, Orgânico).
+- **F4/B — mockup da nova interface APROVADO como está** [relatado pelo dono, 2026-11-15]: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN). Próximo passo da F4/B: spec + WO de implementação, em lotes (layout e seções; rótulos PT/EN; estados e mensagens; celular).
+- **F5 — Variedade procedural:** lote 1 (instrumento + Botânico) entregue em v0.6.0 — placar `formas>1: 6/53`. Próximo: um lote por estilo (Art Deco, Barroco, Geométrico, Vitoriano, Celta, Islâmico, Minimal, Orgânico). Roteiro visual do lote 1 (Botânico): **1–6 ok** [relatado pelo dono, 2026-11-15].
+- **Ordem das próximas frentes — NÃO decidida:** F5 lote 2 (Art Deco + Geométrico, sugerido no fecho de 2026-11-15) ou F4/B implementação. O dono pausou para a troca de conversa antes de escolher.
 
 ---
 
@@ -48,6 +49,7 @@
 - [ ] Testar `dist/vectorforge.html` em Firefox e Safari.
 - [ ] Avaliar fallback de `DM Mono`/`Fraunces` (Google Fonts) offline.
 - [ ] Sincronizar `snoiseSetSeed` em `genPixelArt()` caso um gerador de pixel art baseado em noise seja adicionado (Armadilha 7 no CONTEXT.md).
+- [ ] **`.gitattributes` com `* text=auto eol=lf`** — o Git do Windows do dono avisa «LF will be replaced by CRLF» em toda WO (autocrlf), e o relatório da WO 0002 chegou a afirmar CRLF onde o disco tinha LF. Fixar LF no repo encerra a ambiguidade. Pequeno; entra na próxima WO que tocar estrutura.
 - [ ] **Definir política de CI** (GitHub Actions) para rodar `npm run regress` e garantir que `dist/vectorforge.html` nunca fique dessincronizado de `src/` — o instrumento já existe (DEC-014). Baixa prioridade enquanto for projeto de mantenedor único.
 - [ ] **Licença:** o repositório é público e não declara licença (sem licença, ninguém tem permissão legal de reusar o código). Decisão do dono — o README não traz seção de licença até lá.
 
@@ -55,14 +57,6 @@
 
 ## 💬 Última conversa
 
-**2026-11-11** — Merge do Kit v1.135.0 e troca do método de trabalho: ASU e FlatDrop saem, entra o modo Code (chat com a pasta vinculada + Claude Code no repo). Instalados `CLAUDE.md`, `.claude/` (settings + skills `apply-wo`/`wrap`/`sondar`), `meta/workorders/_TEMPLATE.md` e `meta/SPEC.md`; CEREBRO e Instruções refeitos sobre o pacote com os transplantes deste projeto; docs vivos migrados ao formato novo; artefatos do ASU movidos para `zz_para-excluir\` na pasta-pai. Ver DEC-012. Nenhuma linha de código do produto mudou. Próximo passo: Flow Fields (último item de F3).
-
-**2026-11-11 (2)** — WO 0001 aplicada pelo Code (`a979fa7`, empurrado): tipo `flow` (Flow Fields) no estilo Organic, versão 0.4.0, F3 concluída, DEC-013. Sonda antes/depois: 312 → 318 chaves, 0 antigas diferentes; `npm run build` ok. Visual NÃO verificado (a sonda só conta hashes/bytes). Próximo passo: dono roda o roteiro visual da Flow Fields; depois escolher a próxima frente (F4 ou backlog; ver ideia da sonda versionada em IDEAS).
-
-**2026-11-12** - WO 0002 aplicada pelo Code (`2d3ac8b`, empurrado): `npm run regress` (318 chaves, DEC-014) e README publico; Flow Fields validada pelo dono (8/8) registrada; backlog ganha licenca e CI atualizado. Sem mudanca em `src/`/`dist/`.
-
-**2026-11-12 (2)** - WO 0003 aplicada pelo Code (`5ca526f`, empurrado): v0.5.0, ciclo de exploracao (Surprise, cadeados, New seed, desfazer/refazer, Like this, previa ao vivo; DEC-015) e FIX-003 (canvas vazio). Regress 0 mudancas; sonda jsdom 18/18 OK; prova de vida width=400. Visual NAO verificado (jsdom nao desenha): roteiro do dono pendente. Fases B e C aguardam decisao do dono.
-
-**2026-11-15** - WO 0004 aplicada pelo Code (`ead6ace`, empurrado): so doc. DEC-016 (Fase B em PT com seletor EN, mockup antes de codigo, ROADMAP renumerado: F4 Exploracao e Interface, F5 Variedade procedural, F6/F7 as antigas F4/F5); defeito «seed sem efeito em 46/53 tipos» (medido pelo chat, nao remedido aqui) em Quebrado. Sem build/regress. Proximo passo: retorno do dono sobre o mockup da F4/B; WO do instrumento de sensibilidade ao seed + lote Botanico (F5).
+> Rolante: só as entradas mais recentes. As anteriores (2026-11-11 a 2026-11-15) estão em `logs/2026-11-11.md`, `logs/2026-11-12.md` e `logs/2026-11-15.md` (enxugado pela WO 0006).
 
 **2026-11-15 (2)** - WO 0005 aplicada pelo Code (`c4d5146`, empurrado): v0.6.0, `npm run seeds` (catraca) e lote Botanico (tree estocastica, Koch e Dragon em 5 curvas, Symmetry = copias no Dragon, enquadramento ~83%); DEC-017 e FIX-004 (build injetava o bundle com `String.replace` e quebrava com `$&`). Regress: 18 chaves `botanical/*` mudaram, 0 fora; seeds formas>1 3/53 -> 6/53; sonda jsdom 18/18. Visual NAO verificado: roteiro do dono pendente. Proximo passo: dono ve as curvas novas; depois um lote F5 por estilo; mockup da F4/B segue aguardando.

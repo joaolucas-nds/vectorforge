@@ -43,11 +43,11 @@
 
 ---
 
-## 🟡 F4 — Exploração e Interface *(em curso — Fase A entregue em v0.5.0; Fase B em mockup)*
+## 🟡 F4 — Exploração e Interface *(em curso — Fase A entregue em v0.5.0; mockup da Fase B aprovado; implementação da B pendente)*
 **Objetivo:** Tornar a ferramenta rápida de explorar e fácil de entender: cada ajuste responde na hora, o acaso é controlável e a interface explica a si mesma. Origem: análise `meta/analises/261112-ANALISE-exploracao-e-ux.md`.
 **Critério de conclusão:** ciclo de exploração no ar (A) e interface nova aprovada pelo dono no roteiro visual (B), em português com seletor EN.
 - [x] **A — Ciclo de exploração**: prévia ao vivo, Surprise, cadeados, New seed, desfazer/refazer, variações «Like this», FIX-003. v0.5.0, DEC-015.
-- [ ] **B — mockup** aprovado pelo dono: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f
+- [x] **B — mockup** aprovado pelo dono como está em 2026-11-15 [relatado pelo dono]: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f
 - [ ] **B — implementação**: PT com seletor EN; seções recolhíveis com resumo; rótulos completos com dica e atalho; seed digitável; controle sem efeito no tipo atual desabilitado com o motivo; Text→Form avisa quando o tipo ignora o texto; estado na URL (link reproduz o desenho); favoritos (`localStorage`, absorve a «Preset gallery» da F6); paleta harmônica aleatória; contraste AA nos rótulos; responsivo.
 
 ---
