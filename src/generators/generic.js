@@ -4,7 +4,7 @@
 import { genMandala } from './geometric.js'; // fallback de genTextShape quando a textarea está vazia
 
 
-import { TAU, f, pt, polyPath, starPath, mkRand } from '../core/utils.js';
+import { TAU, f, pt, polyPath, starPath, mkRand, pickOne, steppedDiamondPath } from '../core/utils.js';
 import { state, PALETTES } from '../core/state.js';
 
 
@@ -14,11 +14,36 @@ export function genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style) {
   const cx = w / 2;
 
   if (style === 'artdeco') {
-    parts.push(`<path d="M ${cx} ${f(cy - 12 - comp * 10)} L ${f(cx + 8 + comp * 6)} ${f(cy)} L ${cx} ${f(cy + 12 + comp * 10)} L ${f(cx - 8 - comp * 6)} ${f(cy)} Z" ${FG}/>`);
+    // F5 lote 2 (DEC-018): o seed escolhe o miolo (losango · leque · zigurate), as peças
+    // laterais (retângulos · chevrons · barras que afinam) e se há filetes extras
+    const centerKind = pickOne(['diamond', 'fan', 'ziggurat'], rnd);
+    const sideKind = pickOne(['rects', 'chevrons', 'bars'], rnd);
+    if (rnd() < 0.5) for (const dy of [-4, 4]) parts.push(`<line x1="${x + 40}" y1="${f(cy + dy)}" x2="${w - 40}" y2="${f(cy + dy)}" ${SO}/>`);
+    if (centerKind === 'fan') {
+      // leque espelhado: meia-lua para cima e para baixo, com raios
+      const R = 14 + comp * 12, k = 5 + Math.round(comp * 6);
+      for (const up of [true, false]) {
+        parts.push(`<path d="M ${f(cx - R)} ${f(cy)} A ${f(R)} ${f(R)} 0 0 ${up ? 1 : 0} ${f(cx + R)} ${f(cy)} Z" ${SO}/>`);
+        for (let j = 1; j < k; j++) {
+          const [ex, ey] = pt(cx, cy, R * 0.92, (up ? Math.PI : 0) + j * Math.PI / k);
+          parts.push(`<line x1="${f(cx)}" y1="${f(cy)}" x2="${f(ex)}" y2="${f(ey)}" ${SO}/>`);
+        }
+      }
+      parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(3 + comp * 2)}" ${FG}/>`);
+    } else if (centerKind === 'ziggurat') {
+      parts.push(`<path d="${steppedDiamondPath(cx, cy, 2 + Math.round(comp * 2), 10 + comp * 8, 12 + comp * 10)}" ${FG}/>`);
+    } else {
+      parts.push(`<path d="M ${cx} ${f(cy - 12 - comp * 10)} L ${f(cx + 8 + comp * 6)} ${f(cy)} L ${cx} ${f(cy + 12 + comp * 10)} L ${f(cx - 8 - comp * 6)} ${f(cy)} Z" ${FG}/>`);
+    }
     const ns = 2 + Math.round(comp * 3);
     for (let i = 1; i <= ns; i++) {
       const off = 20 + i * 18;
-      for (const dir of [-1, 1]) parts.push(`<rect x="${f(cx + dir * off - 5)}" y="${f(cy - 8 - comp * 4)}" width="10" height="${f(16 + comp * 8)}" ${SO}/>`);
+      for (const dir of [-1, 1]) {
+        const px = cx + dir * off;
+        if (sideKind === 'chevrons') parts.push(`<polyline points="${f(px - dir * 4)},${f(cy - 6 - comp * 4)} ${f(px + dir * 4)},${f(cy)} ${f(px - dir * 4)},${f(cy + 6 + comp * 4)}" ${SO}/>`);
+        else if (sideKind === 'bars') { const hh = (10 + comp * 6) * (1 - (i - 1) / (ns + 1)); parts.push(`<line x1="${f(px)}" y1="${f(cy - hh)}" x2="${f(px)}" y2="${f(cy + hh)}" ${SO}/>`); }
+        else parts.push(`<rect x="${f(px - 5)}" y="${f(cy - 8 - comp * 4)}" width="10" height="${f(16 + comp * 8)}" ${SO}/>`);
+      }
     }
   } else if (style === 'baroque') {
     const ow = 40 + comp * 25, oh = 16 + comp * 8;
@@ -29,13 +54,34 @@ export function genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style) {
       parts.push(`<path d="M ${f(bx)} ${f(cy)} C ${f(bx + dir * 16)} ${f(cy - oh * 1.1)} ${f(bx + dir * 28)} ${f(cy - oh * 0.3)} ${f(bx + dir * 28)} ${f(cy + oh * 0.3)} C ${f(bx + dir * 28)} ${f(cy + oh * 1.1)} ${f(bx + dir * 16)} ${f(cy + oh * 0.8)} ${f(bx + dir * 6)} ${f(cy + oh * 0.3)}" ${SO}/>`);
     }
   } else if (style === 'geo' || style === 'geometric') {
+    // F5 lote 2 (DEC-018): o seed escolhe o miolo (estrela · polígonos encaixados · anéis ·
+    // losango) e as peças laterais (círculos · polígonos · losangos · traços que encurtam)
+    const centerKind = pickOne(['star', 'nested', 'rings', 'rhombus'], rnd);
+    const sideKind = pickOne(['circles', 'polys', 'diamonds', 'ticks'], rnd);
     const n2 = Math.round(4 + sym * 6);
-    parts.push(`<path d="${starPath(cx, cy, 16 + comp * 12, 7 + comp * 5, n2)}" ${SO}/>`);
+    const R = 16 + comp * 12;
+    if (centerKind === 'nested') {
+      parts.push(`<path d="${polyPath(cx, cy, R, n2)}" ${SO}/>`);
+      parts.push(`<path d="${polyPath(cx, cy, R * 0.6, n2, -Math.PI / 2 + Math.PI / n2)}" ${SO}/>`);
+    } else if (centerKind === 'rings') {
+      parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(R)}" ${SO}/>`);
+      parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(R * 0.65)}" ${SO}/>`);
+    } else if (centerKind === 'rhombus') {
+      parts.push(`<path d="M ${f(cx)} ${f(cy - R)} L ${f(cx + R * 0.6)} ${f(cy)} L ${f(cx)} ${f(cy + R)} L ${f(cx - R * 0.6)} ${f(cy)} Z" ${SO}/>`);
+    } else {
+      parts.push(`<path d="${starPath(cx, cy, R, 7 + comp * 5, n2)}" ${SO}/>`);
+    }
     parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(4 + comp * 3)}" ${FG}/>`);
     const ns = 2 + Math.round(comp * 3);
     for (let i = 1; i <= ns; i++) {
       const off = 28 + i * 14;
-      for (const dir of [-1, 1]) parts.push(`<circle cx="${f(cx + dir * off)}" cy="${f(cy)}" r="${f(3 + comp * 2)}" ${SO}/>`);
+      for (const dir of [-1, 1]) {
+        const px = cx + dir * off, r = 3 + comp * 2;
+        if (sideKind === 'polys') parts.push(`<path d="${polyPath(px, cy, r * 1.2, Math.max(3, Math.round(n2 / 2)))}" ${SO}/>`);
+        else if (sideKind === 'diamonds') parts.push(`<path d="M ${f(px)} ${f(cy - r)} L ${f(px + r)} ${f(cy)} L ${f(px)} ${f(cy + r)} L ${f(px - r)} ${f(cy)} Z" ${FG}/>`);
+        else if (sideKind === 'ticks') { const hh = r * 2 * (1 - (i - 1) / (ns + 1)); parts.push(`<line x1="${f(px)}" y1="${f(cy - hh)}" x2="${f(px)}" y2="${f(cy + hh)}" ${SO}/>`); }
+        else parts.push(`<circle cx="${f(px)}" cy="${f(cy)}" r="${f(r)}" ${SO}/>`);
+      }
     }
   } else if (style === 'victorian') {
     parts.push(`<path d="${starPath(cx, cy, 14 + comp * 10, 6 + comp * 4, 8)}" ${SO}/>`);
@@ -59,15 +105,58 @@ export function genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style) {
 export function genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style) {
   const parts = [];
   const cell = 40 + Math.round((1 - comp) * 35);
+  // F5 lote 2 (DEC-018): Art Deco e Geométrico sorteiam o motivo e a malha; girih e islamic
+  // seguem fixos (não consomem o seed). O motivo original de cada um é uma das opções.
+  const motif = style === 'artdeco' ? pickOne(['polygon', 'scallop', 'fan', 'chevron'], rnd)
+    : style === 'geo' ? pickOne(['polygon', 'star', 'truchet', 'rosette'], rnd) : 'polygon';
+  let grid = style === 'artdeco' ? pickOne(['square', 'brick'], rnd)
+    : style === 'geo' ? pickOne(['tri', 'square'], rnd) : (style === 'girih' ? 'brick' : 'square');
+  if (motif === 'truchet') grid = 'square'; // o Truchet só fecha os arcos em malha quadrada
+  const n = style === 'girih' || style === 'islamic' ? 6 : Math.round(3 + sym * 4);
   for (let row = -1; row <= Math.ceil(h / cell) + 1; row++) {
     for (let col = -1; col <= Math.ceil(w / cell) + 1; col++) {
-      const offset = (style === 'geo' || style === 'girih') ? (row % 2 === 0 ? 0 : cell / 2) : 0;
+      const offset = grid !== 'square' ? (row % 2 === 0 ? 0 : cell / 2) : 0;
       const cx = col * cell + cell / 2 + offset;
-      const cy = row * (style === 'geo' ? cell * 0.866 : cell) + cell / 2;
+      const cy = row * (grid === 'tri' ? cell * 0.866 : cell) + cell / 2;
       if (cx < -cell || cx > w + cell || cy < -cell || cy > h + cell) continue;
-      const n = style === 'girih' || style === 'islamic' ? 6 : Math.round(3 + sym * 4);
-      parts.push(`<path d="${polyPath(cx, cy, cell * 0.47, n)}" ${SO}/>`);
-      parts.push(`<path d="${polyPath(cx, cy, cell * 0.22, n, Math.PI / n)}" ${FG}/>`);
+      const c2 = cell / 2;
+      if (motif === 'scallop') {
+        // escama: arco grande vazado com meia-lua cheia dentro
+        parts.push(`<path d="M ${f(cx - c2)} ${f(cy)} A ${f(c2)} ${f(c2)} 0 0 1 ${f(cx + c2)} ${f(cy)}" ${SO}/>`);
+        parts.push(`<path d="M ${f(cx - c2 / 2)} ${f(cy)} A ${f(c2 / 2)} ${f(c2 / 2)} 0 0 1 ${f(cx + c2 / 2)} ${f(cy)} Z" ${FG}/>`);
+      } else if (motif === 'fan') {
+        const R = cell * 0.45;
+        parts.push(`<path d="M ${f(cx - R)} ${f(cy)} A ${f(R)} ${f(R)} 0 0 1 ${f(cx + R)} ${f(cy)} Z" ${SO}/>`);
+        // raios num só path (M…L por raio): um elemento por célula em vez de n, o padrão cobre o canvas inteiro
+        let d = '';
+        for (let j = 1; j <= n; j++) {
+          const [ex, ey] = pt(cx, cy, R, Math.PI + j * Math.PI / (n + 1));
+          d += `M ${f(cx)} ${f(cy)} L ${f(ex)} ${f(ey)} `;
+        }
+        parts.push(`<path d="${d.trim()}" ${SO}/>`);
+      } else if (motif === 'chevron') {
+        for (const dy of [-cell * 0.15, cell * 0.15]) parts.push(`<polyline points="${f(cx - c2)},${f(cy + dy - cell * 0.15)} ${f(cx)},${f(cy + dy + cell * 0.15)} ${f(cx + c2)},${f(cy + dy - cell * 0.15)}" ${SO}/>`);
+      } else if (motif === 'star') {
+        parts.push(`<path d="${starPath(cx, cy, cell * 0.47, cell * 0.2, n)}" ${SO}/>`);
+        parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(cell * 0.08)}" ${FG}/>`);
+      } else if (motif === 'truchet') {
+        // ladrilho de Truchet: dois quartos de círculo em cantos opostos; o seed gira cada ladrilho
+        const x0 = cx - c2, y0 = cy - c2, x1 = cx + c2, y1 = cy + c2;
+        if (rnd() < 0.5) {
+          parts.push(`<path d="M ${f(x0 + c2)} ${f(y0)} A ${f(c2)} ${f(c2)} 0 0 1 ${f(x0)} ${f(y0 + c2)}" ${SO}/>`);
+          parts.push(`<path d="M ${f(x1 - c2)} ${f(y1)} A ${f(c2)} ${f(c2)} 0 0 1 ${f(x1)} ${f(y1 - c2)}" ${SO}/>`);
+        } else {
+          parts.push(`<path d="M ${f(x1 - c2)} ${f(y0)} A ${f(c2)} ${f(c2)} 0 0 0 ${f(x1)} ${f(y0 + c2)}" ${SO}/>`);
+          parts.push(`<path d="M ${f(x0 + c2)} ${f(y1)} A ${f(c2)} ${f(c2)} 0 0 0 ${f(x0)} ${f(y1 - c2)}" ${SO}/>`);
+        }
+      } else if (motif === 'rosette') {
+        parts.push(`<path d="${polyPath(cx, cy, cell * 0.47, n)}" ${SO}/>`);
+        parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(cell * 0.47 * Math.cos(Math.PI / n))}" ${SO}/>`);
+        parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(cell * 0.1)}" ${FG}/>`);
+      } else {
+        parts.push(`<path d="${polyPath(cx, cy, cell * 0.47, n)}" ${SO}/>`);
+        parts.push(`<path d="${polyPath(cx, cy, cell * 0.22, n, Math.PI / n)}" ${FG}/>`);
+      }
     }
   }
   return parts.join('\n');

@@ -10,6 +10,14 @@
 
 ---
 
+## [0.7.0] — 2026-11-16
+### Alterado
+- **Art Deco e Geométrico com variedade de verdade** (F5, lote 2): os 12 tipos passam a sortear pelo seed a variante de motivo, arranjo e acabamento — medalhão (raios em cunha, degraus, leque ou alternados; anéis em círculo, octógono ou dodecágono; três miolos; três acabamentos), moldura (cantos em colchete, leque ou zigurate; quatro motivos de borda; filete simples, duplo ou triplo), divisor, canto, padrão (polígono, escama, leque, chevron; malha reta ou em tijolo), ornamento (quatro células × quatro contornos × três miolos), mandala (pétala por anel, anéis escalonados), moldura geométrica, divisor geométrico, tesselação (polígono, estrela, Truchet, roseta), estrela ({n/k}, alternada, três giros) e símbolo. O desenho de antes de cada tipo continua sendo uma das variantes. Placar `npm run seeds`: formas>1 6/53 → 18/53.
+- Celta, Islâmico e Orgânico, que reusam `genADFrame`, `genMandala` e `genPattern`, não mudam: a variação só liga para o estilo dono.
+- Linha de base do `npm run regress` regravada para as 72 chaves `artdeco/*` e `geometric/*` (mudança intencional).
+
+---
+
 ## [0.6.0] — 2026-11-15
 ### Adicionado
 - **`npm run seeds`** (`scripts/seeds.mjs`) — instrumento de sensibilidade ao seed: por tipo, quantos desenhos e quantas estruturas diferentes saem de 40 seeds; catraca contra perda de variedade. Ver DEC-017.

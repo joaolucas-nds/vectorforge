@@ -29,7 +29,7 @@ export function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, s
   const generators = {
     artdeco: {
       medallion: () => genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw),
-      frame:     () => genADFrame(0, 0, state.w, state.h, comp, n, rnd, SO, FG, sw),
+      frame:     () => genADFrame(0, 0, state.w, state.h, comp, n, rnd, SO, FG, sw, true),
       divider:   () => genDivider(0, cy, state.w, comp, sym, rnd, SO, FG, sw, 'artdeco'),
       corner:    () => genADCorner(cx - sz * 0.5, cy - sz * 0.5, sz, comp, rnd, SO, FG, sw),
       pattern:   () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'artdeco'),
@@ -44,7 +44,7 @@ export function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, s
       acanthus:  () => genBQAcanthus(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
     },
     geometric: {
-      mandala:      () => genMandala(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw),
+      mandala:      () => genMandala(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw, true),
       frame:        () => genGeoFrame(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw),
       divider:      () => genDivider(0, cy, state.w, comp, sym, rnd, SO, FG, sw, 'geo'),
       tessellation: () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'geo'),

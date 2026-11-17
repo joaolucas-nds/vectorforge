@@ -443,4 +443,29 @@ F5 (DEC-016) começa pelo que o dono apontou: a árvore tem sempre a mesma silhu
 - **Solução:** `html.replace(marcador, () => texto)` para o CSS e o JS, e o build lança erro se o HTML final não contiver o bundle e o CSS inteiros.
 - **Lição:** regress e seeds testam o `src/`, não o arquivo distribuído; a sonda de interface (jsdom sobre o `dist`) foi a única rede que pegou. Virou a Armadilha 9 do CONTEXT, e a conferência das WOs que mexem em `src/` passa a incluir `grep -c "//__SCRIPT__" dist/vectorforge.html` = 0.
 
+---
+
+## DEC-018 — Lote 2 da F5: escolhas semeadas no Art Deco e no Geométrico, sem vazar para quem reusa
+**Data:** 2026-11-16 · **Status:** aceita
+
+### Contexto
+Depois do lote 1 (DEC-017), o placar era formas>1 6/53; os 12 tipos do Art Deco e do Geométrico — os estilos mais usados — marcavam 1/1. Quatro dos geradores são compartilhados: `genADFrame` (Celta e Islâmico usam como borda), `genMandala` (Celta, Orgânico, fallback e Text→Form), `genPattern` e `genDivider` (todos os estilos, por ramo).
+
+### Decisão
+1. **Escolhas semeadas por tipo**, com `pickOne` (primitiva nova em `core/utils.js`): cada gerador sorteia de 2 a 5 eixos independentes (forma do motivo, arranjo, acabamento, miolo); o desenho original é uma das combinações. Complexity segue = densidade; Symmetry segue = eixos/lados.
+2. **Gerador compartilhado só varia para o estilo dono:** `genADFrame(…, vary = false)` e `genMandala(…, vary = false)`; o dispatcher passa `true` só em `artdeco/frame` e `geometric/mandala`. Em `genDivider`/`genPattern`, só os ramos `artdeco` e `geo` chamam o PRNG; `girih` e `islamic` seguem idênticos.
+3. **Primitivas novas:** `steppedDiamondPath` (zigurate) e `polygramPath` ({n/k}, com laços separados quando há divisor comum).
+4. **Dois ajustes vistos no contact sheet:** o {n/k} não usa giro progressivo entre camadas (vira emaranhado; usa meio passo); os raios do leque do padrão Art Deco vão num `path` por célula (com um `<line>` por raio o pior caso dobrava, 50 → 108 KB).
+
+### Alternativas consideradas
+- **Variar os geradores compartilhados para todos** — rejeitada neste lote: mudaria Celta, Islâmico e Orgânico sem roteiro visual deles, e o regress deixaria de separar o lote do resto. Cada um ganha variedade no próprio lote.
+- **Funções novas para Art Deco/Geométrico, deixando as antigas intactas** — rejeitada: duplicaria `genADFrame`/`genMandala` quase inteiros; o parâmetro opcional mantém um corpo só, e o padrão `false` garante a saída antiga.
+- **Ruído nos números (raio, ângulo) em vez de escolhas** — rejeitada (como em DEC-017): muda o hash, não o desenho; a métrica «formas» e o dono pedem estrutura diferente.
+
+### Consequências
+- Placar: formas>1 6/53 → 18/53, distintos>1 9/53 → 21/53. Regress: exatamente 72 chaves mudaram (12 tipos × 6), 0 fora do lote.
+- Pior caso (Complexity e Symmetry no máximo, 80 seeds, canvas 400): maior é `artdeco/pattern`, 49,6 KB (igual ao original). Em 1200, os padrões crescem com a área como antes.
+- `formas` baixo em `artdeco/pattern` (4) e `geometric/tessellation` (7): a malha muda posição, não sequência de elementos — o instrumento subconta; o roteiro decide se basta (IDEAS).
+- O Botânico mantém o `pickOne` local (IDEAS: unificar).
+
 

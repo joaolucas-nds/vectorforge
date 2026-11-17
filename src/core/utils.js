@@ -85,3 +85,57 @@ export function curvePath(pts, closed = false) {
   if (closed) d += ' Z';
   return d;
 }
+// ── Primitivas da F5 (variedade semeada, DEC-018) ────────────────────────────
+
+/**
+ * Sorteia um item da lista com o PRNG semeado. É a «escolha semeada» da F5: o seed decide
+ * QUAL variante de motivo, arranjo ou acabamento entra, não só um número.
+ * @template T
+ * @param {T[]} list - alternativas (a ordem importa: mesmo seed, mesma escolha)
+ * @param {() => number} rnd - PRNG semeado (mkRand)
+ * @returns {T}
+ */
+export function pickOne(list, rnd) { return list[Math.floor(rnd() * list.length)]; }
+
+/**
+ * Losango em degraus («zigurate» Art Deco): sobe em `levels` degraus até o topo e espelha
+ * para baixo. Com levels = 1 vira um retângulo; quanto mais degraus, mais escalonado.
+ * @param {number} cx - centro x
+ * @param {number} cy - centro y (linha de base do espelho)
+ * @param {number} levels - quantidade de degraus por metade (>= 1)
+ * @param {number} w0 - meia-largura da base
+ * @param {number} h0 - altura de cada metade
+ * @returns {string} atributo d de um path fechado
+ */
+export function steppedDiamondPath(cx, cy, levels, w0, h0) {
+  const L = Math.max(1, Math.round(levels)), hs = h0 / L;
+  const half = [];
+  for (let k = 0; k < L; k++) { const wk = w0 * (1 - k / L); half.push([-wk, k * hs], [-wk, (k + 1) * hs]); }
+  // metade de cima: sobe pela esquerda, desce pela direita; a de baixo é o espelho vertical
+  const up = [...half.map(([x, y]) => [x, -y]), ...half.slice().reverse().map(([x, y]) => [-x, -y])];
+  const down = up.map(([x, y]) => [-x, -y]);
+  const pts = [...up, ...down].filter((p, i, a) => i === 0 || p[0] !== a[i - 1][0] || p[1] !== a[i - 1][1]);
+  return 'M ' + pts.map(([x, y]) => `${f(cx + x)} ${f(cy + y)}`).join(' L ') + ' Z';
+}
+
+/**
+ * Polígono estrelado {n/k}: liga cada vértice ao k-ésimo seguinte. Quando n e k têm divisor
+ * comum, a figura se parte em mdc(n, k) laços (ex.: {6/2} = dois triângulos), cada um com seu M…Z.
+ * @param {number} cx
+ * @param {number} cy
+ * @param {number} r - raio dos vértices
+ * @param {number} n - número de vértices (>= 5 para haver estrela)
+ * @param {number} k - salto (1 = polígono comum)
+ * @param {number} [rot] - rotação inicial
+ * @returns {string} atributo d
+ */
+export function polygramPath(cx, cy, r, n, k, rot = -Math.PI / 2) {
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  const g = gcd(n, k), len = n / g;
+  let d = '';
+  for (let s = 0; s < g; s++) {
+    const pts = Array.from({ length: len }, (_, i) => pt(cx, cy, r, rot + ((s + i * k) % n) * TAU / n));
+    d += (d ? ' ' : '') + 'M ' + pts.map(p => `${f(p[0])} ${f(p[1])}`).join(' L ') + ' Z';
+  }
+  return d;
+}

@@ -54,10 +54,11 @@
 
 ## 🟡 F5 — Variedade procedural *(próxima, em paralelo à F4/B)*
 **Objetivo:** O seed passar a decidir a forma em TODOS os tipos, e cada tipo ter mais de uma «cara». Medido em 2026-11-15: o seed não muda nada em 46 dos 53 tipos (DEC-016).
-**Critério de conclusão:** instrumento de sensibilidade ao seed com **53/53** tipos produzindo desenhos distintos em 40 seeds (hoje 7/53), linha de base do regress regravada de propósito, e roteiro visual do dono por lote.
+**Critério de conclusão:** instrumento de sensibilidade ao seed com **53/53** tipos produzindo desenhos distintos em 40 seeds (placar atual: rode `npm run seeds`), linha de base do regress regravada de propósito, e roteiro visual do dono por lote.
 - [x] Instrumento de sensibilidade ao seed — `npm run seeds` (catraca), v0.6.0, DEC-017. Placar: formas>1 3/53 → 6/53.
 - [x] Lote Botânico — árvore estocástica, família de Koch, família dragão (Symmetry = cópias), enquadramento ~83%. v0.6.0, DEC-017, `specs/261115-seed-vivo-botanico.md`.
-- [ ] Um lote por estilo: Art Deco, Barroco, Geométrico, Vitoriano, Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
+- [x] Lote Art Deco + Geométrico — 12 tipos com escolhas semeadas; geradores compartilhados variam só para o estilo dono (`vary`). v0.7.0, DEC-018, `specs/261116-seed-vivo-artdeco-geometrico.md`. Placar: formas>1 6/53 → 18/53.
+- [ ] Um lote por estilo: Barroco, Vitoriano, Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
 - [ ] Modificadores universais: traço tracejado/duplo/pontilhado, camadas, espelho, deformação leve por ruído.
 
 ---
