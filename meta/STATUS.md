@@ -17,7 +17,7 @@
 - **Ciclo de exploração (v0.5.0, DEC-015):** tudo redesenha na hora; 🎲 Surprise (Espaço) sorteia o que não estiver travado e nunca repete; cadeados; ↻ New seed (R); ↶ ↷ desfazer/refazer (60 estados); variações «Like this». FIX-001 segue valendo no New seed.
 - **Canvas nunca abre vazio** (FIX-003): enquadramento com piso e re-enquadramento ao redimensionar/voltar a aba.
 - **Botânico variado (v0.6.0, DEC-017):** árvore estocástica (40 formas em 40 seeds), Koch em 5 curvas, Dragon em 5 curvas com Symmetry = cópias giradas. Medido por `npm run seeds`.
-- **Art Deco e Geométrico variados (v0.7.0, DEC-018):** os 12 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: medalhão com raios em cunha, degraus, leque ou alternados; tesselação com polígonos, estrelas, Truchet ou rosetas). Celta, Islâmico e Orgânico, que reusam esses geradores, não mudaram. Medido por `npm run seeds` e `npm run regress`.
+- **Art Deco e Geométrico variados (v0.7.0, DEC-018):** os 12 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: medalhão com raios em cunha, degraus, leque ou alternados; tesselação com polígonos, estrelas, Truchet ou rosetas). Celta, Islâmico e Orgânico, que reusam esses geradores, não mudaram. Medido por `npm run seeds` e `npm run regress`. Roteiro visual 1–8 ok [relatado pelo dono, 2026-11-17].
 - **Export PNG no modo Pixel Art** exporta o `px-canvas` corretamente (FIX-002).
 - **Simplex Noise 2D** (`snoise`, `snoiseSetSeed`) integrado e reproducível por seed.
 - **`genPhyllotaxis`** — tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
@@ -33,7 +33,7 @@
 ## 🔧 Em Progresso
 
 - **F4/B — mockup da nova interface APROVADO como está** [relatado pelo dono, 2026-11-15]: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN). Próximo passo da F4/B: spec + WO de implementação, em lotes (layout e seções; rótulos PT/EN; estados e mensagens; celular).
-- **F5 — Variedade procedural:** lote 1 (instrumento + Botânico, v0.6.0) e lote 2 (Art Deco + Geométrico, v0.7.0) entregues — placar `formas>1: 18/53`. Próximo: um lote por estilo (Barroco, Vitoriano, Celta, Islâmico, Minimal, Orgânico). Roteiro do Botânico 1–6 ok [relatado pelo dono, 2026-11-15]; roteiro do lote 2 pendente.
+- **F5 — Variedade procedural:** lote 1 (instrumento + Botânico, v0.6.0) e lote 2 (Art Deco + Geométrico, v0.7.0) entregues — placar `formas>1: 18/53`. Próximo: um lote por estilo (Barroco, Vitoriano, Celta, Islâmico, Minimal, Orgânico). Roteiro do Botânico 1–6 ok [relatado pelo dono, 2026-11-15]; roteiro do lote 2 (Art Deco + Geométrico) 1–8 ok [relatado pelo dono, 2026-11-17].
 - **Ordem das frentes:** o dono escolheu F5 lote 2 primeiro [relatado pelo dono, 2026-11-16]; a F4/B (implementação da nova interface) segue aguardando a vez.
 
 ---
@@ -62,4 +62,4 @@
 
 **2026-11-15 (2)** - WO 0005 aplicada pelo Code (`c4d5146`, empurrado): v0.6.0, `npm run seeds` (catraca) e lote Botanico (tree estocastica, Koch e Dragon em 5 curvas, Symmetry = copias no Dragon, enquadramento ~83%); DEC-017 e FIX-004 (build injetava o bundle com `String.replace` e quebrava com `$&`). Regress: 18 chaves `botanical/*` mudaram, 0 fora; seeds formas>1 3/53 -> 6/53; sonda jsdom 18/18. Visual: roteiro do dono 1-6 ok depois [relatado pelo dono, registrado pela WO 0006]. Proximo passo: dono ve as curvas novas; depois um lote F5 por estilo; mockup da F4/B segue aguardando.
 
-**2026-11-16** - WO 0007 aplicada pelo Code (`b7d997a`, empurrado): v0.7.0, F5 lote 2 — 12 tipos de Art Deco e Geometrico com escolhas semeadas; `vary` em `genADFrame`/`genMandala` para nao vazar em Celta, Islamico e Organico; DEC-018. Regress: 72 chaves mudaram, 0 fora do lote; seeds formas>1 6/53 -> 18/53; sonda jsdom 18/18 (medido no relatorio do apply). Visual NAO verificado: roteiro do dono pendente. Proximo passo: dono ve o lote 2; depois proximo lote F5; mockup da F4/B segue aguardando.
+**2026-11-16** - WO 0007 aplicada pelo Code (`b7d997a`, empurrado): v0.7.0, F5 lote 2 — 12 tipos de Art Deco e Geometrico com escolhas semeadas; `vary` em `genADFrame`/`genMandala` para nao vazar em Celta, Islamico e Organico; DEC-018. Regress: 72 chaves mudaram, 0 fora do lote; seeds formas>1 6/53 -> 18/53; sonda jsdom 18/18 (medido no relatorio do apply). Visual: roteiro do dono 1-8 ok depois [relatado pelo dono, 2026-11-17, registrado pela WO 0008]. Proximo passo: dono ve o lote 2; depois proximo lote F5; mockup da F4/B segue aguardando.

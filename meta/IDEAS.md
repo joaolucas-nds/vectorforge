@@ -61,7 +61,7 @@ Ver o item do backlog do STATUS: `* text=auto eol=lf` acaba com o aviso de CRLF 
 O Botânico tem `pickOne` local (lote 1); o lote 2 pôs um em `core/utils.js`. Trocar o local pelo de `utils` quando o `botanical.js` for tocado de novo — mudança de uma linha, sem efeito na saída.
 
 ### 2026-11-16 — Padrão Art Deco com mais caras
-`artdeco/pattern` tem só 8 combinações (4 motivos × 2 malhas; `formas` = 4). Candidatos baratos: acento em xadrez (célula sim, célula não preenchida), malha girada 45°, motivo alternando por linha. Esperar o roteiro do dono dizer se 8 basta.
+`artdeco/pattern` tem só 8 combinações (4 motivos × 2 malhas; `formas` = 4). Candidatos baratos: acento em xadrez (célula sim, célula não preenchida), malha girada 45°, motivo alternando por linha. Roteiro do lote 2, item 4: ok [relatado pelo dono, 2026-11-17] — 8 bastam por ora. Reabrir se o dono pedir mais caras ou quando o lote de modificadores universais (F5) chegar.
 
 ### 2026-06-30 — Voronoi/Worley (F3 ou F4)
 Diagrama de Voronoi para tesselações islâmicas variáveis e padrão celular orgânico. Implementável com Fortune's algorithm em ~100 linhas ou via `d3-delaunay` (2KB). Worley noise (distância ao ponto Voronoi mais próximo) para texturas de pedra/osso.
