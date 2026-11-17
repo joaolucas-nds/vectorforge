@@ -54,12 +54,15 @@
 
 ## 🟡 F5 — Variedade procedural *(próxima, em paralelo à F4/B)*
 **Objetivo:** O seed passar a decidir a forma em TODOS os tipos, e cada tipo ter mais de uma «cara». Medido em 2026-11-15: o seed não muda nada em 46 dos 53 tipos (DEC-016).
-**Critério de conclusão:** instrumento de sensibilidade ao seed com **53/53** tipos produzindo desenhos distintos em 40 seeds (placar atual: rode `npm run seeds`), linha de base do regress regravada de propósito, e roteiro visual do dono por lote.
+**Critério de conclusão:** `npm run seeds` com **53/53** tipos com `silhueta%` ≥ 25 (o seed muda o que se lê na miniatura; DEC-020 — antes a meta era `formas`, que contava detalhe), linha de base do regress regravada de propósito, e roteiro visual do dono por lote. Placar atual: rode `npm run seeds`.
 - [x] Instrumento de sensibilidade ao seed — `npm run seeds` (catraca), v0.6.0, DEC-017. Placar: formas>1 3/53 → 6/53.
 - [x] Lote Botânico — árvore estocástica, família de Koch, família dragão (Symmetry = cópias), enquadramento ~83%. v0.6.0, DEC-017, `specs/261115-seed-vivo-botanico.md`.
 - [x] Lote Art Deco + Geométrico — 12 tipos com escolhas semeadas; geradores compartilhados variam só para o estilo dono (`vary`). v0.7.0, DEC-018, `specs/261116-seed-vivo-artdeco-geometrico.md`. Placar: formas>1 6/53 → 18/53.
 - [x] Lote Barroco + Vitoriano — 11 tipos com escolhas semeadas; flourish e cartela do Vitoriano com repertório próprio (`style`). v0.8.0, DEC-019, `specs/261117-seed-vivo-barroco-vitoriano.md`. Placar: formas>1 18/53 → 29/53.
-- [ ] Um lote por estilo: Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
+- [x] Régua de silhueta — coluna `silhueta%` no `npm run seeds` (`scripts/silhouette.mjs`), catraca. v0.9.0, DEC-020, análise `261117-ANALISE-variedade-silhueta.md`.
+- [x] Piloto do esqueleto semeado — medalhão e padrão Art Deco, mandala e símbolo geométricos: silhueta 2–9% → 26–42%. v0.9.0, DEC-020, `specs/261117-esqueleto-semeado-piloto.md`.
+- [ ] Esqueleto nos 19 tipos dos lotes 2 e 3 (depois do roteiro do piloto).
+- [ ] Um lote por estilo, já com esqueleto: Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
 - [ ] Modificadores universais: traço tracejado/duplo/pontilhado, camadas, espelho, deformação leve por ruído.
 
 ---

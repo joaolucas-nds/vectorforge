@@ -491,4 +491,28 @@ Placar depois do lote 2 (DEC-018): formas>1 18/53. Os 6 tipos do Barroco e 5 dos
 - Pior caso: maior é `baroque/frame` em canvas 1200, 34,1 KB.
 - O acanto/flourish continua ocupando ~1/3 da altura do canvas, como desde a v0.1.0 (IDEAS).
 
+---
+
+## DEC-020 — A meta de variedade passa a ser a silhueta; piloto do esqueleto semeado em 4 tipos
+**Data:** 2026-11-17 · **Status:** aceita
+
+### Contexto
+Depois do lote 3 (DEC-019), o dono ainda sentia pouca variedade [relatado pelo dono, 2026-11-17]. A análise `meta/analises/261117-ANALISE-variedade-silhueta.md` mediu, com uma sonda rasterizada fora do repo, que fora do Botânico o seed trocava detalhes dentro do mesmo contorno (silhueta 2–16% contra 42–66%) — e que a métrica `formas` do `npm run seeds` premiava essa troca. O dono escolheu: régua de silhueta + piloto do esqueleto semeado nos 4 tipos de silhueta mais parada.
+
+### Decisão
+1. **`scripts/silhouette.mjs`**: ocupação de uma malha 16×16 a partir da geometria do SVG (paths com M L H V Q C A Z, círculos, elipses, retângulos, linhas, polylines; `translate`/`scale` em `<g>`); `silhouetteChange` = média de 1 − IoU entre todos os pares. O `npm run seeds` ganha a coluna `silhueta%`, a catraca passa a cobrar também a silhueta, e o resumo conta `silhueta>=25%`.
+2. **Meta de 25%** (`SIL` no `seeds.mjs`): o limiar que separa, na tabela medida, os tipos que o dono via variar dos que ele achava parados. O critério de conclusão da F5 passa a ser 53/53 com silhueta ≥ 25%.
+3. **Esqueleto semeado** — o seed escolhe a COMPOSIÇÃO (contorno, escala, arranjo, desvio de contagem); contorno como r(a) (`contourRadius`/`contourPath`), seguido por anéis, pontas e nós. Piloto: `artdeco/medallion`, `artdeco/pattern` (campo + escala da célula), `geometric/mandala` (com `vary`), `geometric/symbol`.
+4. **A mandala sem `vary` faz as mesmas contas na mesma ordem** — Celta/Orgânico/Text→Form ficam byte a byte iguais (o regress confere).
+
+### Alternativas consideradas
+- **Modificadores universais primeiro** (análise, opção B) — não escolhida pelo dono: mais rápida, mas genérica; fica para depois e fora do seed.
+- **Régua por raster** (ImageMagick/jsdom) — rejeitada como instrumento: dependência nova e lenta; a sonda rasterizada continua fora do repo, só para calibrar.
+
+### Consequências
+- Silhueta (régua / raster, 40 / 12 seeds): medallion 25,8 / 29,8 · pattern 41,9 / 43,5 · mandala 29,7 / 30,2 · symbol 33,2 / 33,1. `silhueta>=25%`: 6/53 → 10/53. `formas>1` segue 29/53.
+- Calibragem: Spearman 0,771 contra a sonda rasterizada. Divergência conhecida: divisores (0% na régua, 30–40% no raster) — o traço fica numa faixa de duas linhas da malha, e só a espessura rasterizada cruza a fronteira de célula.
+- Tamanho (pior caso, canvas 400): pattern 75 KB (antes 50), mandala 33, medallion 26, symbol 6. Em 1200, o padrão vai de 362 a 561 KB (célula 0,8×) — IDEAS.
+- Se o roteiro do piloto convencer, a receita volta aos 19 tipos dos lotes 2 e 3 e é o padrão dos lotes 4–7.
+
 

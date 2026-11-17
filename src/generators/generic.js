@@ -4,7 +4,7 @@
 import { genMandala } from './geometric.js'; // fallback de genTextShape quando a textarea está vazia
 
 
-import { TAU, f, pt, polyPath, starPath, mkRand, pickOne, steppedDiamondPath, spiralPath, shellFanPaths } from '../core/utils.js';
+import { TAU, f, pt, polyPath, starPath, mkRand, pickOne, steppedDiamondPath, spiralPath, shellFanPaths, contourRadius, contourPath } from '../core/utils.js';
 import { state, PALETTES } from '../core/state.js';
 
 
@@ -138,7 +138,7 @@ export function genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style) {
 
 export function genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style) {
   const parts = [];
-  const cell = 40 + Math.round((1 - comp) * 35);
+  let cell = 40 + Math.round((1 - comp) * 35);
   // F5 lote 2 (DEC-018): Art Deco e Geométrico sorteiam o motivo e a malha; girih e islamic
   // seguem fixos (não consomem o seed). O motivo original de cada um é uma das opções.
   const motif = style === 'artdeco' ? pickOne(['polygon', 'scallop', 'fan', 'chevron'], rnd)
@@ -147,12 +147,30 @@ export function genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style) {
     : style === 'geo' ? pickOne(['tri', 'square'], rnd) : (style === 'girih' ? 'brick' : 'square');
   if (motif === 'truchet') grid = 'square'; // o Truchet só fecha os arcos em malha quadrada
   const n = style === 'girih' || style === 'islamic' ? 6 : Math.round(3 + sym * 4);
+  // Piloto do esqueleto semeado (DEC-020): no Art Deco, o seed escolhe também a ESCALA da célula
+  // e o CAMPO que o padrão ocupa — página inteira · medalhão · losango · faixa · moldura · arco;
+  // fora da página inteira, o campo ganha um contorno. Os outros estilos não consomem o seed aqui.
+  const field = style === 'artdeco' ? pickOne(['full', 'circle', 'diamond', 'band', 'frame', 'arch'], rnd) : 'full';
+  if (style === 'artdeco') cell = Math.round(cell * pickOne([0.8, 1, 1.35], rnd));
+  const mx = w / 2, my = h / 2, Rf = Math.min(w, h) * 0.42, pad = cell * 0.55;
+  const archFn = contourRadius('arch', Rf, { base: 0.85 });
+  /** O centro da célula (px, py) está dentro do campo? */
+  const inField = (px, py) => {
+    const dx = px - mx, dy = py - my;
+    if (field === 'circle') return Math.hypot(dx, dy) <= Rf;
+    if (field === 'diamond') return Math.abs(dx) / Rf + Math.abs(dy) / (Rf * 1.15) <= 1;
+    if (field === 'band') return Math.abs(dy) <= h * 0.2;
+    if (field === 'frame') return Math.min(px, w - px, py, h - py) <= Math.min(w, h) * 0.2;
+    if (field === 'arch') return Math.hypot(dx, dy) <= archFn(Math.atan2(dy, dx));
+    return true;
+  };
   for (let row = -1; row <= Math.ceil(h / cell) + 1; row++) {
     for (let col = -1; col <= Math.ceil(w / cell) + 1; col++) {
       const offset = grid !== 'square' ? (row % 2 === 0 ? 0 : cell / 2) : 0;
       const cx = col * cell + cell / 2 + offset;
       const cy = row * (grid === 'tri' ? cell * 0.866 : cell) + cell / 2;
       if (cx < -cell || cx > w + cell || cy < -cell || cy > h + cell) continue;
+      if (!inField(cx, cy)) continue;
       const c2 = cell / 2;
       if (motif === 'scallop') {
         // escama: arco grande vazado com meia-lua cheia dentro
@@ -193,6 +211,12 @@ export function genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style) {
       }
     }
   }
+  // contorno do campo, um pouco por fora das células da borda
+  if (field === 'circle') parts.push(`<circle cx="${f(mx)}" cy="${f(my)}" r="${f(Rf + pad)}" ${SO}/>`);
+  else if (field === 'diamond') parts.push(`<path d="M ${f(mx)} ${f(my - Rf * 1.15 - pad)} L ${f(mx + Rf + pad)} ${f(my)} L ${f(mx)} ${f(my + Rf * 1.15 + pad)} L ${f(mx - Rf - pad)} ${f(my)} Z" ${SO}/>`);
+  else if (field === 'band') for (const s of [-1, 1]) parts.push(`<line x1="0" y1="${f(my + s * (h * 0.2 + pad))}" x2="${w}" y2="${f(my + s * (h * 0.2 + pad))}" ${SO}/>`);
+  else if (field === 'frame') { const d = Math.min(w, h) * 0.2 + pad; parts.push(`<rect x="${f(d)}" y="${f(d)}" width="${f(w - 2 * d)}" height="${f(h - 2 * d)}" ${SO}/>`); }
+  else if (field === 'arch') parts.push(`<path d="${contourPath(mx, my, a => archFn(a) + pad)}" ${SO}/>`);
   return parts.join('\n');
 }
 

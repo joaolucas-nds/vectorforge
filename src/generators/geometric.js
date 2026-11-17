@@ -1,17 +1,21 @@
 // Gerado a partir de vectorforge.html v0.2.0 (F3 esbuild). F5 lote 2 (DEC-018): cada gerador
 // recebe ESCOLHAS semeadas (variante de motivo, arranjo, acabamento) — o desenho original de
 // cada um continua sendo uma das variantes. Complexity segue sendo densidade; Symmetry, eixos.
+// Piloto do esqueleto semeado (DEC-020): na mandala e no símbolo, o seed escolhe também o CONTORNO.
 
 
-import { TAU, f, pt, polyPath, starPath, pickOne, polygramPath } from '../core/utils.js';
+import { TAU, f, pt, polyPath, starPath, pickOne, polygramPath, contourRadius, contourPath } from '../core/utils.js';
 import { state, PALETTES } from '../core/state.js';
 
 
 /**
  * Mandala de anéis de pétalas. Reusada por Celta (medallion), Orgânico (mandala), pelo fallback
  * do dispatcher e pelo Text→Form SEM variação: só quem passa `vary = true` (o Geométrico) recebe
- * as escolhas semeadas — a pétala de CADA anel (gota · triângulo · concha · pipa), anéis
- * escalonados ou não, o anel-guia (círculo · polígono) e o miolo (estrela · polígono · anéis).
+ * as escolhas semeadas. ESQUELETO (DEC-020): contorno (círculo · polígono de n lados · estrela
+ * ondulada · oval largo · oval alto), escala (0,8 · 1 · 1,12), espaçamento dos anéis (igual ·
+ * apertado no miolo · apertado na borda) e ±2 anéis. DETALHE (DEC-018): a pétala de CADA anel
+ * (gota · triângulo · concha · pipa), anéis escalonados ou não, o anel-guia (círculo · polígono,
+ * só no contorno circular) e o miolo (estrela · polígono · anéis).
  * Symmetry = pétalas por anel (n); Complexity = quantidade de anéis (layers).
  * @param {boolean} [vary=false] - liga as escolhas semeadas (só o Geométrico liga)
  * @returns {string} elementos SVG
@@ -21,10 +25,23 @@ export function genMandala(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw, va
   const stagger = vary && rnd() < 0.5;
   const ringKind = vary ? pickOne(['circle', 'polygon'], rnd) : 'circle';
   const coreKind = vary ? pickOne(['star', 'poly', 'rings'], rnd) : 'star';
+  const contour = vary ? pickOne(['circle', 'polygon', 'star', 'wide', 'tall'], rnd) : 'circle';
+  const scale = vary ? pickOne([0.8, 1, 1.12], rnd) : 1;
+  const spacing = vary ? pickOne(['even', 'inner', 'outer'], rnd) : 'even';
+  if (vary) layers = Math.max(2, layers + pickOne([-2, -1, 0, 1, 2], rnd));
+  const R = sz * 0.48 * scale;
+  const rFn = contour === 'polygon' ? contourRadius('polygon', R, { k: n, rot: -Math.PI / 2 + Math.PI / n })
+    : contour === 'star' ? contourRadius('star', R, { k: Math.max(3, Math.round(n / 2)), amp: 0.28, rot: -Math.PI / 2 })
+    : contour === 'wide' ? contourRadius('ellipse', R, { sx: 1.12, sy: 0.78 })
+    : contour === 'tall' ? contourRadius('ellipse', R, { sx: 0.78, sy: 1.12 })
+    : contourRadius('circle', R);
+  // fração radial: com espaçamento igual, as contas são as do original (mesma ordem de operações,
+  // para Celta/Orgânico saírem byte a byte iguais); «inner»/«outer» curvam a distribuição
+  const ex = spacing === 'inner' ? 0.7 : 1.5;
+  const tip = (a, t) => spacing === 'even' ? rFn(a) * t : rFn(a) * Math.pow(t, ex);
+  const base = (a, l) => l === 0 ? sz * 0.015 * scale : spacing === 'even' ? rFn(a) * l / (layers + 1) : rFn(a) * Math.pow(l / (layers + 1), ex);
   for (let l = 0; l < layers; l++) {
     const t = (l + 1) / (layers + 1);
-    const r = sz * 0.48 * t;
-    const prevR = l === 0 ? sz * 0.015 : sz * 0.48 * l / (layers + 1);
     const petal = vary ? pickOne(['drop', 'pointed', 'shell', 'kite'], rnd) : 'drop';
     const off = stagger && l % 2 === 1 ? Math.PI / n : 0; // anéis ímpares meio passo girados
 
@@ -33,26 +50,28 @@ export function genMandala(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw, va
       const a1 = (i / n) * TAU - Math.PI / 2 + off;
       const a2 = ((i + 1) / n) * TAU - Math.PI / 2 + off;
       const aM = (a1 + a2) / 2;
-      const [tx, ty] = pt(cx, cy, r, aM);
-      const [b1x, b1y] = pt(cx, cy, prevR, a1);
-      const [b2x, b2y] = pt(cx, cy, prevR, a2);
+      const [tx, ty] = pt(cx, cy, tip(aM, t), aM);
+      const [b1x, b1y] = pt(cx, cy, base(a1, l), a1);
+      const [b2x, b2y] = pt(cx, cy, base(a2, l), a2);
       const d = l % 2 === 0 ? SO : FG;
       if (petal === 'pointed') {
         parts.push(`<path d="M ${f(b1x)} ${f(b1y)} L ${f(tx)} ${f(ty)} L ${f(b2x)} ${f(b2y)} Z" ${d}/>`);
       } else if (petal === 'shell') {
         parts.push(`<path d="M ${f(b1x)} ${f(b1y)} Q ${f(tx)} ${f(ty)} ${f(b2x)} ${f(b2y)}" ${SO}/>`);
       } else if (petal === 'kite') {
-        const mr = (prevR + r) / 2;
+        const mr = (base(aM, l) + tip(aM, t)) / 2;
         const [k1x, k1y] = pt(cx, cy, mr, a1 + (a2 - a1) * 0.2);
         const [k2x, k2y] = pt(cx, cy, mr, a2 - (a2 - a1) * 0.2);
-        const [bx, by] = pt(cx, cy, prevR, aM);
+        const [bx, by] = pt(cx, cy, base(aM, l), aM);
         parts.push(`<path d="M ${f(bx)} ${f(by)} L ${f(k1x)} ${f(k1y)} L ${f(tx)} ${f(ty)} L ${f(k2x)} ${f(k2y)} Z" ${d}/>`);
       } else {
         parts.push(`<path d="M ${f(b1x)} ${f(b1y)} Q ${f(tx)} ${f(ty)} ${f(b2x)} ${f(b2y)} Q ${f(cx + (b2x - cx) * 0.1)} ${f(cy + (b2y - cy) * 0.1)} ${f(b1x)} ${f(b1y)}" ${d}/>`);
       }
     }
-    if (ringKind === 'polygon') parts.push(`<path d="${polyPath(cx, cy, r, n, -Math.PI / 2 + off)}" ${SO}/>`);
-    else parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" ${SO}/>`);
+    // anel-guia: segue o contorno; no círculo, o lote 2 ainda sorteia círculo ou polígono
+    if (contour !== 'circle') parts.push(`<path d="${contourPath(cx, cy, rFn, spacing === 'even' ? t : Math.pow(t, ex), 72, -Math.PI / 2 + off)}" ${SO}/>`);
+    else if (ringKind === 'polygon') parts.push(`<path d="${polyPath(cx, cy, tip(0, t), n, -Math.PI / 2 + off)}" ${SO}/>`);
+    else parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(tip(0, t))}" ${SO}/>`);
   }
   const sR = sz * 0.055, sR2 = sz * 0.022;
   if (coreKind === 'poly') parts.push(`<path d="${polyPath(cx, cy, sR, n)}" ${FG}/>`);
@@ -168,10 +187,12 @@ export function genGeoStar(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw) {
 }
 
 /**
- * Símbolo geométrico: contorno, figura inscrita, raios e nós. O seed escolhe o contorno
- * (círculo · polígono · círculo duplo), a figura (polígono · estrela · {n/2}), os raios (aos
- * vértices · aos lados · nenhum), os nós (disco · polígono · nenhum) e o miolo (disco · anel ·
- * polígono). Symmetry = lados (n).
+ * Símbolo geométrico: contorno, figura inscrita, raios e nós. ESQUELETO (DEC-020): contorno
+ * (círculo · polígono · estrela ondulada · losango · oval largo), órbita dos nós (no contorno ·
+ * satélites por fora, ligados por haste · por dentro) e escala (0,82 · 1 · 1,12); a figura e os
+ * nós seguem o contorno. DETALHE (DEC-018): traço do contorno (simples · polígono · duplo), a
+ * figura (polígono · estrela · {n/2}), os raios (aos vértices · aos lados · nenhum), os nós
+ * (disco · polígono · nenhum) e o miolo (disco · anel · polígono). Symmetry = lados (n).
  * @returns {string} elementos SVG
  */
 export function genGeoSymbol(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw) {
@@ -182,28 +203,49 @@ export function genGeoSymbol(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw) {
   const spokeKind = pickOne(['vertices', 'midpoints', 'none'], rnd);
   const nodeKind = pickOne(['disc', 'poly', 'none'], rnd);
   const coreKind = pickOne(['disc', 'ring', 'poly'], rnd);
-  const R = sz * 0.42;
-  if (outerKind === 'polygon') parts.push(`<path d="${polyPath(cx, cy, sz * 0.48, n, -Math.PI / 2 + Math.PI / n)}" ${SO}/>`);
-  else parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.48)}" ${SO}/>`);
-  if (outerKind === 'double') parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.45)}" ${SO}/>`);
-  if (innerKind === 'star') parts.push(`<path d="${starPath(cx, cy, R, R * 0.5, n)}" ${SO}/>`);
-  else if (innerKind === 'polygram') parts.push(`<path d="${polygramPath(cx, cy, R, n, 2)}" ${SO}/>`);
-  else parts.push(`<path d="${polyPath(cx, cy, R, n)}" ${SO}/>`);
+  const contour = pickOne(['circle', 'polygon', 'star', 'lozenge', 'wide'], rnd);
+  const orbit = pickOne(['on', 'out', 'in'], rnd);
+  const S = sz * pickOne([0.82, 1, 1.12], rnd);
+  const rFn = contour === 'polygon' ? contourRadius('polygon', S * 0.48, { k: n, rot: -Math.PI / 2 + Math.PI / n })
+    : contour === 'star' ? contourRadius('star', S * 0.48, { k: n, amp: 0.3, rot: -Math.PI / 2 })
+    : contour === 'lozenge' ? contourRadius('lozenge', S * 0.48, { sx: 0.68, sy: 1.05 })
+    : contour === 'wide' ? contourRadius('ellipse', S * 0.48, { sx: 1.1, sy: 0.72 })
+    : contourRadius('circle', S * 0.48);
+  const fig = a => rFn(a) * 0.875; // a figura inscrita (0,42 de 0,48 no original) segue o contorno
+  const P = (r, a) => pt(cx, cy, r, a);
+  const ang = i => (i / n) * TAU - Math.PI / 2;
+  const V = Array.from({ length: n }, (_, i) => P(fig(ang(i)), ang(i)));
+  const line = (p, q) => `<line x1="${f(p[0])}" y1="${f(p[1])}" x2="${f(q[0])}" y2="${f(q[1])}" ${SO}/>`;
+  const poly = pts => 'M ' + pts.map(p => `${f(p[0])} ${f(p[1])}`).join(' L ') + ' Z';
+
+  // contorno: no círculo, o traço do lote 2 (simples · polígono · duplo); nos outros, o próprio contorno
+  if (contour === 'circle' && outerKind === 'polygon') parts.push(`<path d="${polyPath(cx, cy, S * 0.48, n, -Math.PI / 2 + Math.PI / n)}" ${SO}/>`);
+  else if (contour === 'circle') parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(S * 0.48)}" ${SO}/>`);
+  else parts.push(`<path d="${contourPath(cx, cy, rFn)}" ${SO}/>`);
+  if (outerKind === 'double') parts.push(contour === 'circle' ? `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(S * 0.45)}" ${SO}/>` : `<path d="${contourPath(cx, cy, rFn, 0.94)}" ${SO}/>`);
+
+  // figura inscrita
+  if (innerKind === 'star') parts.push(`<path d="${poly(V.flatMap((v, i) => [v, P(fig(ang(i) + Math.PI / n) * 0.5, ang(i) + Math.PI / n)]))}" ${SO}/>`);
+  else if (innerKind === 'polygram') {
+    // {n/2}: liga cada vértice ao segundo seguinte; com n par, dois laços
+    const g = n % 2 === 0 ? 2 : 1, len = n / g;
+    parts.push(`<path d="${Array.from({ length: g }, (_, s) => poly(Array.from({ length: len }, (_, i) => V[(s + i * 2) % n]))).join(' ')}" ${SO}/>`);
+  } else parts.push(`<path d="${poly(V)}" ${SO}/>`);
+
   for (let i = 0; i < n; i++) {
-    const a = (i / n) * TAU - Math.PI / 2;
-    const [x1, y1] = pt(cx, cy, R, a);
-    if (spokeKind === 'vertices') parts.push(`<line x1="${f(cx)}" y1="${f(cy)}" x2="${f(x1)}" y2="${f(y1)}" ${SO}/>`);
-    else if (spokeKind === 'midpoints') {
-      const [mx, my] = pt(cx, cy, R * Math.cos(Math.PI / n), a + Math.PI / n);
-      parts.push(`<line x1="${f(cx)}" y1="${f(cy)}" x2="${f(mx)}" y2="${f(my)}" ${SO}/>`);
-    }
-    if (nodeKind === 'disc') parts.push(`<circle cx="${f(x1)}" cy="${f(y1)}" r="${f(sz * 0.04)}" ${FG}/>`);
-    else if (nodeKind === 'poly') parts.push(`<path d="${polyPath(x1, y1, sz * 0.05, n, a)}" ${FG}/>`);
+    const a = ang(i), v = V[i];
+    if (spokeKind === 'vertices') parts.push(line([cx, cy], v));
+    else if (spokeKind === 'midpoints') { const w = V[(i + 1) % n]; parts.push(line([cx, cy], [(v[0] + w[0]) / 2, (v[1] + w[1]) / 2])); }
+    // órbita: onde ficam os nós
+    const node = orbit === 'out' ? P(rFn(a) * 1.15, a) : orbit === 'in' ? P(fig(a) * 0.55, a) : v;
+    if (orbit === 'out' && nodeKind !== 'none') parts.push(line(v, node));
+    if (nodeKind === 'disc') parts.push(`<circle cx="${f(node[0])}" cy="${f(node[1])}" r="${f(S * 0.04)}" ${FG}/>`);
+    else if (nodeKind === 'poly') parts.push(`<path d="${polyPath(node[0], node[1], S * 0.05, n, a)}" ${FG}/>`);
   }
   if (coreKind === 'ring') {
-    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.14)}" ${SO}/>`);
-    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.08)}" ${FG}/>`);
-  } else if (coreKind === 'poly') parts.push(`<path d="${polyPath(cx, cy, sz * 0.14, n)}" ${FG}/>`);
-  else parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(sz * 0.14)}" ${FG}/>`);
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(S * 0.14)}" ${SO}/>`);
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(S * 0.08)}" ${FG}/>`);
+  } else if (coreKind === 'poly') parts.push(`<path d="${polyPath(cx, cy, S * 0.14, n)}" ${FG}/>`);
+  else parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(S * 0.14)}" ${FG}/>`);
   return parts.join('\n');
 }

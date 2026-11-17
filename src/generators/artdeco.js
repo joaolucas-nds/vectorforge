@@ -1,17 +1,22 @@
 // Gerado a partir de vectorforge.html v0.2.0 (F3 esbuild). F5 lote 2 (DEC-018): cada gerador
 // recebe ESCOLHAS semeadas (variante de motivo, arranjo, acabamento) — o desenho original de
 // cada um continua sendo uma das variantes. Complexity segue sendo densidade; Symmetry, eixos.
+// Piloto do esqueleto semeado (DEC-020): no medalhão, o seed escolhe também o CONTORNO.
 
 
-import { TAU, f, pt, polyPath, starPath, pickOne, steppedDiamondPath } from '../core/utils.js';
+import { TAU, f, pt, polyPath, starPath, pickOne, steppedDiamondPath, contourRadius, contourPath } from '../core/utils.js';
 import { state, PALETTES } from '../core/state.js';
 
 
 /**
  * Medalhão Art Deco: anel externo, raios, anéis concêntricos e miolo.
- * O seed escolhe a forma dos raios (cunha · degraus · leque · alternados), o desenho dos anéis
- * (círculo · octógono · dodecágono), o miolo (octógono · quadrados girados · sol) e o
- * acabamento externo (4 arcos · 8 arcos · pontos). Complexity = quantidade de raios e anéis.
+ * O ESQUELETO é semeado (DEC-020): contorno (círculo · octógono · losango · quadrado · oval alto · arco ·
+ * sol nascente, que é meio medalhão sobre uma base), escala (0,84 · 1 · 1,1), ±1 anel e ±2 raios em
+ * torno do que o Complexity dá.
+ * Por cima, as escolhas de detalhe do lote 2 (DEC-018): forma dos raios (cunha · degraus ·
+ * leque · alternados), desenho dos anéis (círculo · octógono · dodecágono — só no contorno
+ * circular; nos outros, os anéis seguem o contorno), miolo (octógono · quadrados girados · sol)
+ * e acabamento externo (4 arcos · 8 arcos · pontos). Complexity = quantidade de raios e anéis.
  * @returns {string} elementos SVG
  */
 export function genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw) {
@@ -20,22 +25,41 @@ export function genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw
   const ringKind = pickOne(['circle', 'octagon', 'dodecagon'], rnd);
   const coreKind = pickOne(['octagon', 'squares', 'sun'], rnd);
   const rimKind = pickOne(['arcs4', 'arcs8', 'dots'], rnd);
-  const rays = Math.round(6 + comp * 14);
-  const outerR = sz * 0.48;
-  const innerR = sz * (0.10 + 0.08 * comp);
+  const contour = pickOne(['circle', 'octagon', 'diamond', 'square', 'tall', 'arch', 'sunrise'], rnd);
+  const ringShift = pickOne([-1, 0, 1], rnd);
+  const scale = pickOne([0.84, 1, 1.1], rnd);
+  const rays = Math.max(4, Math.round(6 + comp * 14) + pickOne([-2, 0, 2], rnd));
+  const outerR = sz * 0.48 * scale;
+  const innerR = sz * (0.10 + 0.08 * comp) * scale;
+  const sunrise = contour === 'sunrise';
+  if (sunrise) cy += outerR * 0.3; // meio medalhão: o centro desce para a composição ficar no meio do canvas
+  const rFn = contour === 'octagon' ? contourRadius('polygon', outerR, { k: 8 })
+    : contour === 'diamond' ? contourRadius('polygon', outerR * 1.12, { k: 4, rot: -Math.PI / 2 })
+    : contour === 'square' ? contourRadius('polygon', outerR * 1.12, { k: 4, rot: -Math.PI / 4 })
+    : contour === 'tall' ? contourRadius('ellipse', outerR, { sx: 0.74, sy: 1.08 })
+    : contour === 'arch' ? contourRadius('arch', outerR, { base: 0.82 })
+    : contourRadius('circle', outerR);
+  const round = contour === 'circle' || sunrise;
+  /** Meio anel (sol nascente): arco de cima, da esquerda para a direita. */
+  const halfArc = r => `M ${f(cx - r)} ${f(cy)} A ${f(r)} ${f(r)} 0 0 1 ${f(cx + r)} ${f(cy)}`;
 
   // Outer ring
-  parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(outerR)}" ${SO}/>`);
+  if (sunrise) {
+    parts.push(`<path d="${halfArc(outerR)} Z" ${SO}/>`);
+    for (const dy of [0, 6]) parts.push(`<line x1="${f(cx - outerR * 1.12)}" y1="${f(cy + dy)}" x2="${f(cx + outerR * 1.12)}" y2="${f(cy + dy)}" ${SO}/>`);
+  } else if (round) parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(outerR)}" ${SO}/>`);
+  else parts.push(`<path d="${contourPath(cx, cy, rFn)}" ${SO}/>`);
 
-  // Rays
+  // Rays — no sol nascente, só a metade de cima
   for (let i = 0; i < rays; i++) {
-    const a = (i / rays) * TAU - Math.PI / 2;
-    const ha = (Math.PI / rays) * 0.42;
+    const a = sunrise ? Math.PI + (i + 0.5) / rays * Math.PI : (i / rays) * TAU - Math.PI / 2;
+    const ha = (Math.PI / rays) * (sunrise ? 0.21 : 0.42);
+    const ro = rFn(a);
     if (rayKind === 'stepped') {
       // raio em degraus: três patamares que estreitam até a ponta
       const side = [];
       for (let s = 0; s < 3; s++) {
-        const r0 = innerR + (outerR * 0.92 - innerR) * s / 3, r1 = innerR + (outerR * 0.92 - innerR) * (s + 1) / 3;
+        const r0 = innerR + (ro * 0.92 - innerR) * s / 3, r1 = innerR + (ro * 0.92 - innerR) * (s + 1) / 3;
         const w = ha * (1 - s / 3);
         side.push([r0, w], [r1, w]);
       }
@@ -44,7 +68,7 @@ export function genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw
       parts.push(`<path d="M ${[...left, ...right].map(p => `${f(p[0])} ${f(p[1])}`).join(' L ')} Z" ${FG}/>`);
     } else if (rayKind === 'fan') {
       // lâmina de leque: laterais retas e ponta em arco
-      const tipR = outerR * 0.88;
+      const tipR = ro * 0.88;
       const [x1, y1] = pt(cx, cy, innerR, a - ha);
       const [x2, y2] = pt(cx, cy, tipR, a - ha);
       const [x3, y3] = pt(cx, cy, tipR, a + ha);
@@ -54,17 +78,19 @@ export function genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw
       // cunha (original); em «alternate», um raio sim, um não, fica curto e vazado
       const short = rayKind === 'alternate' && i % 2 === 1;
       const [x1, y1] = pt(cx, cy, innerR, a - ha);
-      const [xt, yt] = pt(cx, cy, outerR * (short ? 0.68 : 0.92), a);
+      const [xt, yt] = pt(cx, cy, ro * (short ? 0.68 : 0.92), a);
       const [x2, y2] = pt(cx, cy, innerR, a + ha);
       parts.push(`<path d="M ${f(x1)} ${f(y1)} L ${f(xt)} ${f(yt)} L ${f(x2)} ${f(y2)} Z" ${short ? SO : FG}/>`);
     }
   }
 
-  // Concentric rings
-  const ringCount = 2 + Math.round(comp * 4);
+  // Concentric rings — seguem o contorno
+  const ringCount = Math.max(1, 2 + Math.round(comp * 4) + ringShift);
   for (let i = 1; i <= ringCount; i++) {
     const r = innerR + (outerR * 0.6 - innerR) * i / ringCount;
-    if (ringKind === 'circle') parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" ${SO}/>`);
+    if (sunrise) parts.push(`<path d="${halfArc(r)}" ${SO}/>`);
+    else if (!round) parts.push(`<path d="${contourPath(cx, cy, rFn, r / outerR)}" ${SO}/>`);
+    else if (ringKind === 'circle') parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(r)}" ${SO}/>`);
     else { const k = ringKind === 'octagon' ? 8 : 12; parts.push(`<path d="${polyPath(cx, cy, r, k, Math.PI / k)}" ${SO}/>`); }
   }
 
@@ -82,16 +108,20 @@ export function genADMedallion(cx, cy, sz, n, layers, comp, rnd, SO, FG, FG2, sw
     parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(innerR * 0.4)}" ${FG}/>`);
   }
 
-  // Outer stepped detail
+  // Outer stepped detail — no círculo, os arcos/pontos do lote 2; nos outros contornos, pontos que o acompanham
   if (comp > 0.4) {
     const steps = 2 + Math.round(comp * 3);
     for (let i = 0; i < steps; i++) {
-      const r2 = outerR + 4 + i * 5;
-      if (rimKind === 'dots') {
+      if (contour !== 'circle' || rimKind === 'dots') {
         const k = 12 + i * 4;
-        for (let s = 0; s < k; s++) { const [dx, dy] = pt(cx, cy, r2, s * TAU / k); parts.push(`<circle cx="${f(dx)}" cy="${f(dy)}" r="${f(1.2 + comp)}" ${FG}/>`); }
+        for (let s = 0; s < k; s++) {
+          const a = sunrise ? Math.PI + (s + 0.5) / k * Math.PI : s * TAU / k;
+          const [dx, dy] = pt(cx, cy, rFn(a) + 4 + i * 5, a);
+          parts.push(`<circle cx="${f(dx)}" cy="${f(dy)}" r="${f(1.2 + comp)}" ${FG}/>`);
+        }
         continue;
       }
+      const r2 = outerR + 4 + i * 5;
       const k = rimKind === 'arcs8' ? 8 : 4;
       const arc = Math.PI * (k === 8 ? 0.15 : 0.3);
       for (let s = 0; s < k; s++) {

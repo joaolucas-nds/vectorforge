@@ -62,7 +62,8 @@ vectorforge/
 │   ├── regress.mjs              # instrumento de regressão dos geradores (`npm run regress`, DEC-014)
 │   ├── regress-baseline.json    # linha de base versionada: 1 chave estilo/tipo/tamanho/seed por linha
 │   ├── seeds.mjs                # instrumento de sensibilidade ao seed (`npm run seeds`, catraca, DEC-017)
-│   └── seeds-baseline.json      # linha de base: distintos/formas por tipo em 40 seeds
+│   ├── silhouette.mjs           # silhueta por geometria do SVG (malha 16×16, 1 − IoU), usada pelo seeds (DEC-020)
+│   └── seeds-baseline.json      # linha de base: distintos/formas/silhueta por tipo em 40 seeds
 ├── package.json                 # devDependency: esbuild. Scripts: build, watch, regress
 ├── .gitignore                   # node_modules/ ignorado; dist/vectorforge.html NÃO (ver DEC-010)
 ├── dist/
@@ -129,9 +130,9 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 
 | Estilo | Arquivo | Tipos (`TYPES_BY_STYLE`) | Funções geradoras |
 |---|---|---|---|
-| **artdeco** | `src/generators/artdeco.js` | medallion, frame, divider, corner, pattern, ornament | `genADMedallion`, `genADFrame`, `genDivider('artdeco')`†, `genADCorner`, `genPattern('artdeco')`†, `genADOrn` — o seed escolhe variante de motivo, arranjo e acabamento em todos os tipos (DEC-018); `genADFrame` só varia com `vary = true`, que só o Art Deco passa |
+| **artdeco** | `src/generators/artdeco.js` | medallion, frame, divider, corner, pattern, ornament | `genADMedallion`, `genADFrame`, `genDivider('artdeco')`†, `genADCorner`, `genPattern('artdeco')`†, `genADOrn` — o seed escolhe variante de motivo, arranjo e acabamento em todos os tipos (DEC-018); `genADFrame` só varia com `vary = true`, que só o Art Deco passa; medalhão e padrão também sorteiam o ESQUELETO — contorno/escala e campo/escala da célula (piloto, DEC-020) |
 | **baroque** | `src/generators/baroque.js` | medallion, frame, divider, cartouche, swag, acanthus | `genBQMedallion`, `genBQFrame`, `genDivider('baroque')`†, `genBQCartouche`, `genBQSwag`, `genBQAcanthus` — o seed escolhe variante de motivo, arranjo e acabamento em todos os tipos (DEC-019) |
-| **geometric** | `src/generators/geometric.js` | mandala, frame, divider, tessellation, star, symbol | `genMandala`, `genGeoFrame`, `genDivider('geo')`†, `genPattern('geo')`†, `genGeoStar`, `genGeoSymbol` — o seed escolhe variante de motivo, arranjo e acabamento em todos os tipos (DEC-018); `genMandala` só varia com `vary = true`, que só o Geométrico passa |
+| **geometric** | `src/generators/geometric.js` | mandala, frame, divider, tessellation, star, symbol | `genMandala`, `genGeoFrame`, `genDivider('geo')`†, `genPattern('geo')`†, `genGeoStar`, `genGeoSymbol` — o seed escolhe variante de motivo, arranjo e acabamento em todos os tipos (DEC-018); `genMandala` só varia com `vary = true`, que só o Geométrico passa; mandala e símbolo também sorteiam o ESQUELETO — contorno, escala, espaçamento/órbita (piloto, DEC-020) |
 | **victorian** | `src/generators/victorian.js` | medallion, frame, divider, flourish, wreath, cartouche | `genVicMedallion`, `genVicFrame`, `genDivider('victorian')`†, `genBQAcanthus`‡ (reuso, `style = 'victorian'`), `genVicWreath`, `genBQCartouche`‡ (reuso, `style = 'victorian'`) — medalhão, moldura, divisor, flourish e cartela com escolhas semeadas; a coroa já variava (DEC-019) |
 | **celtic** | `src/generators/celtic.js` | knot, border, medallion, cross, knotwork, spiral | `genCelticKnot`, `genADFrame`‡ (reuso, n=6), `genMandala`‡ (reuso, n=6), `genCelticCross`, `genCelticKnot` (reuso, sz×1.2/n=8), `genOrganicSpiral`‡ (reuso) |
 | **islamic** | `src/generators/islamic.js` | star, girih, arabesque, border, medallion, pattern | `genIslamicStar`, `genPattern('girih')`†, `genArabesque`, `genADFrame`‡ (reuso, n=8), `genIslamicStar` (reuso, n=12), `genPattern('islamic')`† |

@@ -10,6 +10,18 @@
 
 ---
 
+## [0.9.0] — 2026-11-17
+### Adicionado
+- **Régua de silhueta no `npm run seeds`** (`scripts/silhouette.mjs`): coluna `silhueta%` — quanto o seed muda o que se lê na miniatura (1 − IoU de uma malha 16×16, calculada da geometria do SVG, sem dependência nova). Entra na catraca e no resumo (`silhueta>=25%: N/53`). Calibrada contra uma sonda rasterizada (Spearman 0,771). Ver DEC-020.
+- Primitivas `contourRadius` e `contourPath` (`core/utils.js`): contorno de um desenho radial como função r(a).
+
+### Alterado
+- **Piloto do esqueleto semeado** (F5): o seed passa a escolher também a COMPOSIÇÃO em 4 tipos — medalhão Art Deco (círculo, octógono, losango, quadrado, oval alto, arco ou sol nascente; escala; ±1 anel; ±2 raios), padrão Art Deco (campo: página, medalhão, losango, faixa, moldura ou arco; escala da célula), mandala geométrica (contorno, escala, espaçamento dos anéis, ±2 anéis) e símbolo geométrico (contorno, órbita dos nós, escala). Silhueta: medallion 7,0 → 25,8%, pattern 8,8 → 41,9%, mandala 3,0 → 29,7%, symbol 7,5 → 33,2%.
+- Celta, Orgânico, fallback e Text→Form, que reusam a mandala sem `vary`, não mudam.
+- Linha de base do `npm run regress` regravada para as 24 chaves dos 4 tipos; a do `npm run seeds` ganha a silhueta de todos os tipos.
+
+---
+
 ## [0.8.0] — 2026-11-17
 ### Alterado
 - **Barroco e Vitoriano com variedade de verdade** (F5, lote 3): 11 tipos passam a sortear pelo seed a variante de motivo, arranjo e acabamento — medalhão barroco (moldura oval, com contas ou recortada; volutas em C, em S ou folhas; coroa de esferas, concha ou remate), moldura barroca (cantos em voluta, concha ou roseta; ornamento lateral; filete duplo, triplo ou com contas), divisor, cartela, festão (gomo simples, duplo ou em arco; borla, roseta ou pérola), acanto (voluta, acanto lobado, pena; folhas aos pares ou alternadas), medalhão vitoriano (anel com octógono, recortado ou com contas; bordadura de cachos, laçadas ou flores), moldura vitoriana, divisor vitoriano, flourish e cartela vitorianos. O desenho de antes de cada tipo barroco continua sendo uma das variantes. Placar `npm run seeds`: formas>1 18/53 → 29/53.

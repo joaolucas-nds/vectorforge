@@ -174,3 +174,40 @@ export function shellFanPaths(cx, cy, R, a, k) {
   for (let j = 1; j < k; j++) { const [ex, ey] = pt(cx, cy, R * 0.95, a - Math.PI / 2 + j * Math.PI / k); ribs += `M ${f(cx)} ${f(cy)} L ${f(ex)} ${f(ey)} `; }
   return [outline, ribs.trim()];
 }
+
+// ── Esqueleto semeado (F5, DEC-020) ──────────────────────────────────────────
+
+/**
+ * Contorno de um desenho radial: devolve r(a), o raio do contorno no ângulo a (y para baixo).
+ * É o que deixa a silhueta sair do círculo — anéis, pontas e nós passam a seguir r(a).
+ * Tipos: 'circle' · 'ellipse' (opt.sx, opt.sy) · 'polygon' (opt.k lados; vértices em R; opt.rot = direção de um VÉRTICE)
+ * · 'star' (opt.k ondas, opt.amp) · 'lozenge' (opt.sx, opt.sy) · 'arch' (topo em semicírculo,
+ * base reta a opt.base·R abaixo do centro).
+ * @param {string} kind
+ * @param {number} R - raio de referência
+ * @param {object} [opt]
+ * @returns {(a: number) => number}
+ */
+export function contourRadius(kind, R, opt = {}) {
+  if (kind === 'ellipse') { const ax = R * (opt.sx || 1), ay = R * (opt.sy || 1); return a => 1 / Math.hypot(Math.cos(a) / ax, Math.sin(a) / ay); }
+  if (kind === 'polygon') { const k = opt.k || 6, rot = opt.rot || 0, seg = TAU / k; return a => { const m = ((((a - rot) % seg) + seg) % seg) - seg / 2; return R * Math.cos(Math.PI / k) / Math.cos(m); }; }
+  if (kind === 'star') { const k = opt.k || 6, amp = opt.amp || 0.2, rot = opt.rot || 0; return a => R * (1 - amp * (1 - Math.cos(k * (a - rot))) / 2); }
+  if (kind === 'lozenge') { const w = R * (opt.sx || 0.7), h = R * (opt.sy || 1.05); return a => 1 / (Math.abs(Math.cos(a)) / w + Math.abs(Math.sin(a)) / h); }
+  if (kind === 'arch') { const b = R * (opt.base || 0.8); return a => { const s = Math.sin(a); if (s <= 0) return R; return Math.min(R / Math.max(1e-9, Math.abs(Math.cos(a))), b / s); }; }
+  return () => R;
+}
+
+/**
+ * Path fechado que segue um contorno r(a), escalado por k (anéis internos = contorno × t).
+ * @param {number} cx
+ * @param {number} cy
+ * @param {(a: number) => number} rFn - de contourRadius
+ * @param {number} [k=1] - escala
+ * @param {number} [N=72] - amostras
+ * @param {number} [a0=-Math.PI/2] - ângulo inicial (o topo)
+ * @returns {string} atributo d
+ */
+export function contourPath(cx, cy, rFn, k = 1, N = 72, a0 = -Math.PI / 2) {
+  const pts = Array.from({ length: N }, (_, i) => { const a = a0 + i * TAU / N; return pt(cx, cy, rFn(a) * k, a); });
+  return 'M ' + pts.map(p => `${f(p[0])} ${f(p[1])}`).join(' L ') + ' Z';
+}

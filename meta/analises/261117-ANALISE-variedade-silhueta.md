@@ -1,6 +1,6 @@
 # ANALISE — Por que «ainda falta variedade»: o seed troca detalhes, não a silhueta
 
-> **Status:** Em discussao
+> **Status:** Decidida — D + piloto de A, escolhido pelo dono em 2026-11-17; ver DEC-020 e `specs/261117-esqueleto-semeado-piloto.md`
 > **Data:** 2026-11-17
 
 > Nasceu do relato do dono depois do roteiro do lote 3 (1–7 ok): «ainda sinto que faltou mais variedade» [relatado pelo dono, 2026-11-17]. A pergunta (o que fazer com a F5 a partir daqui) é dele.

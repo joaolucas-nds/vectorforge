@@ -4,10 +4,14 @@
 //   - distintos: quantos SVGs diferentes saíram (o seed muda ALGUM número?);
 //   - formas:    quantas ESTRUTURAS diferentes saíram — sequência de elementos + quantidade de
 //                comandos de cada path. Um ajuste fino de ângulo muda os números mas não a estrutura;
-//                uma árvore com outro arranjo de galhos muda as duas. É a métrica de «desenhos
-//                elaboradamente diferentes».
+//                uma árvore com outro arranjo de galhos muda as duas.
+//   - silhueta:  quanto muda o que se lê na MINIATURA — média de 1 − IoU da ocupação de uma malha
+//                16×16 entre todos os pares de seeds, em % (scripts/silhouette.mjs, DEC-020). «formas»
+//                conta estrutura de elementos e premiava trocar um detalhe dentro do mesmo contorno;
+//                a silhueta é a régua que mira o que o dono vê.
 // Compara com scripts/seeds-baseline.json em modo catraca: reprova (sai 1) se algum tipo PERDER
-// variedade em relação à linha de base. Ganhar não reprova; `--update` regrava a linha de base.
+// variedade (distintos, formas ou silhueta) em relação à linha de base. Ganhar não reprova;
+// `--update` regrava a linha de base.
 //
 // Uso:
 //   npm run seeds                 → compara com a linha de base
@@ -20,6 +24,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import esbuild from 'esbuild';
+import { occupancy, silhouetteChange } from './silhouette.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASELINE = path.join(ROOT, 'scripts', 'seeds-baseline.json');
@@ -60,33 +65,38 @@ state.w = state.h = 400;
 const h = s => createHash('sha1').update(s).digest('hex');
 const now = {};
 for (const [style, types] of Object.entries(TYPES_BY_STYLE)) for (const type of types) {
-  const svgs = new Set(), forms = new Set();
+  const svgs = new Set(), forms = new Set(), occ = [];
   for (let seed = 1; seed <= SEEDS; seed++) {
     const s = generateContent(style, type, 200, 200, 184, 0.55, 0.5, seed, PALETTES[0], 1.2, 0);
-    svgs.add(h(s)); forms.add(h(structure(s)));
+    svgs.add(h(s)); forms.add(h(structure(s))); occ.push(occupancy(s, 400, 400));
   }
-  now[`${style}/${type}`] = { distinct: svgs.size, forms: forms.size };
+  now[`${style}/${type}`] = { distinct: svgs.size, forms: forms.size, silhouette: silhouetteChange(occ) };
 }
 const keys = Object.keys(now).sort();
 const alive = keys.filter(k => now[k].forms > 1).length;
 const moving = keys.filter(k => now[k].distinct > 1).length;
+const SIL = 25; // silhueta a partir da qual o seed muda o que se vê na miniatura (meta do piloto, DEC-020)
+const shaped = keys.filter(k => now[k].silhouette >= SIL).length;
 
 if (update) {
   writeFileSync(BASELINE, '{\n' + keys.map(k => `  ${JSON.stringify(k)}: ${JSON.stringify(now[k])}`).join(',\n') + '\n}\n');
-  console.log(`linha de base gravada: ${keys.length} tipos · formas>1: ${alive}/${keys.length} · distintos>1: ${moving}/${keys.length}`);
+  console.log(`linha de base gravada: ${keys.length} tipos · formas>1: ${alive}/${keys.length} · distintos>1: ${moving}/${keys.length} · silhueta>=${SIL}%: ${shaped}/${keys.length}`);
   process.exit(0);
 }
 
 console.log(`seeds: ${SEEDS} seeds por tipo, Complexity 0.55, Symmetry 0.5`);
-console.log('tipo'.padEnd(26) + 'distintos'.padStart(10) + 'formas'.padStart(8));
-for (const k of keys) console.log(k.padEnd(26) + String(now[k].distinct).padStart(10) + String(now[k].forms).padStart(8));
-console.log(`\nformas>1 (o seed muda a estrutura): ${alive}/${keys.length} · distintos>1 (o seed muda algum número): ${moving}/${keys.length} · meta da F5: ${keys.length}/${keys.length}`);
+console.log('tipo'.padEnd(26) + 'distintos'.padStart(10) + 'formas'.padStart(8) + 'silhueta%'.padStart(11));
+for (const k of keys) console.log(k.padEnd(26) + String(now[k].distinct).padStart(10) + String(now[k].forms).padStart(8) + now[k].silhouette.toFixed(1).padStart(11));
+console.log(`\nformas>1 (o seed muda a estrutura): ${alive}/${keys.length} · distintos>1 (o seed muda algum número): ${moving}/${keys.length} · silhueta>=${SIL}% (o seed muda a miniatura): ${shaped}/${keys.length}`);
 if (!existsSync(BASELINE)) { console.log('linha de base ausente — rode com --update'); process.exit(1); }
 const base = JSON.parse(readFileSync(BASELINE, 'utf8'));
-const lost = Object.keys(base).filter(k => !now[k] || now[k].forms < base[k].forms || now[k].distinct < base[k].distinct);
-const gained = keys.filter(k => base[k] && (now[k].forms > base[k].forms || now[k].distinct > base[k].distinct));
-for (const k of lost) console.log(`  PERDEU: ${k} (${base[k] ? `${base[k].distinct}/${base[k].forms}` : 'novo'} -> ${now[k] ? `${now[k].distinct}/${now[k].forms}` : 'sumiu'})`);
-for (const k of gained) console.log(`  GANHOU: ${k} (${base[k].distinct}/${base[k].forms} -> ${now[k].distinct}/${now[k].forms}) — rode --update para registrar`);
-console.log('  nao olhado: aparencia — duas estruturas diferentes ainda podem PARECER iguais; o roteiro visual decide.');
+// linha de base antiga, sem silhueta: a coluna não é cobrada até o próximo --update
+const sil = k => base[k].silhouette === undefined ? -1 : base[k].silhouette;
+const fmt = o => `${o.distinct}/${o.forms}/${o.silhouette === undefined ? '-' : o.silhouette}`;
+const lost = Object.keys(base).filter(k => !now[k] || now[k].forms < base[k].forms || now[k].distinct < base[k].distinct || now[k].silhouette < sil(k));
+const gained = keys.filter(k => base[k] && (now[k].forms > base[k].forms || now[k].distinct > base[k].distinct || (sil(k) >= 0 && now[k].silhouette > sil(k))));
+for (const k of lost) console.log(`  PERDEU: ${k} (${base[k] ? fmt(base[k]) : 'novo'} -> ${now[k] ? fmt(now[k]) : 'sumiu'})`);
+for (const k of gained) console.log(`  GANHOU: ${k} (${fmt(base[k])} -> ${fmt(now[k])}) — rode --update para registrar`);
+console.log('  nao olhado: aparencia fina — a silhueta por geometria nao ve espessura de traco nem preenchimento; o roteiro visual decide.');
 console.log(lost.length ? `REPROVADO (${lost.length} tipo(s) perderam variedade)` : 'OK — nenhum tipo perdeu variedade');
 process.exit(lost.length ? 1 : 0);

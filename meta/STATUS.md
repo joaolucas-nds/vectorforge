@@ -7,7 +7,7 @@
 ---
 
 ## Versão Atual
-**[0.8.0]** — F5, lote 3: o seed passa a mudar a forma de 11 tipos do Barroco e do Vitoriano, e `victorian/flourish` e `victorian/cartouche` deixam de ser cópias dos barrocos (DEC-019) — placar `formas>1` 29/53. Antes: v0.7.0 Art Deco + Geométrico (DEC-018), v0.6.0 Botânico e `npm run seeds` (DEC-017). GitHub Pages: `https://joaolucas-nds.github.io/vectorforge/`.
+**[0.9.0]** — F5: régua de silhueta no `npm run seeds` e piloto do esqueleto semeado em 4 tipos (medalhão e padrão Art Deco, mandala e símbolo geométricos), que passam de 2–9% para 26–42% de silhueta (DEC-020) — `silhueta>=25%` 10/53. Antes: v0.8.0 Barroco + Vitoriano (DEC-019), v0.7.0 Art Deco + Geométrico (DEC-018), v0.6.0 Botânico (DEC-017). GitHub Pages: `https://joaolucas-nds.github.io/vectorforge/`.
 
 ---
 
@@ -19,6 +19,7 @@
 - **Botânico variado (v0.6.0, DEC-017):** árvore estocástica (40 formas em 40 seeds), Koch em 5 curvas, Dragon em 5 curvas com Symmetry = cópias giradas. Medido por `npm run seeds`.
 - **Art Deco e Geométrico variados (v0.7.0, DEC-018):** os 12 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: medalhão com raios em cunha, degraus, leque ou alternados; tesselação com polígonos, estrelas, Truchet ou rosetas). Celta, Islâmico e Orgânico, que reusam esses geradores, não mudaram. Medido por `npm run seeds` e `npm run regress`. Roteiro visual 1–8 ok [relatado pelo dono, 2026-11-17].
 - **Barroco e Vitoriano variados (v0.8.0, DEC-019):** 11 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: cartela oval, escudo ou lobada no Barroco; chanfrada ou arqueada no Vitoriano; volutas em espiral, conchas em leque, contas). Flourish e cartela do Vitoriano têm repertório próprio — antes eram iguais aos barrocos em 40 de 40 seeds. Medido por `npm run seeds` e `npm run regress`. Roteiro visual 1–7 ok [relatado pelo dono, 2026-11-17].
+- **Esqueleto semeado — piloto (v0.9.0, DEC-020):** nos 4 tipos, o seed escolhe também a composição — medalhão em círculo, octógono, losango, quadrado, oval, arco ou sol nascente; padrão num campo (página, medalhão, losango, faixa, moldura, arco); mandala e símbolo com contorno, escala e arranjo próprios. Medido pela coluna `silhueta%` do `npm run seeds` (régua nova, `scripts/silhouette.mjs`).
 - **Export PNG no modo Pixel Art** exporta o `px-canvas` corretamente (FIX-002).
 - **Simplex Noise 2D** (`snoise`, `snoiseSetSeed`) integrado e reproducível por seed.
 - **`genPhyllotaxis`** — tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
@@ -34,14 +35,14 @@
 ## 🔧 Em Progresso
 
 - **F4/B — mockup da nova interface APROVADO como está** [relatado pelo dono, 2026-11-15]: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN). Próximo passo da F4/B: spec + WO de implementação, em lotes (layout e seções; rótulos PT/EN; estados e mensagens; celular).
-- **F5 — Variedade procedural:** lotes 1 (Botânico, v0.6.0), 2 (Art Deco + Geométrico, v0.7.0) e 3 (Barroco + Vitoriano, v0.8.0) entregues — placar `formas>1: 29/53`. Próximo: Celta, Islâmico, Minimal, Orgânico. Roteiros: Botânico 1–6 ok [relatado pelo dono, 2026-11-15]; lote 2 1–8 ok [relatado pelo dono, 2026-11-17]; lote 3 1–7 ok [relatado pelo dono, 2026-11-17]. **Mas o dono ainda sente falta de variedade** [relatado pelo dono, 2026-11-17]: a sonda de silhueta mostrou que nos lotes 2 e 3 o seed troca detalhes dentro do mesmo contorno (silhueta muda 2–15% contra 42–66% no Botânico). Análise `meta/analises/261117-ANALISE-variedade-silhueta.md` em discussão; os lotes 4–7 esperam a decisão.
-- **Ordem das frentes:** o dono escolheu F5 lote 3 (Barroco + Vitoriano) [relatado pelo dono, 2026-11-17]; a F4/B (implementação da nova interface) segue aguardando a vez.
+- **F5 — Variedade procedural:** lotes 1–3 entregues (v0.6.0–v0.8.0) e piloto do esqueleto semeado em 4 tipos (v0.9.0) — placar `formas>1: 29/53`, **`silhueta>=25%: 10/53`** (a meta agora é a silhueta, DEC-020). Roteiros: Botânico 1–6, lote 2 1–8 e lote 3 1–7 ok [relatado pelo dono]; roteiro do piloto pendente. Se o piloto convencer: a receita volta aos 19 tipos dos lotes 2 e 3 e os lotes 4–7 (Celta, Islâmico, Minimal, Orgânico) já nascem com esqueleto.
+- **Ordem das frentes:** o dono decidiu a análise de variedade — régua de silhueta + piloto do esqueleto semeado [relatado pelo dono, 2026-11-17]; a F4/B (implementação da nova interface) segue aguardando a vez.
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-- **O seed ainda não muda a forma em 24 dos 53 tipos** (placar `npm run seeds` em v0.8.0: formas>1 29/53; 18/53 em v0.7.0, 6/53 em v0.6.0, 3/53 antes da F5). Surprise, New seed e «Like this» só variam o que os sliders variam nesses tipos. Tratado pela F5, um lote por estilo.
+- **O seed ainda não muda a forma em 24 dos 53 tipos, e só muda a SILHUETA em 10** (placar `npm run seeds` em v0.9.0: formas>1 29/53, silhueta>=25% 10/53). Nos outros, Surprise, New seed e «Like this» variam detalhe dentro do mesmo contorno ou só o que os sliders variam. Tratado pela F5.
 
 ---
 
