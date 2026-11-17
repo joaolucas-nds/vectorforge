@@ -7,7 +7,7 @@
 ---
 
 ## Versão Atual
-**[0.7.0]** — F5, lote 2: o seed passa a mudar a forma dos 12 tipos do Art Deco e do Geométrico (escolhas semeadas de motivo, arranjo e acabamento; DEC-018) — placar `formas>1` 18/53. Antes, em v0.6.0: lote Botânico e `npm run seeds` (DEC-017). GitHub Pages: `https://joaolucas-nds.github.io/vectorforge/`.
+**[0.8.0]** — F5, lote 3: o seed passa a mudar a forma de 11 tipos do Barroco e do Vitoriano, e `victorian/flourish` e `victorian/cartouche` deixam de ser cópias dos barrocos (DEC-019) — placar `formas>1` 29/53. Antes: v0.7.0 Art Deco + Geométrico (DEC-018), v0.6.0 Botânico e `npm run seeds` (DEC-017). GitHub Pages: `https://joaolucas-nds.github.io/vectorforge/`.
 
 ---
 
@@ -18,6 +18,7 @@
 - **Canvas nunca abre vazio** (FIX-003): enquadramento com piso e re-enquadramento ao redimensionar/voltar a aba.
 - **Botânico variado (v0.6.0, DEC-017):** árvore estocástica (40 formas em 40 seeds), Koch em 5 curvas, Dragon em 5 curvas com Symmetry = cópias giradas. Medido por `npm run seeds`.
 - **Art Deco e Geométrico variados (v0.7.0, DEC-018):** os 12 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: medalhão com raios em cunha, degraus, leque ou alternados; tesselação com polígonos, estrelas, Truchet ou rosetas). Celta, Islâmico e Orgânico, que reusam esses geradores, não mudaram. Medido por `npm run seeds` e `npm run regress`. Roteiro visual 1–8 ok [relatado pelo dono, 2026-11-17].
+- **Barroco e Vitoriano variados (v0.8.0, DEC-019):** 11 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: cartela oval, escudo ou lobada no Barroco; chanfrada ou arqueada no Vitoriano; volutas em espiral, conchas em leque, contas). Flourish e cartela do Vitoriano têm repertório próprio — antes eram iguais aos barrocos em 40 de 40 seeds. Medido por `npm run seeds` e `npm run regress`.
 - **Export PNG no modo Pixel Art** exporta o `px-canvas` corretamente (FIX-002).
 - **Simplex Noise 2D** (`snoise`, `snoiseSetSeed`) integrado e reproducível por seed.
 - **`genPhyllotaxis`** — tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
@@ -33,20 +34,20 @@
 ## 🔧 Em Progresso
 
 - **F4/B — mockup da nova interface APROVADO como está** [relatado pelo dono, 2026-11-15]: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN). Próximo passo da F4/B: spec + WO de implementação, em lotes (layout e seções; rótulos PT/EN; estados e mensagens; celular).
-- **F5 — Variedade procedural:** lote 1 (instrumento + Botânico, v0.6.0) e lote 2 (Art Deco + Geométrico, v0.7.0) entregues — placar `formas>1: 18/53`. Próximo: um lote por estilo (Barroco, Vitoriano, Celta, Islâmico, Minimal, Orgânico). Roteiro do Botânico 1–6 ok [relatado pelo dono, 2026-11-15]; roteiro do lote 2 (Art Deco + Geométrico) 1–8 ok [relatado pelo dono, 2026-11-17].
-- **Ordem das frentes:** o dono escolheu F5 lote 2 primeiro [relatado pelo dono, 2026-11-16]; a F4/B (implementação da nova interface) segue aguardando a vez.
+- **F5 — Variedade procedural:** lotes 1 (Botânico, v0.6.0), 2 (Art Deco + Geométrico, v0.7.0) e 3 (Barroco + Vitoriano, v0.8.0) entregues — placar `formas>1: 29/53`. Próximo: Celta, Islâmico, Minimal, Orgânico. Roteiros: Botânico 1–6 ok [relatado pelo dono, 2026-11-15]; lote 2 1–8 ok [relatado pelo dono, 2026-11-17]; lote 3 pendente.
+- **Ordem das frentes:** o dono escolheu F5 lote 3 (Barroco + Vitoriano) [relatado pelo dono, 2026-11-17]; a F4/B (implementação da nova interface) segue aguardando a vez.
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-- **O seed ainda não muda a forma em 35 dos 53 tipos** (placar `npm run seeds` em v0.7.0: formas>1 18/53; 6/53 em v0.6.0, 3/53 antes da F5). Surprise, New seed e «Like this» só variam o que os sliders variam nesses tipos. Tratado pela F5, um lote por estilo.
+- **O seed ainda não muda a forma em 24 dos 53 tipos** (placar `npm run seeds` em v0.8.0: formas>1 29/53; 18/53 em v0.7.0, 6/53 em v0.6.0, 3/53 antes da F5). Surprise, New seed e «Like this» só variam o que os sliders variam nesses tipos. Tratado pela F5, um lote por estilo.
 
 ---
 
 ## 📋 Backlog (curto prazo — itens acionáveis)
 
-- [ ] Adicionar JSDoc às funções geradoras do v0.1.0 (`genADMedallion`, `genBQFrame`, etc.). Art Deco e Geométrico já têm (v0.7.0).
+- [ ] Adicionar JSDoc às funções geradoras do v0.1.0 (`genADMedallion`, `genBQFrame`, etc.). Art Deco e Geométrico já têm (v0.7.0); Barroco e Vitoriano também (v0.8.0), exceto `genVicWreath`.
 - [ ] Testar `dist/vectorforge.html` em Firefox e Safari.
 - [ ] Avaliar fallback de `DM Mono`/`Fraunces` (Google Fonts) offline.
 - [ ] Sincronizar `snoiseSetSeed` em `genPixelArt()` caso um gerador de pixel art baseado em noise seja adicionado (Armadilha 7 no CONTEXT.md).

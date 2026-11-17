@@ -55,9 +55,9 @@ export function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, s
       medallion: () => genVicMedallion(cx, cy, sz, layers, comp, sym, rnd, SO, FG, FG2, sw),
       frame:     () => genVicFrame(0, 0, state.w, state.h, comp, rnd, SO, FG, sw),
       divider:   () => genDivider(0, cy, state.w, comp, sym, rnd, SO, FG, sw, 'victorian'),
-      flourish:  () => genBQAcanthus(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+      flourish:  () => genBQAcanthus(cx, cy, sz, comp, sym, rnd, SO, FG, sw, 'victorian'),
       wreath:    () => genVicWreath(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw),
-      cartouche: () => genBQCartouche(cx, cy, sz, comp, rnd, SO, FG, FG2, sw),
+      cartouche: () => genBQCartouche(cx, cy, sz, comp, rnd, SO, FG, FG2, sw, 'victorian'),
     },
     celtic: {
       knot:     () => genCelticKnot(cx, cy, sz, n, comp, rnd, SO, FG, sw),

@@ -468,4 +468,27 @@ Depois do lote 1 (DEC-017), o placar era formas>1 6/53; os 12 tipos do Art Deco 
 - `formas` baixo em `artdeco/pattern` (4) e `geometric/tessellation` (7): a malha muda posição, não sequência de elementos — o instrumento subconta; o roteiro decide se basta (IDEAS).
 - O Botânico mantém o `pickOne` local (IDEAS: unificar).
 
+---
+
+## DEC-019 — Lote 3 da F5: Barroco e Vitoriano, com repertório próprio onde o Vitoriano reusava o Barroco
+**Data:** 2026-11-17 · **Status:** aceita
+
+### Contexto
+Placar depois do lote 2 (DEC-018): formas>1 18/53. Os 6 tipos do Barroco e 5 dos 6 do Vitoriano marcavam 1/1 (`victorian/wreath` já variava, 40/40). Medido no protótipo: `victorian/flourish` e `victorian/cartouche` chamavam `genBQAcanthus` e `genBQCartouche` com os mesmos parâmetros de `baroque/acanthus` e `baroque/cartouche` — iguais byte a byte em 40 de 40 seeds.
+
+### Decisão
+1. **Escolhas semeadas por tipo** (`pickOne`), 3 ou 4 eixos por gerador; no Barroco, o desenho original é uma das combinações.
+2. **`style` em `genBQCartouche` e `genBQAcanthus`** (padrão `'baroque'`); o dispatcher passa `'victorian'` em flourish e cartouche. Cada estilo sorteia de listas próprias de variantes, então os dois tipos deixam de coincidir (0 de 40 seeds iguais).
+3. **Primitivas novas:** `spiralPath` (voluta) e `shellFanPaths` (concha em leque).
+4. **Ajuste visto no contact sheet:** a folha de acanto lobado sumia de tão fina; os lóbulos ficaram ~2× mais fundos.
+
+### Alternativas consideradas
+- **`vary` como no lote 2** — rejeitada aqui: os dois estilos que reusam estão no MESMO lote, então ligar a variação para os dois é seguro; o problema era outro (cópia), e o que o resolve é repertório por estilo.
+- **Funções vitorianas separadas (`genVicFlourish`, `genVicCartouche`)** — rejeitada: duplicaria a estrutura (caule e folhas; escudo, remates e crista); o `style` troca só as listas.
+
+### Consequências
+- Placar: formas>1 18/53 → 29/53, distintos>1 21/53 → 32/53. Regress: exatamente 66 chaves mudaram (11 tipos × 6), 0 fora do lote.
+- Pior caso: maior é `baroque/frame` em canvas 1200, 34,1 KB.
+- O acanto/flourish continua ocupando ~1/3 da altura do canvas, como desde a v0.1.0 (IDEAS).
+
 

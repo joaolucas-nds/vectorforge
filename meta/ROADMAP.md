@@ -58,7 +58,8 @@
 - [x] Instrumento de sensibilidade ao seed — `npm run seeds` (catraca), v0.6.0, DEC-017. Placar: formas>1 3/53 → 6/53.
 - [x] Lote Botânico — árvore estocástica, família de Koch, família dragão (Symmetry = cópias), enquadramento ~83%. v0.6.0, DEC-017, `specs/261115-seed-vivo-botanico.md`.
 - [x] Lote Art Deco + Geométrico — 12 tipos com escolhas semeadas; geradores compartilhados variam só para o estilo dono (`vary`). v0.7.0, DEC-018, `specs/261116-seed-vivo-artdeco-geometrico.md`. Placar: formas>1 6/53 → 18/53.
-- [ ] Um lote por estilo: Barroco, Vitoriano, Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
+- [x] Lote Barroco + Vitoriano — 11 tipos com escolhas semeadas; flourish e cartela do Vitoriano com repertório próprio (`style`). v0.8.0, DEC-019, `specs/261117-seed-vivo-barroco-vitoriano.md`. Placar: formas>1 18/53 → 29/53.
+- [ ] Um lote por estilo: Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
 - [ ] Modificadores universais: traço tracejado/duplo/pontilhado, camadas, espelho, deformação leve por ruído.
 
 ---

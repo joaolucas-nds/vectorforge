@@ -57,6 +57,9 @@ A sonda `../261112-sonda-ui/behave.cjs` (pasta-pai, fora do repo, 18 checagens d
 ### 2026-11-15 — `.gitattributes` fixando LF
 Ver o item do backlog do STATUS: `* text=auto eol=lf` acaba com o aviso de CRLF em toda WO e com a dúvida «o arquivo está em LF ou CRLF?» nos relatórios.
 
+### 2026-11-17 — Enquadrar o acanto e o flourish como o Botânico
+`baroque/acanthus` e `victorian/flourish` ocupam ~1/3 da altura do canvas desde a v0.1.0 (folhas de `sz * 0.2`; o caule vai de `cy − 0,48·sz` a `cy + 0,48·sz`, mas as folhas ficam estreitas). O Botânico resolveu isso com `fitToBox` (`FIT = 1.8`, DEC-017). Medir a caixa do desenho e escalar — muda a saída dos dois tipos, então vai num lote que já os toque.
+
 ### 2026-11-16 — Um `pickOne` só
 O Botânico tem `pickOne` local (lote 1); o lote 2 pôs um em `core/utils.js`. Trocar o local pelo de `utils` quando o `botanical.js` for tocado de novo — mudança de uma linha, sem efeito na saída.
 

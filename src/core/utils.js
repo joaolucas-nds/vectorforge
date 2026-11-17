@@ -139,3 +139,38 @@ export function polygramPath(cx, cy, r, n, k, rot = -Math.PI / 2) {
   }
   return d;
 }
+
+/**
+ * Espiral de Arquimedes (voluta): parte do raio r e enrola até o centro em `turns` voltas.
+ * Número de pontos fixo por volta — o seed muda posição e sentido, não a estrutura do path.
+ * @param {number} cx - centro x
+ * @param {number} cy - centro y
+ * @param {number} r - raio inicial (externo)
+ * @param {number} turns - voltas (ex.: 1.5)
+ * @param {number} [dir=1] - 1 = sentido horário na tela, −1 = anti-horário
+ * @param {number} [a0=0] - ângulo inicial
+ * @returns {string} atributo d (aberto)
+ */
+export function spiralPath(cx, cy, r, turns, dir = 1, a0 = 0) {
+  const N = Math.max(8, Math.round(24 * turns));
+  const pts = Array.from({ length: N + 1 }, (_, i) => { const t = i / N; return pt(cx, cy, r * (1 - t * 0.92), a0 + dir * t * turns * TAU); });
+  return 'M ' + pts.map(p => `${f(p[0])} ${f(p[1])}`).join(' L ');
+}
+
+/**
+ * Concha em leque: meia-lua voltada para o ângulo `a` e as nervuras saindo do centro.
+ * Devolve DOIS atributos d — o contorno (fechado) e as nervuras (um path só, M…L por nervura).
+ * @param {number} cx
+ * @param {number} cy - centro da base da concha
+ * @param {number} R - raio
+ * @param {number} a - direção para onde a concha abre (−π/2 = para cima)
+ * @param {number} k - quantidade de gomos (nervuras = k − 1)
+ * @returns {[string, string]} [contorno, nervuras]
+ */
+export function shellFanPaths(cx, cy, R, a, k) {
+  const [x1, y1] = pt(cx, cy, R, a - Math.PI / 2), [x2, y2] = pt(cx, cy, R, a + Math.PI / 2);
+  const outline = `M ${f(x1)} ${f(y1)} A ${f(R)} ${f(R)} 0 0 1 ${f(x2)} ${f(y2)} Z`;
+  let ribs = '';
+  for (let j = 1; j < k; j++) { const [ex, ey] = pt(cx, cy, R * 0.95, a - Math.PI / 2 + j * Math.PI / k); ribs += `M ${f(cx)} ${f(cy)} L ${f(ex)} ${f(ey)} `; }
+  return [outline, ribs.trim()];
+}

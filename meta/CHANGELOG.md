@@ -10,6 +10,15 @@
 
 ---
 
+## [0.8.0] — 2026-11-17
+### Alterado
+- **Barroco e Vitoriano com variedade de verdade** (F5, lote 3): 11 tipos passam a sortear pelo seed a variante de motivo, arranjo e acabamento — medalhão barroco (moldura oval, com contas ou recortada; volutas em C, em S ou folhas; coroa de esferas, concha ou remate), moldura barroca (cantos em voluta, concha ou roseta; ornamento lateral; filete duplo, triplo ou com contas), divisor, cartela, festão (gomo simples, duplo ou em arco; borla, roseta ou pérola), acanto (voluta, acanto lobado, pena; folhas aos pares ou alternadas), medalhão vitoriano (anel com octógono, recortado ou com contas; bordadura de cachos, laçadas ou flores), moldura vitoriana, divisor vitoriano, flourish e cartela vitorianos. O desenho de antes de cada tipo barroco continua sendo uma das variantes. Placar `npm run seeds`: formas>1 18/53 → 29/53.
+- `victorian/flourish` e `victorian/cartouche` deixam de ser cópias de `baroque/acanthus` e `baroque/cartouche` (eram iguais byte a byte em 40 de 40 seeds): `genBQAcanthus` e `genBQCartouche` ganham `style`, com repertório próprio do Vitoriano.
+- `victorian/wreath` não muda (já variava).
+- Linha de base do `npm run regress` regravada para as 66 chaves dos 11 tipos (mudança intencional).
+
+---
+
 ## [0.7.0] — 2026-11-16
 ### Alterado
 - **Art Deco e Geométrico com variedade de verdade** (F5, lote 2): os 12 tipos passam a sortear pelo seed a variante de motivo, arranjo e acabamento — medalhão (raios em cunha, degraus, leque ou alternados; anéis em círculo, octógono ou dodecágono; três miolos; três acabamentos), moldura (cantos em colchete, leque ou zigurate; quatro motivos de borda; filete simples, duplo ou triplo), divisor, canto, padrão (polígono, escama, leque, chevron; malha reta ou em tijolo), ornamento (quatro células × quatro contornos × três miolos), mandala (pétala por anel, anéis escalonados), moldura geométrica, divisor geométrico, tesselação (polígono, estrela, Truchet, roseta), estrela ({n/k}, alternada, três giros) e símbolo. O desenho de antes de cada tipo continua sendo uma das variantes. Placar `npm run seeds`: formas>1 6/53 → 18/53.

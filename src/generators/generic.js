@@ -4,7 +4,7 @@
 import { genMandala } from './geometric.js'; // fallback de genTextShape quando a textarea está vazia
 
 
-import { TAU, f, pt, polyPath, starPath, mkRand, pickOne, steppedDiamondPath } from '../core/utils.js';
+import { TAU, f, pt, polyPath, starPath, mkRand, pickOne, steppedDiamondPath, spiralPath, shellFanPaths } from '../core/utils.js';
 import { state, PALETTES } from '../core/state.js';
 
 
@@ -46,12 +46,28 @@ export function genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style) {
       }
     }
   } else if (style === 'baroque') {
+    // F5 lote 3 (DEC-019): o seed escolhe o miolo (oval dupla · concha · roseta), o remate das
+    // pontas (voluta em C · espiral · folha) e se há contas ao longo da linha
+    const centerKind = pickOne(['oval', 'shell', 'rosette'], rnd);
+    const endKind = pickOne(['scroll', 'volute', 'leaf'], rnd);
+    const beads = rnd() < 0.5;
     const ow = 40 + comp * 25, oh = 16 + comp * 8;
-    parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(ow)}" ry="${f(oh)}" ${SO}/>`);
-    parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(ow * 0.8)}" ry="${f(oh * 0.65)}" ${SO}/>`);
+    if (centerKind === 'shell') {
+      for (const a of [-Math.PI / 2, Math.PI / 2]) { const [o, r] = shellFanPaths(cx, cy, oh * 1.3, a, 7); parts.push(`<path d="${o}" ${SO}/>`, `<path d="${r}" ${SO}/>`); }
+      parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(3 + comp * 2)}" ${FG}/>`);
+    } else if (centerKind === 'rosette') {
+      for (let k = 0; k < 8; k++) { const [px, py] = pt(cx, cy, oh * 0.9, k * TAU / 8); parts.push(`<circle cx="${f(px)}" cy="${f(py)}" r="${f(oh * 0.4)}" ${SO}/>`); }
+      parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(oh * 0.45)}" ${FG}/>`);
+    } else {
+      parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(ow)}" ry="${f(oh)}" ${SO}/>`);
+      parts.push(`<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="${f(ow * 0.8)}" ry="${f(oh * 0.65)}" ${SO}/>`);
+    }
     for (const dir of [-1, 1]) {
       const bx = cx + dir * ow;
-      parts.push(`<path d="M ${f(bx)} ${f(cy)} C ${f(bx + dir * 16)} ${f(cy - oh * 1.1)} ${f(bx + dir * 28)} ${f(cy - oh * 0.3)} ${f(bx + dir * 28)} ${f(cy + oh * 0.3)} C ${f(bx + dir * 28)} ${f(cy + oh * 1.1)} ${f(bx + dir * 16)} ${f(cy + oh * 0.8)} ${f(bx + dir * 6)} ${f(cy + oh * 0.3)}" ${SO}/>`);
+      if (endKind === 'volute') parts.push(`<path d="${spiralPath(bx + dir * (10 + comp * 4), cy, 10 + comp * 4, 1.5, dir, dir > 0 ? Math.PI : 0)}" ${SO}/>`);
+      else if (endKind === 'leaf') parts.push(`<path d="M ${f(bx)} ${f(cy)} Q ${f(bx + dir * 14)} ${f(cy - 10)} ${f(bx + dir * 30)} ${f(cy)} Q ${f(bx + dir * 14)} ${f(cy + 10)} ${f(bx)} ${f(cy)} Z" ${FG}/>`);
+      else parts.push(`<path d="M ${f(bx)} ${f(cy)} C ${f(bx + dir * 16)} ${f(cy - oh * 1.1)} ${f(bx + dir * 28)} ${f(cy - oh * 0.3)} ${f(bx + dir * 28)} ${f(cy + oh * 0.3)} C ${f(bx + dir * 28)} ${f(cy + oh * 1.1)} ${f(bx + dir * 16)} ${f(cy + oh * 0.8)} ${f(bx + dir * 6)} ${f(cy + oh * 0.3)}" ${SO}/>`);
+      if (beads) for (let px = bx + dir * 42; dir > 0 ? px < w - 20 : px > x + 20; px += dir * 12) parts.push(`<circle cx="${f(px)}" cy="${f(cy)}" r="1.8" ${FG}/>`);
     }
   } else if (style === 'geo' || style === 'geometric') {
     // F5 lote 2 (DEC-018): o seed escolhe o miolo (estrela · polígonos encaixados · anéis ·
@@ -84,12 +100,30 @@ export function genDivider(x, cy, w, comp, sym, rnd, SO, FG, sw, style) {
       }
     }
   } else if (style === 'victorian') {
-    parts.push(`<path d="${starPath(cx, cy, 14 + comp * 10, 6 + comp * 4, 8)}" ${SO}/>`);
+    // F5 lote 3 (DEC-019): o seed escolhe o miolo (estrela · flor de três pétalas espelhada ·
+    // quadrifólio) e as peças laterais (losangos · contas que diminuem · espirais)
+    const centerKind = pickOne(['star', 'fleur', 'quatrefoil'], rnd);
+    const sideKind = pickOne(['diamonds', 'dots', 'curls'], rnd);
+    const R = 14 + comp * 10;
+    if (centerKind === 'fleur') {
+      for (const s of [-1, 1]) {
+        parts.push(`<path d="M ${f(cx)} ${f(cy)} Q ${f(cx + R * 0.45)} ${f(cy + s * R * 0.5)} ${f(cx)} ${f(cy + s * R * 1.1)} Q ${f(cx - R * 0.45)} ${f(cy + s * R * 0.5)} ${f(cx)} ${f(cy)} Z" ${FG}/>`);
+        parts.push(`<path d="M ${f(cx)} ${f(cy)} Q ${f(cx + R * 0.9)} ${f(cy + s * R * 0.1)} ${f(cx + R * 0.8)} ${f(cy + s * R * 0.7)} M ${f(cx)} ${f(cy)} Q ${f(cx - R * 0.9)} ${f(cy + s * R * 0.1)} ${f(cx - R * 0.8)} ${f(cy + s * R * 0.7)}" ${SO}/>`);
+      }
+    } else if (centerKind === 'quatrefoil') {
+      for (let k = 0; k < 4; k++) { const [px, py] = pt(cx, cy, R * 0.45, k * TAU / 4 + Math.PI / 4); parts.push(`<circle cx="${f(px)}" cy="${f(py)}" r="${f(R * 0.45)}" ${SO}/>`); }
+      parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(R * 0.2)}" ${FG}/>`);
+    } else {
+      parts.push(`<path d="${starPath(cx, cy, 14 + comp * 10, 6 + comp * 4, 8)}" ${SO}/>`);
+    }
     const ns2 = 2 + Math.round(comp * 3);
     for (let i = 1; i <= ns2; i++) {
       const off2 = 22 + i * 14;
       for (const dir of [-1, 1]) {
-        parts.push(`<path d="M ${f(cx + dir * off2)} ${f(cy - 5)} L ${f(cx + dir * off2 + dir * 4)} ${f(cy)} L ${f(cx + dir * off2)} ${f(cy + 5)} L ${f(cx + dir * off2 - dir * 4)} ${f(cy)} Z" ${FG}/>`);
+        const px = cx + dir * off2;
+        if (sideKind === 'dots') parts.push(`<circle cx="${f(px)}" cy="${f(cy)}" r="${f(Math.max(1.2, 3.2 - i * 0.4))}" ${FG}/>`);
+        else if (sideKind === 'curls') parts.push(`<path d="${spiralPath(px, cy, 5, 1.25, dir, dir > 0 ? Math.PI : 0)}" ${SO}/>`);
+        else parts.push(`<path d="M ${f(px)} ${f(cy - 5)} L ${f(px + dir * 4)} ${f(cy)} L ${f(px)} ${f(cy + 5)} L ${f(px - dir * 4)} ${f(cy)} Z" ${FG}/>`);
       }
     }
   } else {

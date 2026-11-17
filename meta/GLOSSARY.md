@@ -54,6 +54,8 @@
 - **Escolha semeada** — decisão de estrutura tomada pelo PRNG do seed (`pickOne` em `core/utils.js`): qual variante de motivo, arranjo ou acabamento entra no desenho. É o que a F5 dá a cada tipo para a métrica «formas» subir (DEC-018).
 - **Polígono estrelado {n/k}** — `polygramPath`: liga cada um dos n vértices ao k-ésimo seguinte; com divisor comum vira laços separados ({6/2} = dois triângulos). Usado no Geométrico.
 - **Truchet** — ladrilho com dois quartos de círculo em cantos opostos, girado ao acaso em cada célula; a malha forma caminhos contínuos. Variante da tesselação geométrica.
+- **Voluta** — espiral de remate (`spiralPath` em `core/utils.js`, Arquimedes, pontos fixos por volta). Usada no Barroco e no Vitoriano.
+- **Concha em leque** — meia-lua com nervuras saindo do centro (`shellFanPaths`): devolve contorno e nervuras como dois paths. Crista, canto e ornamento lateral do Barroco.
 - **esbuild** — bundler JS/CSS usado só em tempo de desenvolvimento (devDependency); não é dependência de runtime do app entregue.
 - **IIFE (Immediately Invoked Function Expression)** — formato de bundle escolhido (`format: 'iife'` no esbuild) para que o JS bundlado se comporte como o `<script>` clássico original (execução síncrona, sem defer de módulo). Funções declaradas dentro do IIFE não vazam para `window` automaticamente — por isso `main.js` expõe explicitamente as usadas em `onclick=""` inline (ver Armadilha 8 no CONTEXT.md).
 - **ASU** *(descontinuado em 2026-11-11, DEC-012)* — Atualizador Automático de Scripts; aplicava patches YAML (`AAMMDD-asuNNNN.yaml`) em `src/` e em anexos de DECISIONS/CONTEXT. Mantido aqui porque DEC-007/008/009 e os logs antigos o citam.
