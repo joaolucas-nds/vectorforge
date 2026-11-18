@@ -10,6 +10,16 @@
 
 ---
 
+## [0.10.0] — 2026-11-18
+### Alterado
+- **Celta e Islâmico com variedade de verdade** (F5, lote 4, já com esqueleto semeado): nó (estrela de laços, roseta entrelaçada, triquetra, corrente), cruz (braços iguais, cruz alta com base, latina; remates reto, alargado ou bola), estrela islâmica (rosácea, fita {n/k}, enquadrada, khatam; moldura), arabesco (radial, palmeta, faixa). Placar `npm run seeds`: formas>1 29/53 → 41/53, silhueta>=25% 10/53 → 22/53.
+- **Geradores próprios do estilo** para os seis tipos que emprestavam de outros: borda celta (trança entre trilhos), medalhão celta (anel trançado + tríscele, triquetra ou roseta), painel de tranças (quadrado, círculo, losango, faixa ou cruz), espiral celta (1 a 4 espirais), borda islâmica (estrelas de 8, losangos, merlões ou entrelaçado), medalhão islâmico (shamsa com pingentes).
+- `islamic/girih` e `islamic/pattern` ganham motivos próprios (hexagrama, estrela de seis; khatam, octógono) e o campo/escala de célula semeados; deixam de sair com a mesma silhueta para o mesmo seed (eram iguais em 40 de 40).
+- Art Deco, Orgânico e os demais não mudam (`genADFrame`, `genMandala`, `genOrganicSpiral` e `genPattern` dos outros estilos seguem iguais).
+- Linha de base do `npm run regress` regravada para as 72 chaves `celtic/*` e `islamic/*`.
+
+---
+
 ## [0.9.0] — 2026-11-17
 ### Adicionado
 - **Régua de silhueta no `npm run seeds`** (`scripts/silhouette.mjs`): coluna `silhueta%` — quanto o seed muda o que se lê na miniatura (1 − IoU de uma malha 16×16, calculada da geometria do SVG, sem dependência nova). Entra na catraca e no resumo (`silhueta>=25%: N/53`). Calibrada contra uma sonda rasterizada (Spearman 0,771). Ver DEC-020.

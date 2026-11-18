@@ -61,8 +61,9 @@
 - [x] Lote Barroco + Vitoriano — 11 tipos com escolhas semeadas; flourish e cartela do Vitoriano com repertório próprio (`style`). v0.8.0, DEC-019, `specs/261117-seed-vivo-barroco-vitoriano.md`. Placar: formas>1 18/53 → 29/53.
 - [x] Régua de silhueta — coluna `silhueta%` no `npm run seeds` (`scripts/silhouette.mjs`), catraca. v0.9.0, DEC-020, análise `261117-ANALISE-variedade-silhueta.md`.
 - [x] Piloto do esqueleto semeado — medalhão e padrão Art Deco, mandala e símbolo geométricos: silhueta 2–9% → 26–42%. v0.9.0, DEC-020, `specs/261117-esqueleto-semeado-piloto.md`.
-- [ ] Esqueleto nos 19 tipos dos lotes 2 e 3 (depois do roteiro do piloto).
-- [ ] Um lote por estilo, já com esqueleto: Celta, Islâmico, Minimal, Orgânico (spiral, flower, mandala).
+- [x] Lote 4 — Celta + Islâmico com esqueleto e geradores próprios do estilo. v0.10.0, DEC-021, `specs/261118-esqueleto-celta-islamico.md`. Placar: silhueta>=25% 10/53 → 22/53.
+- [ ] Esqueleto nos 19 tipos dos lotes 2 e 3 (o piloto convenceu: roteiro 1–6 ok em 2026-11-17).
+- [ ] Um lote por estilo, já com esqueleto: Minimal, Orgânico (spiral, flower, mandala, e o resto do estilo).
 - [ ] Modificadores universais: traço tracejado/duplo/pontilhado, camadas, espelho, deformação leve por ruído.
 
 ---

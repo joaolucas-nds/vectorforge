@@ -58,6 +58,9 @@
 - **Concha em leque** — meia-lua com nervuras saindo do centro (`shellFanPaths`): devolve contorno e nervuras como dois paths. Crista, canto e ornamento lateral do Barroco.
 - **Silhueta (régua)** — coluna `silhueta%` do `npm run seeds`: quanto o seed muda o que se lê na MINIATURA — média de 1 − IoU da ocupação de uma malha 16×16 entre pares de seeds, calculada da geometria do SVG (`scripts/silhouette.mjs`). Meta da F5 a partir do piloto: ≥ 25% (DEC-020).
 - **Esqueleto semeado** — o seed escolhe a COMPOSIÇÃO (contorno, escala, arranjo, desvio de contagem), não só o detalhe; contorno como função r(a) (`contourRadius`/`contourPath`). Piloto em 4 tipos (DEC-020).
+- **Triquetra / tríscele** — motivos celtas: três pétalas entrelaçadas (com anel) e três espirais saindo de um centro. Usados no nó, no medalhão e na espiral celtas (DEC-021).
+- **Shamsa** — medalhão islâmico em «sol», com estrela central, anel de pétalas e pingentes nas pontas (`genIslamicMedallion`).
+- **Khatam** — estrela de 8 pontas feita de dois quadrados ({8/2}); em malha quadrada, os vãos formam cruzes. Motivo do `islamic/pattern`.
 - **esbuild** — bundler JS/CSS usado só em tempo de desenvolvimento (devDependency); não é dependência de runtime do app entregue.
 - **IIFE (Immediately Invoked Function Expression)** — formato de bundle escolhido (`format: 'iife'` no esbuild) para que o JS bundlado se comporte como o `<script>` clássico original (execução síncrona, sem defer de módulo). Funções declaradas dentro do IIFE não vazam para `window` automaticamente — por isso `main.js` expõe explicitamente as usadas em `onclick=""` inline (ver Armadilha 8 no CONTEXT.md).
 - **ASU** *(descontinuado em 2026-11-11, DEC-012)* — Atualizador Automático de Scripts; aplicava patches YAML (`AAMMDD-asuNNNN.yaml`) em `src/` e em anexos de DECISIONS/CONTEXT. Mantido aqui porque DEC-007/008/009 e os logs antigos o citam.

@@ -7,7 +7,7 @@
 ---
 
 ## Versão Atual
-**[0.9.0]** — F5: régua de silhueta no `npm run seeds` e piloto do esqueleto semeado em 4 tipos (medalhão e padrão Art Deco, mandala e símbolo geométricos), que passam de 2–9% para 26–42% de silhueta (DEC-020) — `silhueta>=25%` 10/53. Antes: v0.8.0 Barroco + Vitoriano (DEC-019), v0.7.0 Art Deco + Geométrico (DEC-018), v0.6.0 Botânico (DEC-017). GitHub Pages: `https://joaolucas-nds.github.io/vectorforge/`.
+**[0.10.0]** — F5, lote 4: Celta e Islâmico com esqueleto semeado e geradores próprios do estilo nos seis tipos que emprestavam de outros (DEC-021) — `silhueta>=25%` 22/53. Antes: v0.9.0 régua de silhueta + piloto (DEC-020), v0.8.0 Barroco + Vitoriano, v0.7.0 Art Deco + Geométrico, v0.6.0 Botânico. GitHub Pages: `https://joaolucas-nds.github.io/vectorforge/`.
 
 ---
 
@@ -19,7 +19,8 @@
 - **Botânico variado (v0.6.0, DEC-017):** árvore estocástica (40 formas em 40 seeds), Koch em 5 curvas, Dragon em 5 curvas com Symmetry = cópias giradas. Medido por `npm run seeds`.
 - **Art Deco e Geométrico variados (v0.7.0, DEC-018):** os 12 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: medalhão com raios em cunha, degraus, leque ou alternados; tesselação com polígonos, estrelas, Truchet ou rosetas). Celta, Islâmico e Orgânico, que reusam esses geradores, não mudaram. Medido por `npm run seeds` e `npm run regress`. Roteiro visual 1–8 ok [relatado pelo dono, 2026-11-17].
 - **Barroco e Vitoriano variados (v0.8.0, DEC-019):** 11 tipos sorteiam variante de motivo, arranjo e acabamento pelo seed (ex.: cartela oval, escudo ou lobada no Barroco; chanfrada ou arqueada no Vitoriano; volutas em espiral, conchas em leque, contas). Flourish e cartela do Vitoriano têm repertório próprio — antes eram iguais aos barrocos em 40 de 40 seeds. Medido por `npm run seeds` e `npm run regress`. Roteiro visual 1–7 ok [relatado pelo dono, 2026-11-17].
-- **Esqueleto semeado — piloto (v0.9.0, DEC-020):** nos 4 tipos, o seed escolhe também a composição — medalhão em círculo, octógono, losango, quadrado, oval, arco ou sol nascente; padrão num campo (página, medalhão, losango, faixa, moldura, arco); mandala e símbolo com contorno, escala e arranjo próprios. Medido pela coluna `silhueta%` do `npm run seeds` (régua nova, `scripts/silhouette.mjs`).
+- **Esqueleto semeado — piloto (v0.9.0, DEC-020):** nos 4 tipos, o seed escolhe também a composição — medalhão em círculo, octógono, losango, quadrado, oval, arco ou sol nascente; padrão num campo (página, medalhão, losango, faixa, moldura, arco); mandala e símbolo com contorno, escala e arranjo próprios. Medido pela coluna `silhueta%` do `npm run seeds` (régua nova, `scripts/silhouette.mjs`). Roteiro visual 1–6 ok, «a receita convenceu» [relatado pelo dono, 2026-11-17].
+- **Celta e Islâmico variados (v0.10.0, DEC-021):** os 12 tipos nascem com esqueleto semeado; borda e medalhão celtas, painel de tranças, espiral (tríscele), borda islâmica e shamsa com pingentes têm gerador próprio (antes emprestavam a moldura Art Deco, a mandala, a espiral do Orgânico). `islamic/girih` e `islamic/pattern` deixam de sair iguais.
 - **Export PNG no modo Pixel Art** exporta o `px-canvas` corretamente (FIX-002).
 - **Simplex Noise 2D** (`snoise`, `snoiseSetSeed`) integrado e reproducível por seed.
 - **`genPhyllotaxis`** — tipo no estilo Organic, ângulo áureo + noise + anéis-guia.
@@ -35,14 +36,14 @@
 ## 🔧 Em Progresso
 
 - **F4/B — mockup da nova interface APROVADO como está** [relatado pelo dono, 2026-11-15]: https://claude.ai/artifact/RVCGHQTZPrHk39ntQ7627f (DEC-016: PT com seletor EN). Próximo passo da F4/B: spec + WO de implementação, em lotes (layout e seções; rótulos PT/EN; estados e mensagens; celular).
-- **F5 — Variedade procedural:** lotes 1–3 entregues (v0.6.0–v0.8.0) e piloto do esqueleto semeado em 4 tipos (v0.9.0) — placar `formas>1: 29/53`, **`silhueta>=25%: 10/53`** (a meta agora é a silhueta, DEC-020). Roteiros: Botânico 1–6, lote 2 1–8 e lote 3 1–7 ok [relatado pelo dono]; roteiro do piloto pendente. Se o piloto convencer: a receita volta aos 19 tipos dos lotes 2 e 3 e os lotes 4–7 (Celta, Islâmico, Minimal, Orgânico) já nascem com esqueleto.
-- **Ordem das frentes:** o dono decidiu a análise de variedade — régua de silhueta + piloto do esqueleto semeado [relatado pelo dono, 2026-11-17]; a F4/B (implementação da nova interface) segue aguardando a vez.
+- **F5 — Variedade procedural:** lotes 1–3 (v0.6.0–v0.8.0), piloto do esqueleto (v0.9.0, roteiro 1–6 ok [relatado pelo dono, 2026-11-17]) e lote 4 Celta + Islâmico (v0.10.0) entregues — placar `formas>1: 41/53`, **`silhueta>=25%: 22/53`**. Roteiro do lote 4 pendente. Próximo: Minimal + Orgânico (parados) e o esqueleto nos 19 tipos dos lotes 2 e 3.
+- **Ordem das frentes:** depois do piloto, o dono escolheu «parados primeiro» — Celta + Islâmico [relatado pelo dono, 2026-11-18]; a F4/B (implementação da nova interface) segue aguardando a vez.
 
 ---
 
 ## ❌ Quebrado / Com Problema
 
-- **O seed ainda não muda a forma em 24 dos 53 tipos, e só muda a SILHUETA em 10** (placar `npm run seeds` em v0.9.0: formas>1 29/53, silhueta>=25% 10/53). Nos outros, Surprise, New seed e «Like this» variam detalhe dentro do mesmo contorno ou só o que os sliders variam. Tratado pela F5.
+- **O seed ainda não muda a forma em 12 dos 53 tipos (Minimal e Orgânico), e só muda a SILHUETA em 22** (placar `npm run seeds` em v0.10.0: formas>1 41/53, silhueta>=25% 22/53). Nos outros, Surprise, New seed e «Like this» variam detalhe dentro do mesmo contorno ou só o que os sliders variam. Tratado pela F5.
 
 ---
 
@@ -68,4 +69,4 @@
 
 **2026-11-17** - WO 0009 aplicada pelo Code (`d701f0b`, empurrado): v0.8.0, F5 lote 3 — 11 tipos do Barroco e do Vitoriano com escolhas semeadas; `victorian/flourish` e `victorian/cartouche` deixam de ser copias dos barrocos (`style`); DEC-019. Regress: 66 chaves mudaram, 0 fora do lote; seeds formas>1 18/53 -> 29/53; sonda de UI 18 OK (medido no relatorio do apply). Visual: roteiro do dono 1-7 ok depois [relatado pelo dono, 2026-11-17, registrado pela WO 0010]. Proximo passo: dono ve o lote 3; depois proximo lote F5; mockup da F4/B segue aguardando.
 
-**2026-11-17 (2)** - WO 0011 aplicada pelo Code (`b780556`, empurrado): v0.9.0, regua de silhueta no `npm run seeds` (`scripts/silhouette.mjs`) e piloto do esqueleto semeado em 4 tipos (medalhao e padrao Art Deco, mandala e simbolo geometricos); DEC-020. Regress: 24 chaves mudaram, 0 fora dos 4 tipos; seeds `silhueta>=25%` 6/53 -> 10/53, formas>1 29/53; sonda de UI 18 OK (medido no relatorio do apply). Visual: roteiro do piloto pendente com o dono. Proximo passo: dono faz o roteiro; se convencer, esqueleto nos 19 tipos dos lotes 2 e 3.
+**2026-11-17 (2)** - WO 0011 aplicada pelo Code (`b780556`, empurrado): v0.9.0, regua de silhueta no `npm run seeds` (`scripts/silhouette.mjs`) e piloto do esqueleto semeado em 4 tipos (medalhao e padrao Art Deco, mandala e simbolo geometricos); DEC-020. Regress: 24 chaves mudaram, 0 fora dos 4 tipos; seeds `silhueta>=25%` 6/53 -> 10/53, formas>1 29/53; sonda de UI 18 OK (medido no relatorio do apply). Visual: roteiro do piloto 1-6 ok depois [relatado pelo dono, 2026-11-17, registrado pela WO 0012]. Proximo passo: dono faz o roteiro; se convencer, esqueleto nos 19 tipos dos lotes 2 e 3.

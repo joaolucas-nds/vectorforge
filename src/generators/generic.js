@@ -4,7 +4,7 @@
 import { genMandala } from './geometric.js'; // fallback de genTextShape quando a textarea está vazia
 
 
-import { TAU, f, pt, polyPath, starPath, mkRand, pickOne, steppedDiamondPath, spiralPath, shellFanPaths, contourRadius, contourPath } from '../core/utils.js';
+import { TAU, f, pt, polyPath, starPath, mkRand, pickOne, steppedDiamondPath, spiralPath, shellFanPaths, contourRadius, contourPath, polygramPath } from '../core/utils.js';
 import { state, PALETTES } from '../core/state.js';
 
 
@@ -142,16 +142,21 @@ export function genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style) {
   // F5 lote 2 (DEC-018): Art Deco e Geométrico sorteiam o motivo e a malha; girih e islamic
   // seguem fixos (não consomem o seed). O motivo original de cada um é uma das opções.
   const motif = style === 'artdeco' ? pickOne(['polygon', 'scallop', 'fan', 'chevron'], rnd)
-    : style === 'geo' ? pickOne(['polygon', 'star', 'truchet', 'rosette'], rnd) : 'polygon';
+    : style === 'geo' ? pickOne(['polygon', 'star', 'truchet', 'rosette'], rnd)
+    // F5 lote 4 (DEC-021): girih e islamic ganham motivos próprios (o hexágono original fica entre eles);
+    // as listas do girih vêm em outra ordem para o mesmo seed não dar o mesmo desenho nos dois tipos
+    : style === 'girih' ? pickOne(['hexagram', 'polygon', 'sixstar'], rnd)
+    : style === 'islamic' ? pickOne(['polygon', 'khatam', 'octagon'], rnd) : 'polygon';
   let grid = style === 'artdeco' ? pickOne(['square', 'brick'], rnd)
     : style === 'geo' ? pickOne(['tri', 'square'], rnd) : (style === 'girih' ? 'brick' : 'square');
   if (motif === 'truchet') grid = 'square'; // o Truchet só fecha os arcos em malha quadrada
   const n = style === 'girih' || style === 'islamic' ? 6 : Math.round(3 + sym * 4);
-  // Piloto do esqueleto semeado (DEC-020): no Art Deco, o seed escolhe também a ESCALA da célula
-  // e o CAMPO que o padrão ocupa — página inteira · medalhão · losango · faixa · moldura · arco;
-  // fora da página inteira, o campo ganha um contorno. Os outros estilos não consomem o seed aqui.
-  const field = style === 'artdeco' ? pickOne(['full', 'circle', 'diamond', 'band', 'frame', 'arch'], rnd) : 'full';
-  if (style === 'artdeco') cell = Math.round(cell * pickOne([0.8, 1, 1.35], rnd));
+  // Esqueleto semeado (DEC-020; girih e islamic desde o lote 4, DEC-021): o seed escolhe também a
+  // ESCALA da célula e o CAMPO que o padrão ocupa — página inteira · medalhão · losango · faixa ·
+  // moldura · arco; fora da página inteira, o campo ganha um contorno. O Geométrico não consome o seed aqui.
+  const skeleton = style === 'artdeco' || style === 'girih' || style === 'islamic';
+  const field = !skeleton ? 'full' : pickOne(style === 'girih' ? ['circle', 'full', 'band', 'arch', 'diamond', 'frame'] : ['full', 'circle', 'diamond', 'band', 'frame', 'arch'], rnd);
+  if (skeleton) cell = Math.round(cell * pickOne([0.8, 1, 1.35], rnd));
   const mx = w / 2, my = h / 2, Rf = Math.min(w, h) * 0.42, pad = cell * 0.55;
   const archFn = contourRadius('arch', Rf, { base: 0.85 });
   /** O centro da célula (px, py) está dentro do campo? */
@@ -201,6 +206,20 @@ export function genPattern(x, y, w, h, comp, sym, rnd, SO, FG, sw, style) {
           parts.push(`<path d="M ${f(x1 - c2)} ${f(y0)} A ${f(c2)} ${f(c2)} 0 0 0 ${f(x1)} ${f(y0 + c2)}" ${SO}/>`);
           parts.push(`<path d="M ${f(x0 + c2)} ${f(y1)} A ${f(c2)} ${f(c2)} 0 0 0 ${f(x0)} ${f(y1 - c2)}" ${SO}/>`);
         }
+      } else if (motif === 'hexagram') {
+        parts.push(`<path d="${polygramPath(cx, cy, cell * 0.5, 6, 2)}" ${SO}/>`);
+        parts.push(`<path d="${polyPath(cx, cy, cell * 0.2, 6)}" ${FG}/>`);
+      } else if (motif === 'sixstar') {
+        parts.push(`<path d="${starPath(cx, cy, cell * 0.5, cell * 0.29, 6)}" ${SO}/>`);
+        parts.push(`<path d="${polyPath(cx, cy, cell * 0.25, 6, Math.PI / 6 - Math.PI / 2)}" ${SO}/>`);
+      } else if (motif === 'khatam') {
+        // khatam: estrela de 8 pontas de dois quadrados; em malha quadrada, os vãos viram cruzes
+        parts.push(`<path d="${polygramPath(cx, cy, cell * 0.5, 8, 2)}" ${SO}/>`);
+        parts.push(`<path d="${polyPath(cx, cy, cell * 0.16, 8, Math.PI / 8)}" ${FG}/>`);
+      } else if (motif === 'octagon') {
+        // octógonos que se tocam pelos lados; o quadrado no vão completa a malha 4.8.8
+        parts.push(`<path d="${polyPath(cx, cy, cell * 0.54, 8, Math.PI / 8)}" ${SO}/>`);
+        parts.push(`<path d="${polyPath(cx + cell / 2, cy + cell / 2, cell * 0.15, 4, 0)}" ${FG}/>`);
       } else if (motif === 'rosette') {
         parts.push(`<path d="${polyPath(cx, cy, cell * 0.47, n)}" ${SO}/>`);
         parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(cell * 0.47 * Math.cos(Math.PI / n))}" ${SO}/>`);

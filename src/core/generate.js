@@ -7,8 +7,8 @@ import { genADMedallion, genADFrame, genADCorner, genADOrn } from '../generators
 import { genBQMedallion, genBQFrame, genBQCartouche, genBQSwag, genBQAcanthus } from '../generators/baroque.js';
 import { genMandala, genGeoFrame, genGeoStar, genGeoSymbol } from '../generators/geometric.js';
 import { genVicMedallion, genVicFrame, genVicWreath } from '../generators/victorian.js';
-import { genCelticKnot, genCelticCross } from '../generators/celtic.js';
-import { genIslamicStar, genArabesque } from '../generators/islamic.js';
+import { genCelticKnot, genCelticCross, genCelticKnotwork, genCelticBorder, genCelticMedallion, genCelticSpiral } from '../generators/celtic.js';
+import { genIslamicStar, genArabesque, genIslamicBorder, genIslamicMedallion } from '../generators/islamic.js';
 import { genMinimalSymbol, genMinGrid, genMinCircles, genGlyph } from '../generators/minimal.js';
 import { genOrganicLeaf, genOrganicSpiral, genOrganicBranch, genOrganicFlower, genWave, genPhyllotaxis, genFlowField } from '../generators/organic.js';
 import { genDivider, genPattern, genPixelArt, genTextShape } from '../generators/generic.js';
@@ -61,18 +61,18 @@ export function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, s
     },
     celtic: {
       knot:     () => genCelticKnot(cx, cy, sz, n, comp, rnd, SO, FG, sw),
-      border:   () => genADFrame(0, 0, state.w, state.h, comp, 6, rnd, SO, FG, sw),
-      medallion:() => genMandala(cx, cy, sz, 6, layers, comp, rnd, SO, FG, FG2, sw),
+      border:   () => genCelticBorder(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw),
+      medallion:() => genCelticMedallion(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw),
       cross:    () => genCelticCross(cx, cy, sz, comp, rnd, SO, FG, FG2, sw),
-      knotwork: () => genCelticKnot(cx, cy, sz * 1.2, 8, comp, rnd, SO, FG, sw),
-      spiral:   () => genOrganicSpiral(cx, cy, sz, comp, rnd, SO, FG, sw),
+      knotwork: () => genCelticKnotwork(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
+      spiral:   () => genCelticSpiral(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
     },
     islamic: {
       star:      () => genIslamicStar(cx, cy, sz, n, comp, rnd, SO, FG, FG2, sw),
       girih:     () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'girih'),
       arabesque: () => genArabesque(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
-      border:    () => genADFrame(0, 0, state.w, state.h, comp, 8, rnd, SO, FG, sw),
-      medallion: () => genIslamicStar(cx, cy, sz, 12, comp, rnd, SO, FG, FG2, sw),
+      border:    () => genIslamicBorder(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw),
+      medallion: () => genIslamicMedallion(cx, cy, sz, comp, sym, rnd, SO, FG, FG2, sw),
       pattern:   () => genPattern(0, 0, state.w, state.h, comp, sym, rnd, SO, FG, sw, 'islamic'),
     },
     minimal: {

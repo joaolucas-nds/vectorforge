@@ -515,4 +515,27 @@ Depois do lote 3 (DEC-019), o dono ainda sentia pouca variedade [relatado pelo d
 - Tamanho (pior caso, canvas 400): pattern 75 KB (antes 50), mandala 33, medallion 26, symbol 6. Em 1200, o padrão vai de 362 a 561 KB (célula 0,8×) — IDEAS.
 - Se o roteiro do piloto convencer, a receita volta aos 19 tipos dos lotes 2 e 3 e é o padrão dos lotes 4–7.
 
+---
+
+## DEC-021 — Lote 4 da F5: Celta e Islâmico com geradores próprios e esqueleto semeado
+**Data:** 2026-11-18 · **Status:** aceita
+
+### Contexto
+Depois do piloto (DEC-020, roteiro 1–6 ok), o dono escolheu «parados primeiro» [relatado pelo dono, 2026-11-18]. Os 12 tipos do Celta e do Islâmico marcavam 1/1/0%. Seis deles emprestavam geradores de outros estilos — `celtic/border` e `islamic/border` a moldura Art Deco, `celtic/medallion` a mandala, `celtic/spiral` a espiral do Orgânico, `celtic/knotwork` o próprio nó, `islamic/medallion` a mesma estrela do `star` — e `islamic/girih` e `islamic/pattern` tinham a mesma silhueta em 40 de 40 seeds.
+
+### Decisão
+1. **Geradores próprios** para os seis tipos emprestados: `genCelticBorder`, `genCelticMedallion`, `genCelticKnotwork`, `genCelticSpiral`, `genIslamicBorder`, `genIslamicMedallion`. Os emprestados seguem iguais para quem os usa.
+2. **Esqueleto semeado desde o início** nos 12 (contorno, escala, arranjo, campo, proporção), com escolhas de detalhe por cima; nos quatro que já eram do estilo (`genCelticKnot`, `genCelticCross`, `genIslamicStar`, `genArabesque`), o desenho original é uma das variantes.
+3. **`girih` e `islamic` em `genPattern`:** motivos próprios, campo e escala de célula como o Art Deco; as listas do `girih` vêm em outra ordem para o mesmo seed não dar o mesmo desenho nos dois tipos (0 de 40 silhuetas iguais).
+4. **Fita** (duas linhas paralelas) como traço celta; cruzamento por cima/por baixo fica fora.
+
+### Alternativas consideradas
+- **Variar os geradores emprestados com `vary`** — rejeitada: daria variedade, mas a borda celta continuaria uma moldura Art Deco e o medalhão celta, uma mandala geométrica.
+- **Seed separado por tipo** (ex.: misturar o nome do tipo no seed) para descolar girih de pattern — rejeitada: mudaria a regra «mesmo seed + mesmos parâmetros = mesma arte» para todo o app; reordenar as listas resolve localmente.
+
+### Consequências
+- Placar: formas>1 29/53 → 41/53, distintos>1 32/53 → 44/53, silhueta>=25% 10/53 → 22/53. Regress: exatamente 72 chaves mudaram, 0 fora do lote.
+- Pior caso (canvas 400): `islamic/pattern` 81,6 KB, `islamic/girih` 73,9 KB. Em 1200, ~600 KB (antes 316) — IDEAS.
+- Restam parados Minimal e Orgânico (12 tipos sem formas>1); os 19 tipos dos lotes 2 e 3 ainda variam só no detalhe.
+
 

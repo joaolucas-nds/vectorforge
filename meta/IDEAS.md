@@ -59,7 +59,7 @@ A sonda `../261112-sonda-ui/behave.cjs` (pasta-pai, fora do repo, 18 checagens d
 Ver o item do backlog do STATUS: `* text=auto eol=lf` acaba com o aviso de CRLF em toda WO e com a dúvida «o arquivo está em LF ou CRLF?» nos relatórios.
 
 ### 2026-11-17 — Padrão Art Deco pesado em canvas grande
-Com a escala da célula semeada (0,8×), o pior caso do `artdeco/pattern` em canvas 1200 vai de 362 a 561 KB (75 KB em 400, dentro do teto). Se export grande virar queixa: limitar a escala mínima pela área do canvas, ou desenhar o motivo uma vez num `<pattern>` SVG (ver «Tile seamless» na F7).
+Com a escala da célula semeada (0,8×), o pior caso do `artdeco/pattern` em canvas 1200 vai de 362 a 561 KB (75 KB em 400, dentro do teto). Se export grande virar queixa: limitar a escala mínima pela área do canvas, ou desenhar o motivo uma vez num `<pattern>` SVG (ver «Tile seamless» na F7). Desde v0.10.0, `islamic/pattern` e `islamic/girih` também (~600 KB em 1200, antes 316; 82 e 74 KB em 400).
 
 ### 2026-11-17 — Enquadrar o acanto e o flourish como o Botânico
 `baroque/acanthus` e `victorian/flourish` ocupam ~1/3 da altura do canvas desde a v0.1.0 (folhas de `sz * 0.2`; o caule vai de `cy − 0,48·sz` a `cy + 0,48·sz`, mas as folhas ficam estreitas). O Botânico resolveu isso com `fitToBox` (`FIT = 1.8`, DEC-017). Medir a caixa do desenho e escalar — muda a saída dos dois tipos, então vai num lote que já os toque.
