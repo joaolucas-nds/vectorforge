@@ -42,7 +42,8 @@ vectorforge/
 │   ├── styles/
 │   │   └── main.css            # CSS extraído do vectorforge.html original, sem mudanças
 │   ├── core/
-│   │   ├── utils.js            # TAU, f, mkRand, snoise/snoiseSetSeed, pt/polyPath/starPath/curvePath
+│   │   ├── utils.js            # TAU, f, mkRand, snoise/snoiseSetSeed, pt/polyPath/starPath/curvePath,
+│   │   │                        #   pickOne + recordChoices (registrador das escolhas, DEC-022)
 │   │   ├── state.js            # state (mutável), STYLES, TYPES_BY_STYLE, PALETTES, FONTS
 │   │   ├── ui.js                # buildStyleGrid/buildTypeChips/buildPalettes/buildFontChips/buildVariations
 │   │   │                        #   + selectStyle/selectType/selectPal/selectFont/setRatio/setMode + sliders
@@ -50,7 +51,9 @@ vectorforge/
 │   │   ├── generate.js          # generateContent() (dispatcher central) + doGen/doGenRandom/
 │   │   │                        #   generateVariations/applyVar/updateInfo/setStatus
 │   │   ├── export.js            # getSVGString/xSVG/xPNG/copySVG
-│   │   └── explore.js           # ciclo de exploração: surprise/newSeed/locks/undo/redo/«Like this»/prévia ao vivo (DEC-015)
+│   │   ├── explore.js           # ciclo de exploração: surprise/newSeed/locks/undo/redo/«Like this»/prévia ao vivo (DEC-015)
+│   │   │                        #   + anti-repetição do R/Surprise: pickNovel, melhor de até 12 candidatos (DEC-022)
+│   │   └── silhouette.js        # silhueta por geometria do SVG (malha 16×16, IoU) — anti-repetição e `npm run seeds` (DEC-020, DEC-022)
 │   ├── generators/
 │   │   ├── artdeco.js · baroque.js · geometric.js · victorian.js
 │   │   ├── celtic.js · islamic.js · minimal.js · organic.js
@@ -61,8 +64,8 @@ vectorforge/
 │   ├── build.js                 # esbuild (bundle IIFE) + inlining de CSS/JS no template → dist/
 │   ├── regress.mjs              # instrumento de regressão dos geradores (`npm run regress`, DEC-014)
 │   ├── regress-baseline.json    # linha de base versionada: 1 chave estilo/tipo/tamanho/seed por linha
-│   ├── seeds.mjs                # instrumento de sensibilidade ao seed (`npm run seeds`, catraca, DEC-017)
-│   ├── silhouette.mjs           # silhueta por geometria do SVG (malha 16×16, 1 − IoU), usada pelo seeds (DEC-020)
+│   ├── seeds.mjs                # instrumento de sensibilidade ao seed (`npm run seeds`, catraca, DEC-017);
+│   │                            #   colunas informativas caras/escolhas em 200 seeds (DEC-022); silhueta vem de src/core/
 │   └── seeds-baseline.json      # linha de base: distintos/formas/silhueta por tipo em 40 seeds
 ├── package.json                 # devDependency: esbuild. Scripts: build, watch, regress
 ├── .gitignore                   # node_modules/ ignorado; dist/vectorforge.html NÃO (ver DEC-010)
@@ -178,7 +181,7 @@ Todo gerador segue a assinatura `gen*(cx, cy, sz, comp, sym, rnd, SO, FG, [FG2],
 ## 📁 Arquivos Críticos (não mexer sem contexto)
 > Conhecimento **estável** — movido do STATUS em 2026-11-11 (formato do kit v1.135.0).
 
-- **`src/` (17 módulos ES)** — o código-fonte real. Antes de editar: ler CONTEXT.md (seção "Como o pipeline funciona" + "Inventário de Geradores" + Armadilha 8) + DEC-001 a DEC-011 no DECISIONS.md. Depois de editar, **sempre rodar `npm run build`** antes de testar.
+- **`src/` (19 módulos ES)** — o código-fonte real. Antes de editar: ler CONTEXT.md (seção "Como o pipeline funciona" + "Inventário de Geradores" + Armadilha 8) + DEC-001 a DEC-011 no DECISIONS.md. Depois de editar, **sempre rodar `npm run build`** antes de testar.
 - **`dist/vectorforge.html`** — o arquivo que o usuário efetivamente abre (e que o GitHub Pages serve). Versionado no Git — ver DEC-010. Nunca editar à mão.
 - **`index.html`** (raiz) — redirect para `dist/vectorforge.html`, existe só por causa do GitHub Pages. Não confundir com `src/index.html` (o template do build).
 - **`scripts/build.js`** — lógica de bundling + inlining. Mudar com cuidado.

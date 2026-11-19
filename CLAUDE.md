@@ -10,7 +10,7 @@ Leia `meta/CEREBRO.md` → o doc de contexto do projeto (ex.: `meta/CONTEXT.md`)
 ## Build / validação
 - Build: `npm run build` — gera `dist/vectorforge.html` a partir de `src/` (esbuild + inlining, ver DEC-010). Rode SEMPRE depois de editar `src/`, e inclua `dist/vectorforge.html` no mesmo commit (ele é versionado de propósito — é o que o GitHub Pages serve). Nunca edite `dist/` à mão.
 - Testes/validação: `npm run regress` — compara a saída de todas as combinações estilo×tipo com `scripts/regress-baseline.json` (DEC-014). Sai 1 se algo antigo mudou: PARE e reporte. Mudança **intencional** de gerador ou tipo novo: `npm run regress -- --update` e versione a linha de base no mesmo commit, dizendo no relatório quais chaves mudaram. O instrumento não vê aparência — visual é roteiro do dono.
-- Variedade: `npm run seeds` — mede quanto o seed muda cada tipo (catraca: sai 1 se algum tipo PERDER variedade). Lote da F5 que aumenta variedade: `npm run seeds -- --update` e versione `scripts/seeds-baseline.json` no mesmo commit, citando no relatório o placar `formas>1: N/53` e `silhueta>=25%: N/53` (a silhueta é a meta, DEC-020).
+- Variedade: `npm run seeds` — mede quanto o seed muda cada tipo (catraca: sai 1 se algum tipo PERDER variedade). Lote da F5 que aumenta variedade: `npm run seeds -- --update` e versione `scripts/seeds-baseline.json` no mesmo commit, citando no relatório o placar `formas>1: N/53` e `silhueta>=25%: N/53` (a silhueta é a meta, DEC-020). As colunas `caras` e `escolhas` são informativas (DEC-022): não reprovam e não entram na linha de base.
 - Mudança só de doc (meta/) NÃO precisa de build; a rede é o `git diff`.
 - `npm ci`, `npm run build`, `npm run regress` e `npm run seeds` já estão no `allow` de `.claude/settings.json`.
 

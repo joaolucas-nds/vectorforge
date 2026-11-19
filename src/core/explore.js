@@ -3,12 +3,15 @@
 // tudo o que não estiver travado e nunca repete o último), cadeados por parâmetro, novo seed,
 // desfazer/refazer e variações «Like this». Não toca gerador nenhum: só muda `state`, os
 // controles da UI e chama doGen() — por isso o `npm run regress` continua com 0 mudanças.
+// Anti-repetição (DEC-022): R e Surprise sorteiam vários candidatos e mostram o que menos repete
+// as últimas imagens exibidas — por silhueta e pelas escolhas discretas do gerador.
 
 import { state, STYLES, TYPES_BY_STYLE, PALETTES } from './state.js';
-import { mkRand } from './utils.js';
+import { mkRand, recordChoices } from './utils.js';
 import { buildStyleGrid, buildTypeChips, buildPalettes } from './ui.js';
-import { doGen, setStatus } from './generate.js';
+import { doGen, setStatus, generateContent } from './generate.js';
 import { fitToView } from './view.js';
+import { occupancy, silhouetteIoU } from './silhouette.js';
 
 /** Parâmetros que o Surprise sorteia e que um cadeado pode travar. */
 export const LOCKABLE = ['style', 'type', 'pal', 'comp', 'sym', 'sw', 'fill', 'seed'];
@@ -59,10 +62,99 @@ export function recordHistory() {
 
 function commit(s) { applySnapshot(s); doGen(); recordHistory(); }
 
+// ── Anti-repetição no sorteio (DEC-022, análise 261119) ─────────────────────
+// R e Surprise geram até `max` candidatos e mostram o que menos repete as `recent` últimas imagens
+// do histórico. «Repete» = mesma silhueta (IoU ≥ `sameIoU` na malha 16×16) OU mesmas escolhas do
+// pickOne no mesmo tipo; as duas juntas pesam o dobro. Empate: o mais distante (fração de escolhas
+// diferentes + 1 − IoU). Medido na análise: com 12 candidatos e janela 10, o R chega a 0,2 do piso
+// teórico de repetição; janela curta (4) quase não ajuda; o Mitchell puro (só a distância) piora
+// com poucas caras. O orçamento protege os tipos pesados (padrão em canvas 1200 ≈ 25 ms por candidato).
+export const NOVELTY = { max: 12, min: 2, budgetMs: 30, recent: 10, sameIoU: 0.8 };
+
+const fpCache = new Map();
+const FP_CACHE_MAX = 300;
+
+/**
+ * Dá para prever o que o doGen vai desenhar? Não no Pixel Art (não é SVG) nem com texto no
+ * Text→Form (o doGen desenha com genTextShape, não com generateContent): aí o sorteio é o de antes.
+ */
+function canPreview() {
+  if (state.mode === 'pixel') return false;
+  const ta = document.getElementById('tv-ta');
+  return !(ta && ta.value.trim());
+}
+
+/**
+ * «Impressão digital» de um snapshot no canvas atual: silhueta + escolhas do pickOne. Gera o desenho
+ * como o doGen geraria (mesmo centro, tamanho e parâmetros), sem tocar o DOM. Guardada em cache.
+ * @param {object} s - snapshot
+ * @returns {{kind: string, occ: Set<number>, ch: number[]}}
+ */
+function fingerprint(s) {
+  const key = [s.style, s.type, s.comp, s.sym, s.sw, s.fill, s.seed, state.w, state.h].join('|');
+  let fp = fpCache.get(key);
+  if (!fp) {
+    const cx = state.w / 2, cy = state.h / 2, sz = Math.min(state.w, state.h) * 0.46;
+    const [svg, ch] = recordChoices(() =>
+      generateContent(s.style, s.type, cx, cy, sz, s.comp, s.sym, s.seed, PALETTES[s.pal], s.sw, s.fill));
+    fp = { kind: s.style + '/' + s.type, occ: occupancy(svg, state.w, state.h), ch };
+    if (fpCache.size >= FP_CACHE_MAX) fpCache.clear();
+    fpCache.set(key, fp);
+  }
+  return fp;
+}
+
+/** Fração de posições diferentes entre duas tuplas de escolhas (0 = iguais; vazias = iguais). */
+function choiceDistance(a, b) {
+  const n = Math.max(a.length, b.length);
+  if (!n) return 0;
+  let d = 0;
+  for (let i = 0; i < n; i++) if (a[i] !== b[i]) d++;
+  return d / n;
+}
+
+/** Nota de novidade de um candidato contra as imagens recentes (maior = repete menos). */
+function noveltyScore(fp, recent) {
+  let same = 0, nearest = Infinity;
+  for (const r of recent) {
+    const v = silhouetteIoU(fp.occ, r.occ);
+    const sameKind = r.kind === fp.kind;
+    const dc = sameKind ? choiceDistance(fp.ch, r.ch) : 1;
+    const sameChoices = sameKind && dc === 0, sameShape = v >= NOVELTY.sameIoU;
+    if (sameChoices && sameShape) same += 2; else if (sameChoices || sameShape) same++;
+    nearest = Math.min(nearest, dc + (1 - v));
+  }
+  return -10 * same + (recent.length ? nearest : 0);
+}
+
+/**
+ * Melhor de vários sorteios: chama draw() até NOVELTY.max vezes (pelo menos NOVELTY.min, e para
+ * quando o orçamento de tempo estoura) e devolve o snapshot que menos repete as últimas imagens.
+ * Sem previsão possível (canPreview), devolve o primeiro sorteio — o comportamento de antes.
+ * @param {() => (object|null)} draw - um sorteio já respeitando cadeados; null = nada a sortear
+ * @returns {object|null}
+ */
+function pickNovel(draw) {
+  const first = draw();
+  if (!first || !canPreview()) return first;
+  const t0 = performance.now();
+  const recent = history.slice(Math.max(0, cursor - NOVELTY.recent + 1), cursor + 1).map(fingerprint);
+  let best = first, bestScore = noveltyScore(fingerprint(first), recent);
+  for (let k = 1; k < NOVELTY.max; k++) {
+    if (k >= NOVELTY.min && performance.now() - t0 >= NOVELTY.budgetMs) break;
+    const s = draw();
+    if (!s) break;
+    const sc = noveltyScore(fingerprint(s), recent);
+    if (sc > bestScore) { best = s; bestScore = sc; }
+  }
+  return best;
+}
+
 /**
  * Surprise: sorteia cada parâmetro não travado, sempre em unidades que os sliders representam.
- * Travar o tipo também segura o estilo (os tipos pertencem a um estilo). Tenta até 8 vezes
- * produzir algo diferente do estado atual; se tudo estiver travado, avisa e não muda nada.
+ * Travar o tipo também segura o estilo (os tipos pertencem a um estilo). Cada sorteio tenta até
+ * 8 vezes produzir algo diferente do estado atual; entre os candidatos, fica o que menos repete
+ * as últimas imagens (pickNovel). Se tudo estiver travado, avisa e não muda nada.
  * @param {() => number} [rand] - fonte de acaso (Math.random por padrão; injetável em teste)
  * @returns {boolean} true se gerou algo novo
  */
@@ -70,28 +162,41 @@ export function surprise(rand = Math.random) {
   const prev = snapshot();
   const pick = n => Math.floor(rand() * n);
   const int = (a, b) => a + pick(b - a + 1);
-  for (let attempt = 0; attempt < 8; attempt++) {
-    const s = { ...prev };
-    if (!locks.style && !locks.type) s.style = STYLES[pick(STYLES.length)].id;
-    const types = TYPES_BY_STYLE[s.style];
-    if (!locks.type || !types.includes(s.type)) s.type = types[pick(types.length)];
-    if (!locks.pal) s.pal = pick(PALETTES.length);
-    if (!locks.comp) s.comp = int(15, 95) / 100;
-    if (!locks.sym) s.sym = int(0, 100) / 100;
-    if (!locks.sw) s.sw = int(6, 24) / 10;
-    if (!locks.fill) s.fill = rand() < 0.5 ? 0 : int(10, 60) / 100;
-    if (!locks.seed) s.seed = int(1, 999);
-    if (!same(s, prev)) { commit(s); return true; }
-  }
+  const draw = () => {
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const s = { ...prev };
+      if (!locks.style && !locks.type) s.style = STYLES[pick(STYLES.length)].id;
+      const types = TYPES_BY_STYLE[s.style];
+      if (!locks.type || !types.includes(s.type)) s.type = types[pick(types.length)];
+      if (!locks.pal) s.pal = pick(PALETTES.length);
+      if (!locks.comp) s.comp = int(15, 95) / 100;
+      if (!locks.sym) s.sym = int(0, 100) / 100;
+      if (!locks.sw) s.sw = int(6, 24) / 10;
+      if (!locks.fill) s.fill = rand() < 0.5 ? 0 : int(10, 60) / 100;
+      if (!locks.seed) s.seed = int(1, 999);
+      if (!same(s, prev)) return s;
+    }
+    return null;
+  };
+  const s = pickNovel(draw);
+  if (s) { commit(s); return true; }
   setStatus('Everything is locked — unlock something to surprise');
   return false;
 }
 
-/** Novo seed (tecla R): ação explícita, por isso ignora o cadeado do seed. Nunca repete o atual. */
+/**
+ * Novo seed (tecla R): ação explícita, por isso ignora o cadeado do seed. Nunca repete o atual;
+ * entre os candidatos, fica o que menos repete as últimas imagens (pickNovel).
+ * @param {() => number} [rand] - fonte de acaso (Math.random por padrão; injetável em teste)
+ */
 export function newSeed(rand = Math.random) {
-  let seed = state.seed;
-  while (seed === state.seed) seed = 1 + Math.floor(rand() * 999);
-  commit({ ...snapshot(), seed });
+  const base = snapshot();
+  const draw = () => {
+    let seed = base.seed;
+    while (seed === base.seed) seed = 1 + Math.floor(rand() * 999);
+    return { ...base, seed };
+  };
+  commit(pickNovel(draw));
 }
 
 export function undo() {

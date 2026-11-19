@@ -1,10 +1,16 @@
-// scripts/silhouette.mjs
+// src/core/silhouette.js
 // Silhueta de um SVG gerado, por GEOMETRIA (sem rasterizar, sem dependência): percorre paths,
 // círculos, elipses, retângulos, linhas e polylines, amostra o traçado e marca as células de uma
 // malha grossa G×G que ele toca. É «o que se lê na miniatura» (F5, DEC-020).
-// Aproximações declaradas: o traço não tem espessura; preenchimento não conta (os instrumentos
-// renderizam com fill-opacity 0); de `transform`, só `translate` e `scale` em `<g>` (o Botânico usa).
+// Uma fonte só para o produto e para os instrumentos (DEC-022): a anti-repetição do R e do Surprise
+// (`explore.js`) e o `npm run seeds` usam estas mesmas funções. Até a v0.10.0 morava em
+// `scripts/silhouette.mjs`.
+// Aproximações declaradas: o traço não tem espessura; preenchimento não conta (só o traçado marca
+// célula); de `transform`, só `translate` e `scale` em `<g>` (o Botânico usa).
 // Calibrada em 2026-11-17 contra a sonda rasterizada `../261117-sonda-silhueta/` (ver DEC-020).
+// Limite medido em 2026-11-19 (análise 261119): ela vê ONDE há tinta, não QUE forma ela tem — dois
+// motivos diferentes dentro do mesmo contorno podem dar IoU ≥ 0,8. Por isso a anti-repetição não
+// usa só ela: soma as escolhas do `pickOne` (`recordChoices`, em utils.js).
 
 const NUM = /-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gi;
 
@@ -92,15 +98,25 @@ function arc(x1, y1, rx, ry, rotDeg, la, sw, x2, y2, seg) {
 }
 
 /**
+ * Semelhança entre duas ocupações: IoU (interseção ÷ união das células), 1 = mesma silhueta.
+ * Duas ocupações vazias contam como iguais.
+ * @param {Set<number>} a
+ * @param {Set<number>} b
+ * @returns {number} 0–1
+ */
+export function silhouetteIoU(a, b) {
+  let inter = 0; for (const c of a) if (b.has(c)) inter++;
+  const uni = a.size + b.size - inter;
+  return uni ? inter / uni : 1;
+}
+
+/**
  * Quanto a silhueta muda entre as amostras: média de 1 − IoU sobre todos os pares, em %.
  * @param {Set<number>[]} sets - ocupações (uma por seed)
  * @returns {number} 0–100, com 1 casa decimal
  */
 export function silhouetteChange(sets) {
   let sum = 0, n = 0;
-  for (let i = 0; i < sets.length; i++) for (let j = i + 1; j < sets.length; j++) {
-    const a = sets[i], b = sets[j]; let inter = 0; for (const c of a) if (b.has(c)) inter++;
-    const uni = a.size + b.size - inter; sum += uni ? 1 - inter / uni : 0; n++;
-  }
+  for (let i = 0; i < sets.length; i++) for (let j = i + 1; j < sets.length; j++) { sum += 1 - silhouetteIoU(sets[i], sets[j]); n++; }
   return n ? Math.round(sum / n * 1000) / 10 : 0;
 }

@@ -58,17 +58,21 @@ A sonda `../261112-sonda-ui/behave.cjs` (pasta-pai, fora do repo, 18 checagens d
 ### 2026-11-15 — `.gitattributes` fixando LF
 Ver o item do backlog do STATUS: `* text=auto eol=lf` acaba com o aviso de CRLF em toda WO e com a dúvida «o arquivo está em LF ou CRLF?» nos relatórios.
 
+### 2026-11-19 — Régua de «mesma cara» que veja o motivo
+A silhueta 16×16 junta motivos diferentes no mesmo contorno (concordou com o olho em 7/16 pares; análise 261119, §5, folha `../261119-1720-CALIBRA-caras.png`). Malha fina, folga de uma célula e estrutura de elementos não passaram de 10/16. Candidatos: descritor de forma por anéis/setores (histograma radial da tinta), comparação depois de alinhar giro e escala, ou uma folha maior marcada pelo dono para escolher o limiar. Gatilho: o roteiro da anti-repetição mostrar repetição que os números não contam, ou `caras` ser cogitada como meta.
+
+### 2026-11-19 — «Like this» sem miniaturas iguais
+As 3 variações «Like this» trocam o seed e mexem ±20 em Complexity/Symmetry, sem olhar se saíram iguais entre si ou à atual. Aplicar o `pickNovel` às variações (determinístico pelo estado, para as miniaturas não mudarem a cada redesenho) daria 4 miniaturas sem duas iguais. Fora da v0.11.0 de propósito: «parecido com este» é o objetivo ali (DEC-022). Gatilho: o dono reclamar de miniaturas repetidas, ou a F4/B redesenhar o painel.
+
 ### 2026-11-18 — Repetição em 10 cliques: anti-repetição no sorteio + mais «caras» por tipo
 Pergunta do dono depois do lote 4 [relatado pelo dono, 2026-11-18]: «não é possível aumentar as possibilidades de geração? em 10 cliques eu vi a mesma coisa umas 2-3 vezes». Medido pela sonda `../261117-sonda-silhueta/looks.mjs` (relatório `261118-1510-CARAS-v0.10.0.txt`): 200 seeds por tipo agrupadas por silhueta (IoU ≥ 0,8 na malha 16×16) — a maioria dos tipos tem 1–17 caras e a mais comum cobre 20–65% das seeds; a chance de rever uma cara em 10 cliques é ~100% em 51 dos 53 tipos (`botanical/tree`: 200 caras, 20%; `botanical/dragon` 75%). Não é o PRNG: é o espaço de saída — escolhas discretas de 3–7 opções, com a silhueta decidida por um ou dois eixos. Pelo «problema do aniversário», ficar abaixo de 50% de repetição em 10 cliques pede ~65 caras igualmente prováveis por tipo. Caminhos: (a) **anti-repetição no sorteio** — R/Surprise geram alguns candidatos e mostram o de silhueta mais distante das últimas exibidas (amostragem do «melhor candidato», de Mitchell; mesma família da busca por novidade); vale para os 53 tipos de uma vez; (b) **valores contínuos** no esqueleto (escala, proporção, giro) em vez de 3 valores fixos; (c) **composição recursiva** (cada anel/camada sorteia o próprio motivo e contorno, como as regras do L-System na árvore); (d) **equilibrar as probabilidades** para nenhuma cara dominar; (e) nova coluna `caras` no `npm run seeds` para medir. Decisão do dono.
+**Andamento (2026-11-19):** (a) e (e) entregues em v0.11.0 (DEC-022, análise 261119) — com a tupla de escolhas do `pickOne` somada à silhueta, porque a silhueta sozinha não vê o motivo. Medido: o sorteio chega a 0,2 do piso teórico de repetição; o que sobra é falta de caras, então (b), (c) e (d) seguem valendo para os lotes.
 
 ### 2026-11-17 — Padrão Art Deco pesado em canvas grande
 Com a escala da célula semeada (0,8×), o pior caso do `artdeco/pattern` em canvas 1200 vai de 362 a 561 KB (75 KB em 400, dentro do teto). Se export grande virar queixa: limitar a escala mínima pela área do canvas, ou desenhar o motivo uma vez num `<pattern>` SVG (ver «Tile seamless» na F7). Desde v0.10.0, `islamic/pattern` e `islamic/girih` também (~600 KB em 1200, antes 316; 82 e 74 KB em 400).
 
 ### 2026-11-17 — Enquadrar o acanto e o flourish como o Botânico
 `baroque/acanthus` e `victorian/flourish` ocupam ~1/3 da altura do canvas desde a v0.1.0 (folhas de `sz * 0.2`; o caule vai de `cy − 0,48·sz` a `cy + 0,48·sz`, mas as folhas ficam estreitas). O Botânico resolveu isso com `fitToBox` (`FIT = 1.8`, DEC-017). Medir a caixa do desenho e escalar — muda a saída dos dois tipos, então vai num lote que já os toque.
-
-### 2026-11-16 — Um `pickOne` só
-O Botânico tem `pickOne` local (lote 1); o lote 2 pôs um em `core/utils.js`. Trocar o local pelo de `utils` quando o `botanical.js` for tocado de novo — mudança de uma linha, sem efeito na saída.
 
 ### 2026-11-16 — Padrão Art Deco com mais caras
 `artdeco/pattern` tem só 8 combinações (4 motivos × 2 malhas; `formas` = 4). Candidatos baratos: acento em xadrez (célula sim, célula não preenchida), malha girada 45°, motivo alternando por linha. Roteiro do lote 2, item 4: ok [relatado pelo dono, 2026-11-17] — 8 bastam por ora. Reabrir se o dono pedir mais caras ou quando o lote de modificadores universais (F5) chegar.
@@ -106,6 +110,7 @@ As funções `genADMedallion`, `genBQFrame`, etc. ainda sem docstrings completas
 - **Motor L-System + estilo Botanical (F3)** — implementado em 2026-07-24 (DEC-011): `lsystemExpand`/`turtleToPath` + 3 presets (tree/koch/dragon) em `src/generators/botanical.js`. Zero regressão nos 8 estilos anteriores, verificada byte-a-byte.
 - **Flow Fields (F3)** — implementada em v0.4.0 (DEC-013): tipo `flow` no Organic, `genFlowField`. Ideia original (2026-06-30) previa ~120 linhas e 500 partículas × 200 passos; a versão entregue usa 30–120 partículas × 40–120 passos num disco, porque o tamanho do SVG (não o tempo) era o gargalo.
 - **Comparação antes/depois como prática padrão → instrumento `npm run regress`** — ideias de 2026-07-07 (generalizar a comparação headless) e 2026-11-11 (promover a sonda) implementadas juntas em 2026-11-12 (DEC-014): `scripts/regress.mjs` + linha de base versionada, sai 1 quando uma saída antiga muda.
+- **Um `pickOne` só** (2026-11-16) — implementado em v0.11.0 (DEC-022): o Botânico usa o `pickOne` de `core/utils.js`, que a anti-repetição enxerga. Sem efeito na saída (regress 0).
 
 ---
 

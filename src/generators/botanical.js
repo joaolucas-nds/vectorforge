@@ -3,7 +3,7 @@
 // turtle graphics. Ver GLOSSARY.md para os termos e DEC-011 em DECISIONS.md
 // para as escolhas de design (mapeamento de comp/sym, ajuste de bounding box).
 
-import { f } from '../core/utils.js';
+import { f, pickOne } from '../core/utils.js';
 
 /**
  * Expande o axioma aplicando as regras de reescrita N vezes.
@@ -45,8 +45,8 @@ export function lsystemExpandStochastic(axiom, rules, iterations, rnd) {
   return str;
 }
 
-/** Sorteia um item de uma lista com `rnd` (os presets por seed). */
-const pickOne = (list, rnd) => list[Math.floor(rnd() * list.length)];
+// O pickOne local saiu (IDEAS «Um pickOne só», DEC-022): o de core/utils.js faz a mesma conta e
+// é o que o registrador de escolhas da anti-repetição enxerga.
 
 /**
  * Interpreta a string do L-System como comandos de turtle graphics e monta um

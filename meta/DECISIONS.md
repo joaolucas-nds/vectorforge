@@ -538,4 +538,33 @@ Depois do piloto (DEC-020, roteiro 1–6 ok), o dono escolheu «parados primeiro
 - Pior caso (canvas 400): `islamic/pattern` 81,6 KB, `islamic/girih` 73,9 KB. Em 1200, ~600 KB (antes 316) — IDEAS.
 - Restam parados Minimal e Orgânico (12 tipos sem formas>1); os 19 tipos dos lotes 2 e 3 ainda variam só no detalhe.
 
+---
+
+## DEC-022 — Anti-repetição no sorteio: melhor de K candidatos por silhueta + escolhas do gerador
+**Data:** 2026-11-19 · **Status:** aceita
+
+### Contexto
+«Em 10 cliques eu vi a mesma coisa umas 2-3 vezes» [relatado pelo dono, 2026-11-18]. O R e o Surprise sorteavam sem olhar o que já tinha sido mostrado; em 51 dos 53 tipos, mais de 80% das sessões de 10 cliques repetiam uma silhueta. O dono decidiu fazer a anti-repetição com uma coluna `caras` no instrumento [relatado pelo dono, 2026-11-19]; a análise `meta/analises/261119-ANALISE-anti-repeticao.md` mediu o custo, simulou o R e o Surprise e achou que a silhueta 16×16 não vê o motivo (concordou com o olho em 7 de 16 pares). O dono aprovou a opção A e as marcações da §5 [relatado pelo dono, 2026-11-19].
+
+### Decisão
+1. **R e Surprise escolhem entre até 12 candidatos** (`pickNovel` em `explore.js`), sorteados como antes (mesmos cadeados), com orçamento de ~30 ms (sempre pelo menos 2). Fica o que menos repete as **últimas 10 imagens do histórico**.
+2. **«Repete» = dois sinais, não um limiar:** mesma silhueta (IoU ≥ 0,8 na malha 16×16) OU mesma tupla de escolhas do `pickOne` no mesmo tipo; as duas juntas pesam o dobro. Empate: o mais distante (fração de escolhas diferentes + 1 − IoU).
+3. **Registrador de escolhas** em `pickOne` (`recordChoices`): anota índices sem consumir número do PRNG — saída idêntica. O Botânico passa a usar o `pickOne` de `core/utils.js`.
+4. **Uma régua só:** `occupancy`/`silhouetteChange` saem de `scripts/` para `src/core/silhouette.js`; o `npm run seeds` importa de lá pelo bundle.
+5. **Fora:** «Like this» (é «parecido com este» por definição), Text→Form com texto e Pixel Art (o candidato não representa o que o `doGen` desenha) — nesses, o sorteio de antes. Seed continua 1–999.
+6. **`caras` e `escolhas` no `npm run seeds`: informativas**, em 200 seeds, sem catraca, sem meta, fora da linha de base.
+
+### Alternativas consideradas
+- **Só silhueta (critério c)** — rejeitada: mesmo ganho de silhueta e metade do ganho em escolhas (17 contra 31 tipos sem repetir a combinação em 10 cliques), e confunde motivos diferentes no mesmo contorno.
+- **Mitchell puro (maior distância mínima)** — rejeitada: piora com poucas caras (2 caras: 29,5 pares contra 20,1 do critério escolhido).
+- **«Saco embaralhado» das combinações** — adiada: zero repetição até esgotar, mas exige que cada gerador aceite a combinação de fora.
+- **Régua de igualdade melhor** (malha fina, folga de célula, estrutura de elementos) — nenhuma passou de 10/16 contra o olho; fica no IDEAS.
+- **Catraca em `caras`** — rejeitada por ora: régua que não reproduz o olho vira meta errada (a lição do `formas`, DEC-020).
+
+### Consequências
+- Simulado (R, 999 seeds, 2.000 sessões): repetição de silhueta < 50% em 9/53 tipos (antes 1/53) e de escolhas em 31/53 (antes 11/53), a 0,2 pares do piso teórico; Surprise sem nada travado: 81% → 0%. Medido no `dist` (jsdom): `artdeco/pattern` e `celtic/spiral` 100% → 8%; `geometric/symbol` e `celtic/knot` → 64%.
+- **Não cria caras:** os 19 tipos de silhueta única continuam repetindo; quem resolve são os lotes da F5. A anti-repetição faz cada cara nova aparecer na hora.
+- Custo: +30 ms no clique típico e +60 ms no pior (padrão em canvas 1200), medidos em jsdom; no browser, conferir no roteiro.
+- Escolha discreta nova em gerador precisa passar pelo `pickOne`, ou fica invisível para a anti-repetição.
+
 

@@ -95,7 +95,35 @@ export function curvePath(pts, closed = false) {
  * @param {() => number} rnd - PRNG semeado (mkRand)
  * @returns {T}
  */
-export function pickOne(list, rnd) { return list[Math.floor(rnd() * list.length)]; }
+export function pickOne(list, rnd) {
+  const i = Math.floor(rnd() * list.length);
+  if (choiceLog) choiceLog.push(i);
+  return list[i];
+}
+
+// Registrador das escolhas discretas (anti-repetição, DEC-022): enquanto `choiceLog` não é null,
+// cada pickOne anota o ÍNDICE sorteado. Não consome número do PRNG nem muda a escolha — a saída
+// dos geradores fica byte a byte igual (o `npm run regress` confere).
+let choiceLog = null;
+
+/**
+ * Roda fn() anotando as escolhas feitas por pickOne durante ela. A tupla é a declaração do gerador
+ * sobre «qual variante» saiu: mesma tupla no mesmo tipo = mesmas decisões de motivo, arranjo e
+ * esqueleto. Aninhável (restaura o registrador de fora ao terminar).
+ * @template T
+ * @param {() => T} fn
+ * @returns {[T, number[]]} o resultado de fn e os índices sorteados, em ordem
+ */
+export function recordChoices(fn) {
+  const outer = choiceLog;
+  choiceLog = [];
+  try {
+    const out = fn();
+    return [out, choiceLog];
+  } finally {
+    choiceLog = outer;
+  }
+}
 
 /**
  * Losango em degraus («zigurate» Art Deco): sobe em `levels` degraus até o topo e espelha

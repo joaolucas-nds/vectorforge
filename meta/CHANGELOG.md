@@ -10,6 +10,16 @@
 
 ---
 
+## [0.11.0] — 2026-11-19
+### Adicionado
+- **Anti-repetição no R (New seed) e no Surprise:** cada clique sorteia até 12 candidatos (para antes se passar de ~30 ms, sempre pelo menos 2) e mostra o que menos repete as últimas 10 imagens do histórico — mesma silhueta (malha 16×16) ou mesmas escolhas de motivo/arranjo/esqueleto do gerador. Cadeados, histórico e desfazer funcionam como antes. Com texto no Text→Form e no Pixel Art, o sorteio é o de antes. Ver DEC-022.
+- **`npm run seeds` com duas colunas informativas, em 200 seeds:** `caras` (grupos de mesma silhueta) e `escolhas` (combinações distintas do `pickOne`). Sem catraca e fora da linha de base: nenhuma das duas reproduz o olho (análise 261119, §5).
+### Alterado
+- A régua de silhueta sai de `scripts/silhouette.mjs` para `src/core/silhouette.js` — a mesma função no app e no instrumento; ganha `silhouetteIoU`.
+- `pickOne` (`core/utils.js`) anota as escolhas quando o registrador `recordChoices` está ligado; o Botânico deixa o `pickOne` local e usa este. Nenhum desenho muda: `npm run regress` com 0 chaves mudadas.
+
+---
+
 ## [0.10.0] — 2026-11-18
 ### Alterado
 - **Celta e Islâmico com variedade de verdade** (F5, lote 4, já com esqueleto semeado): nó (estrela de laços, roseta entrelaçada, triquetra, corrente), cruz (braços iguais, cruz alta com base, latina; remates reto, alargado ou bola), estrela islâmica (rosácea, fita {n/k}, enquadrada, khatam; moldura), arabesco (radial, palmeta, faixa). Placar `npm run seeds`: formas>1 29/53 → 41/53, silhueta>=25% 10/53 → 22/53.
