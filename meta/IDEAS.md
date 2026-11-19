@@ -119,6 +119,9 @@ As funções `genADMedallion`, `genBQFrame`, etc. ainda sem docstrings completas
 
 ## 📮 Feedback para o Kit
 
+### 2026-11-19 — Instrumento que não vê o que o dono vê vira meta errada
+Caso deste projeto (DEC-020): o `npm run seeds` contava «formas» (estrutura de elementos), os lotes 2 e 3 da F5 subiram o placar trocando detalhe dentro do mesmo contorno, os roteiros passaram — e o dono continuou dizendo «falta variedade». Só uma segunda régua, a silhueta, mostrou o problema; e depois uma terceira, as «caras», mostrou que mesmo com silhueta variando o dono revê a mesma cara em 10 cliques. Regra candidata para o kit: **antes de um instrumento virar meta de um lote, confira que a métrica dele reproduz a queixa do dono** (o tipo que ele reclama tem de aparecer mal na régua); placar que sobe enquanto a queixa continua é sinal de régua errada, não de dono exigente. Complementa a regra «existência não é aptidão» do kit: aqui era «estrutura não é aparência».
+
 ### 2026-11-15 — `/wrap` faz o «Última conversa» do STATUS crescer sem limite
 A skill `wrap` manda acrescentar (append) uma entrada em «Última conversa» a cada fecho, e nada no ciclo a enxuga: em 5 dias o STATUS acumulou 6 entradas, contra a regra «STATUS é só o agora». Enxugado à mão pela WO 0006. Sugestão para o kit: a skill dizer «mantenha só as N mais recentes; o histórico está no log do dia», ou o template do STATUS trazer o teto.
 

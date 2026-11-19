@@ -61,6 +61,7 @@
 - **Triquetra / tríscele** — motivos celtas: três pétalas entrelaçadas (com anel) e três espirais saindo de um centro. Usados no nó, no medalhão e na espiral celtas (DEC-021).
 - **Shamsa** — medalhão islâmico em «sol», com estrela central, anel de pétalas e pingentes nas pontas (`genIslamicMedallion`).
 - **Khatam** — estrela de 8 pontas feita de dois quadrados ({8/2}); em malha quadrada, os vãos formam cruzes. Motivo do `islamic/pattern`.
+- **Caras** — quantas silhuetas distintas um tipo produz: seeds agrupadas por IoU ≥ 0,8 na malha 16×16 da régua de silhueta. Medida pela sonda `../261117-sonda-silhueta/looks.mjs` (ainda fora do repo); candidata a coluna do `npm run seeds`. «Varia» (silhueta média alta) não é «não repete» (poucas caras).
 - **esbuild** — bundler JS/CSS usado só em tempo de desenvolvimento (devDependency); não é dependência de runtime do app entregue.
 - **IIFE (Immediately Invoked Function Expression)** — formato de bundle escolhido (`format: 'iife'` no esbuild) para que o JS bundlado se comporte como o `<script>` clássico original (execução síncrona, sem defer de módulo). Funções declaradas dentro do IIFE não vazam para `window` automaticamente — por isso `main.js` expõe explicitamente as usadas em `onclick=""` inline (ver Armadilha 8 no CONTEXT.md).
 - **ASU** *(descontinuado em 2026-11-11, DEC-012)* — Atualizador Automático de Scripts; aplicava patches YAML (`AAMMDD-asuNNNN.yaml`) em `src/` e em anexos de DECISIONS/CONTEXT. Mantido aqui porque DEC-007/008/009 e os logs antigos o citam.
