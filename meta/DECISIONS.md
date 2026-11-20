@@ -564,7 +564,7 @@ Depois do piloto (DEC-020, roteiro 1–6 ok), o dono escolheu «parados primeiro
 ### Consequências
 - Simulado (R, 999 seeds, 2.000 sessões): repetição de silhueta < 50% em 9/53 tipos (antes 1/53) e de escolhas em 31/53 (antes 11/53), a 0,2 pares do piso teórico; Surprise sem nada travado: 81% → 0%. Medido no `dist` (jsdom): `artdeco/pattern` e `celtic/spiral` 100% → 8%; `geometric/symbol` e `celtic/knot` → 64%.
 - **Não cria caras:** os 19 tipos de silhueta única continuam repetindo; quem resolve são os lotes da F5. A anti-repetição faz cada cara nova aparecer na hora.
-- Custo: +30 ms no clique típico e +60 ms no pior (padrão em canvas 1200), medidos em jsdom; no browser, conferir no roteiro.
+- Custo: +30 ms no clique típico e +60 ms no pior (padrão em canvas 1200), medidos em jsdom; no browser, o roteiro do dono (1–9 ok, item 7 = tempo do R em canvas 1200) não notou atraso [relatado pelo dono, 2026-11-19].
 - Escolha discreta nova em gerador precisa passar pelo `pickOne`, ou fica invisível para a anti-repetição.
 
 
