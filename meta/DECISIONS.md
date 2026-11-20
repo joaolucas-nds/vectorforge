@@ -567,4 +567,30 @@ Depois do piloto (DEC-020, roteiro 1–6 ok), o dono escolheu «parados primeiro
 - Custo: +30 ms no clique típico e +60 ms no pior (padrão em canvas 1200), medidos em jsdom; no browser, o roteiro do dono (1–9 ok, item 7 = tempo do R em canvas 1200) não notou atraso [relatado pelo dono, 2026-11-19].
 - Escolha discreta nova em gerador precisa passar pelo `pickOne`, ou fica invisível para a anti-repetição.
 
+---
+
+## DEC-023 — Lote 5a da F5: Minimal com esqueleto semeado
+**Data:** 2026-11-20 · **Status:** aceita
+
+### Contexto
+O dono escolheu a frente A, Minimal + Orgânico com esqueleto [relatado pelo dono, 2026-11-20]. Os 6 tipos do Minimal marcavam 1/1/0% e 1 cara: com a anti-repetição (DEC-022), o R não tinha o que alternar neles. O chat dividiu a frente em duas WOs (5a Minimal, 5b Orgânico), porque os dois estilos têm natureza diferente. `symbol` e `mark` usavam o mesmo gerador; `line` era o `genDivider('min')`, cuja linha cheia é comum a todos os estilos; `glyph` sem texto era um `<text>` ✦, invisível à régua.
+
+### Decisão
+1. **Esqueleto semeado nos 6 tipos** (contorno, arranjo, campo, comprimento, direção, escala, posição), com o desenho de antes como variante onde cabe.
+2. **`genMinimalSymbol(…, kind)`**: `symbol` e `mark` com repertórios próprios (como o `style` do DEC-019).
+3. **`genMinLine` próprio** para `minimal/line`; o ramo `'min'` do `genDivider` fica sem uso, e o divisor dos outros estilos não muda.
+4. **`glyph` sem texto = sinal assêmico** de traços (haste, bojo, barra, diagonal, gancho, ponto); com texto, o desenho de sempre.
+5. **Identidade:** poucos traços de uma espessura, muito vazio, no máximo um acento cheio.
+
+### Alternativas consideradas
+- **Caracteres ornamentais sorteados no `glyph`** (✧ ❋ ✺…) — rejeitada: dependem da fonte do sistema e a régua não vê `<text>`.
+- **Variar o ramo `'min'` do `genDivider`** — rejeitada: a linha cheia do topo da função é de todos os estilos; mexer nela vaza para fora do lote.
+- **Um lote só com Minimal + Orgânico** — trocado por duas WOs: o Orgânico pede outro tipo de trabalho (esqueleto por cima de ruído contínuo).
+
+### Consequências
+- Placar: formas>1 41/53 → 47/53, silhueta>=25% 22/53 → 28/53; silhueta do Minimal 57–78%. Regress: exatamente 36 chaves mudaram, todas `minimal/*`.
+- Caras (200 seeds): circle 18, mark 80, symbol 82, line 19, grid 50, glyph 162 — com a anti-repetição, o R deixa de repetir na maioria.
+- Pior caso (canvas 400): `grid` 41,4 KB. `dist` 108,1 → 115,8 KB.
+- Resta o Orgânico (lote 5b) e o esqueleto nos 19 tipos dos lotes 2 e 3.
+
 

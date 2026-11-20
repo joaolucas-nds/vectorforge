@@ -9,7 +9,7 @@ import { genMandala, genGeoFrame, genGeoStar, genGeoSymbol } from '../generators
 import { genVicMedallion, genVicFrame, genVicWreath } from '../generators/victorian.js';
 import { genCelticKnot, genCelticCross, genCelticKnotwork, genCelticBorder, genCelticMedallion, genCelticSpiral } from '../generators/celtic.js';
 import { genIslamicStar, genArabesque, genIslamicBorder, genIslamicMedallion } from '../generators/islamic.js';
-import { genMinimalSymbol, genMinGrid, genMinCircles, genGlyph } from '../generators/minimal.js';
+import { genMinimalSymbol, genMinLine, genMinGrid, genMinCircles, genGlyph } from '../generators/minimal.js';
 import { genOrganicLeaf, genOrganicSpiral, genOrganicBranch, genOrganicFlower, genWave, genPhyllotaxis, genFlowField } from '../generators/organic.js';
 import { genDivider, genPattern, genPixelArt, genTextShape } from '../generators/generic.js';
 import { genLSysTree, genLSysKoch, genLSysDragon } from '../generators/botanical.js';
@@ -77,10 +77,10 @@ export function generateContent(style, type, cx, cy, sz, comp, sym, seed, pal, s
     },
     minimal: {
       symbol:  () => genMinimalSymbol(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
-      line:    () => genDivider(0, cy, state.w, comp * 0.3, sym, rnd, SO, FG, sw, 'min'),
+      line:    () => genMinLine(0, cy, state.w, state.h, comp, sym, rnd, SO, FG, sw),
       grid:    () => genMinGrid(0, 0, state.w, state.h, comp, rnd, SO, FG, sw),
       circle:  () => genMinCircles(cx, cy, sz, comp, rnd, SO, FG, sw),
-      mark:    () => genMinimalSymbol(cx, cy, sz * 0.7, comp * 0.5, sym, rnd, SO, FG, sw),
+      mark:    () => genMinimalSymbol(cx, cy, sz * 0.7, comp * 0.5, sym, rnd, SO, FG, sw, 'mark'),
       glyph:   () => genGlyph(cx, cy, sz, comp, sym, rnd, SO, FG, sw),
     },
     organic: {

@@ -64,7 +64,8 @@
 - [x] Lote 4 — Celta + Islâmico com esqueleto e geradores próprios do estilo. v0.10.0, DEC-021, `specs/261118-esqueleto-celta-islamico.md`. Placar: silhueta>=25% 10/53 → 22/53.
 - [x] Anti-repetição no sorteio — R e Surprise escolhem, entre até 12 candidatos, o que menos repete as últimas 10 imagens (silhueta + escolhas do `pickOne`); colunas informativas `caras` e `escolhas` no `npm run seeds`. v0.11.0, DEC-022, análise `261119-ANALISE-anti-repeticao.md`. O sorteio chega a 0,2 do piso teórico; o resto é falta de caras.
 - [ ] Esqueleto nos 19 tipos dos lotes 2 e 3 (o piloto convenceu: roteiro 1–6 ok em 2026-11-17).
-- [ ] Um lote por estilo, já com esqueleto: Minimal, Orgânico (spiral, flower, mandala, e o resto do estilo).
+- [x] Lote 5a — Minimal com esqueleto semeado nos 6 tipos (`symbol`/`mark` com repertórios próprios, `line` com gerador próprio, `glyph` assêmico sem texto). v0.12.0, DEC-023, `specs/261120-esqueleto-minimal.md`. Placar: silhueta>=25% 22/53 → 28/53.
+- [ ] Lote 5b — Orgânico com esqueleto: `spiral`, `flower`, `mandala`, `phyllotaxis` parados; `leaf`, `branch`, `wave`, `flow` variam por ruído, sem esqueleto.
 - [ ] Modificadores universais: traço tracejado/duplo/pontilhado, camadas, espelho, deformação leve por ruído.
 
 ---

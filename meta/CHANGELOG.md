@@ -10,6 +10,14 @@
 
 ---
 
+## [0.12.0] — 2026-11-20
+### Alterado
+- **Minimal com variedade de verdade** (F5, lote 5a, com esqueleto semeado): símbolo (contorno círculo, quadrado, triângulo, hexágono, arco aberto ou nenhum × miolo raios, cruz, anel, ponto, meia-lua ou barra × escala × posição), marca (círculos sobrepostos, círculo no quadrado, quartos de círculo, barras escalonadas, chevrons, meio cheio, arco sobre ponto; girada e deslocada), linha (comprimento, 1–3 linhas, alinhamento, acento), grade (página, quadrado, círculo, faixa ou coluna × linhas, pontos, células ou tijolos), círculos (concêntricos, tangentes, fileira, sobrepostos, órbita, pilha, em quatro direções). Até v0.11.0 os 6 tipos saíam iguais para qualquer seed.
+- **Glyph sem texto:** o seed desenha um sinal assêmico de 1 a 3 «letras» de traços simples (antes, sempre o caractere ✦). Com texto no Text→Form, nada muda.
+- Placar `npm run seeds`: formas>1 41/53 → 47/53, silhueta>=25% 22/53 → 28/53. Linha de base do `npm run regress` regravada para as 36 chaves `minimal/*`; os outros estilos não mudam (o `genDivider` segue igual para eles).
+
+---
+
 ## [0.11.0] — 2026-11-19
 ### Adicionado
 - **Anti-repetição no R (New seed) e no Surprise:** cada clique sorteia até 12 candidatos (para antes se passar de ~30 ms, sempre pelo menos 2) e mostra o que menos repete as últimas 10 imagens do histórico — mesma silhueta (malha 16×16) ou mesmas escolhas de motivo/arranjo/esqueleto do gerador. Cadeados, histórico e desfazer funcionam como antes. Com texto no Text→Form e no Pixel Art, o sorteio é o de antes. Ver DEC-022.
